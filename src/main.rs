@@ -222,8 +222,8 @@ async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
         // This is running on a thread where blocking is fine.
         let response = format!("{}", generator::generate(
             &prompt,
-            35,
-            Some(150)
+            20,
+            Some(100)
         ));
        response
     });
