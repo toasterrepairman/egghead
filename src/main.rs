@@ -221,7 +221,7 @@ async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
             35,
             Some(150)
         ));
-        response
+        response.trim_start_matches("e.ask")
     });
     println!("still not dead!");
 
