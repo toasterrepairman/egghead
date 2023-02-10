@@ -242,7 +242,7 @@ async fn code(ctx: &Context, msg: &Message) -> CommandResult {
     let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
         .expect("Typing failed");
 
-    let prompt = format!("Respond with your answer wrapped in a code box outlined with '```'. {}", msg.content.clone());
+    let prompt = format!("Respond with your answer wrapped in a code box outlined with '```'. Remember to close it with '```' as well.{}", msg.content.clone());
     let runner = tokio::task::spawn_blocking(move || {
         println!("Thread Spawned!");
         // This is running on a thread where blocking is fine.
