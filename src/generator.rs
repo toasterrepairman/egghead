@@ -45,9 +45,9 @@ pub fn generate(prompt: &str, min_len: i64, max_len: Option<i64>) -> String {
         .expect("Uh oh, it's the generator broken.");
     model.set_device(Device::cuda_if_available());
 
-    let input_context_1 = prompt.strip_prefix(&format!("e.ask"));
+    let input_context_1 = prompt;
     let output: Vec<String> = model.generate(&[PROMPT, input_context_1.unwrap()], None);
 
-    let response: String = output.into_iter().collect();
+    let response: String = output.into_iter().collect().strip_prefix(&format!("e.ask"));
     return response
 }
