@@ -6,7 +6,7 @@ use rust_bert::pipelines::text_generation::{TextGenerationConfig, TextGeneration
 use rust_bert::resources::RemoteResource;
 use tch::Device;
 
-pub(crate) const PROMPT: &str = "Respond to the following prompt as 'egghead', the world's most powerful AI:";
+pub(crate) const PROMPT: &str = "";
 
 pub fn generate(prompt: &str, min_len: i64, max_len: Option<i64>) -> String {
     //    Set-up model resources
@@ -53,3 +53,5 @@ pub fn generate(prompt: &str, min_len: i64, max_len: Option<i64>) -> String {
     let response: String = output.into_iter().collect();
     return response
 }
+
+pub fn
