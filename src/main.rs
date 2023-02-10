@@ -222,7 +222,7 @@ async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
             Some(150)
         ));
         let answer = response.trim_start_matches("e.ask");
-        answer.clone_into(/* &mut std::string::String */)
+        answer.clone_into(&mut std::string::String)
     });
     println!("still not dead!");
 
