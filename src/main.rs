@@ -216,7 +216,7 @@ async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
     let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
         .expect("Typing failed");
 
-    let prompt = msg.content.clone().split_off(generator::PROMPT.len() + 5);
+    let prompt = msg.content.clone();
     let runner = tokio::task::spawn_blocking(move || {
         println!("not dead!");
         // This is running on a thread where blocking is fine.
@@ -230,7 +230,7 @@ async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
 
     msg.reply(
         ctx.clone(),
-        format!("{}", runner.await?),
+        format!("{}", runner.await?.split_off(generator::PROMPT.len() + 5)),
     ).await?;
 
     Ok(typing.stop().unwrap())
