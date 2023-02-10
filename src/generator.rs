@@ -35,8 +35,8 @@ pub fn generate(prompt: &str, min_len: i64, max_len: Option<i64>) -> String {
         num_beams: 5,
         num_return_sequences: 1,
         device: Device::Cpu,
-        repetition_penalty: 14.0,
-        temperature: 1.5,
+        repetition_penalty: 20.0,
+        temperature: 15.0,
         top_k: 400,
         ..Default::default()
     };
