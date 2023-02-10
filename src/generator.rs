@@ -35,9 +35,9 @@ pub fn generate(prompt: &str, min_len: i64, max_len: Option<i64>) -> String {
         num_beams: 3,
         num_return_sequences: 1,
         device: Device::Cpu,
-        repetition_penalty: 7.0,
-        temperature: 4.0,
-        top_p: 0.8,
+        repetition_penalty: 10.0,
+        temperature: 7.0,
+        top_k: 60,
         diversity_penalty: Some(15.0),
         ..Default::default()
     };
