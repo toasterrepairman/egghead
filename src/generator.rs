@@ -57,7 +57,8 @@ pub fn generate(prompt: &str, min_len: i64, max_len: Option<i64>) -> String {
 
 pub fn ask(question: &str, context: &str) -> String {
     //    Set-up Question Answering model
-    let qa_model = QuestionAnsweringModel::new(Default::default())?;
+    let qa_model = QuestionAnsweringModel::new(Default::default())
+        .expect("Failed to initialize model.");
 
     //    Define input
     let question_1 = String::from(question);
