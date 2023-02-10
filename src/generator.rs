@@ -53,5 +53,3 @@ pub fn generate(prompt: &str, min_len: i64, max_len: Option<i64>) -> String {
     let response: String = output.into_iter().collect();
     return response
 }
-
-pub fn
