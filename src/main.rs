@@ -216,14 +216,14 @@ async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
     let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
         .expect("Typing failed");
 
-    let prompt = msg.content.clone();
+    let prompt = format!("Respond with your answer wrapped in a code box outlined with '```'. {}", msg.content.clone());
+
     let runner = tokio::task::spawn_blocking(move || {
         println!("Thread Spawned!");
         // This is running on a thread where blocking is fine.
-        let response = format!("{}", generator::generate(
+        let response = format!("{}", generator::ask(
             &prompt,
-            20,
-            Some(100)
+            "No context"
         ));
         println!("{}", &response);
         response

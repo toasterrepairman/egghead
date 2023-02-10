@@ -2,6 +2,7 @@ use rust_bert::gpt_neo::{
     GptNeoConfigResources, GptNeoMergesResources, GptNeoModelResources, GptNeoVocabResources,
 };
 use rust_bert::pipelines::common::ModelType;
+use rust_bert::pipelines::question_answering::{QaInput, QuestionAnsweringModel};
 use rust_bert::pipelines::text_generation::{TextGenerationConfig, TextGenerationModel};
 use rust_bert::resources::RemoteResource;
 use tch::Device;
@@ -52,4 +53,21 @@ pub fn generate(prompt: &str, min_len: i64, max_len: Option<i64>) -> String {
 
     let response: String = output.into_iter().collect();
     return response
+}
+
+pub fn ask(question: &str, context: &str) -> String {
+    //    Set-up Question Answering model
+    let qa_model = QuestionAnsweringModel::new(Default::default())?;
+
+    //    Define input
+    let question_1 = String::from(question);
+    let context_1 = String::from(context);
+    let qa_input_1 = QaInput {
+        question: question_1,
+        context: context_1,
+    };
+
+    //    Get answer
+    let answers = qa_model.predict(&[qa_input_1], 1, 32);
+    return format!("{:?}", answers);
 }
