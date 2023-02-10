@@ -213,7 +213,7 @@ async fn command_usage(ctx: &Context, msg: &Message, mut args: Args) -> CommandR
 
 #[command]
 async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
-    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0)
+    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
         .expect("Typing failed");
 
     let mut prompt = msg.content.clone();
@@ -229,7 +229,7 @@ async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
     });
 
     msg.reply(
-        &ctx,
+        ctx.clone(),
         format!("{}", runner.await?),
     ).await?;
 
