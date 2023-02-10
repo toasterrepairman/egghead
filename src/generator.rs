@@ -93,7 +93,7 @@ pub fn code(prompt: &str) -> String {
     );
 
     let sequence_classification_model =
-        SequenceClassificationModel::new(sequence_classification_config)?;
+        SequenceClassificationModel::new(sequence_classification_config).expect("awkward");
 
     //    Define input
     let input = [prompt];
