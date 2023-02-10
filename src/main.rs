@@ -213,8 +213,9 @@ async fn command_usage(ctx: &Context, msg: &Message, mut args: Args) -> CommandR
 
 #[command]
 async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
-    let typing = Typing::start(Arc::new(http), 7)
+    let typing = Typing::start(ctx.http.clone(), msg.channel_id.0)
         .expect("Typing failed");
+
     let prompt = msg.content.clone();
     let runner = tokio::task::spawn_blocking(move || {
         println!("not dead!");
