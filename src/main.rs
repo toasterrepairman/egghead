@@ -221,7 +221,8 @@ async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
             35,
             Some(150)
         ));
-        response.trim_start_matches("e.ask")
+        let answer = response.trim_start_matches("e.ask");
+        answer
     });
     println!("still not dead!");
 
