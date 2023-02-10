@@ -46,7 +46,7 @@ pub fn generate(prompt: &str, min_len: i64, max_len: Option<i64>) -> String {
     model.set_device(Device::cuda_if_available());
 
     let input_context_1 = prompt;
-    let output = model.generate(&[input_context_1], None);
+    let output = model.generate(&["Respond to the following prompt as if you were a chatbot:", input_context_1], None);
 
     let response: String = output.into_iter().collect();
     return response
