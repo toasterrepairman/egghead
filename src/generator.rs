@@ -32,12 +32,12 @@ pub fn generate(prompt: &str, min_len: i64, max_len: Option<i64>) -> String {
         max_length: max_len,
         do_sample: true,
         early_stopping: true,
-        num_beams: 3,
+        num_beams: 5,
         num_return_sequences: 1,
         device: Device::Cpu,
-        repetition_penalty: 7.0,
-        temperature: 2.0,
-        top_k: 90,
+        repetition_penalty: 14.0,
+        temperature: 1.5,
+        top_k: 400,
         ..Default::default()
     };
 
