@@ -5,6 +5,7 @@ mod generator;
 
 use std::collections::HashMap;
 use std::env;
+use std::ffi::c_void::__variant1;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
 
@@ -216,14 +217,18 @@ async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
     let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
         .expect("Typing failed");
 
-    let prompt = format!("Respond with your answer wrapped in a code box outlined with '```'. {}", msg.content.clone());
+    let prompt = format!(msg.content.clone());
+
+    let discussion = msg.channel_id.0.clone()
+        .messages(&http, |retriever| retriever.after(msg.id).limit(10))
+        .await?;
 
     let runner = tokio::task::spawn_blocking(move || {
         println!("Thread Spawned!");
         // This is running on a thread where blocking is fine.
         let response = format!("{}", generator::ask(
             &prompt,
-            "No context"
+            discussion
         ));
         println!("{}", &response);
         response
@@ -239,26 +244,5 @@ async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
 
 #[command]
 async fn code(ctx: &Context, msg: &Message) -> CommandResult {
-    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
-        .expect("Typing failed");
-
-    let prompt = format!("Respond with your answer wrapped in a code box outlined with '```'. {}", msg.content.clone());
-    let runner = tokio::task::spawn_blocking(move || {
-        println!("Thread Spawned!");
-        // This is running on a thread where blocking is fine.
-        let response = format!("{}", generator::generate(
-            &prompt,
-            20,
-            Some(100)
-        ));
-        println!("{}", &response);
-        response
-    });
-
-    msg.reply(
-        ctx.clone(),
-        format!("{}", runner.await?.split_off(generator::PROMPT.len())),
-    ).await?;
-
-    Ok(typing.stop().unwrap())
+    Ok(())
 }
