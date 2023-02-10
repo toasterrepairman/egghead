@@ -265,7 +265,7 @@ async fn code(ctx: &Context, msg: &Message) -> CommandResult {
 
     msg.reply(
         ctx.clone(),
-        format!("{}", runner.await?),
+        format!("{}", runner.await.expect("erm...")),
     ).await?;
 
     Ok(())
