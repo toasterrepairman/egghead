@@ -48,6 +48,7 @@ pub fn generate(prompt: &str, min_len: i64, max_len: Option<i64>) -> String {
     let input_context_1 = prompt;
     let output: Vec<String> = model.generate(&[prompt, input_context_1], None);
 
-    let response: String = output.into_iter().collect().trim_start_matches("e.ask");
-    return response
+    let response: &str = format!("{}", output.into_iter().collect())
+        .trim_start_matches(&"e.ask");
+    return response.to_string()
 }
