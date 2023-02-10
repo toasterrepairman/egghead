@@ -31,14 +31,13 @@ pub fn generate(prompt: &str, min_len: i64, max_len: Option<i64>) -> String {
         do_sample: true,
         early_stopping: true,
         num_beams: 3,
-        num_beam_groups: Some(3),
         num_return_sequences: 1,
         device: Device::Cpu,
         repetition_penalty: 10.0,
         temperature: 4.0,
         top_k: 40,
         length_penalty: 3.0,
-        diversity_penalty: Some(3.0),
+        diversity_penalty: Some(10.0),
         ..Default::default()
     };
 
