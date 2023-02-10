@@ -11,6 +11,7 @@ use std::sync::Arc;
 use serenity::async_trait;
 use serenity::framework::standard::macros::{command, group, hook};
 use serenity::framework::standard::{Args, CommandResult, StandardFramework};
+use serenity::http::Typing;
 use serenity::model::channel::Message;
 use serenity::model::gateway::Ready;
 use serenity::prelude::*;
@@ -212,19 +213,20 @@ async fn command_usage(ctx: &Context, msg: &Message, mut args: Args) -> CommandR
 
 #[command]
 async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
+    let typing = Typing::start(Arc::new(http), 7);
     let prompt = msg.content.clone();
     let runner = tokio::task::spawn_blocking(move || {
         println!("not dead!");
         // This is running on a thread where blocking is fine.
         let response = format!("{}", generator::generate(
-            &prompt.strip_prefix(&format!("{} e.ask", &generator::PROMPT))
-                .expect("This is the prompt trimming finally breaking."),
+            &prompt,
             35,
             Some(150)
         ));
        response
     });
-    println!("still not dead!");
+
+    typing.stop();
 
     msg.reply(
         &ctx,

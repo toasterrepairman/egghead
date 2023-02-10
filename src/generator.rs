@@ -36,8 +36,8 @@ pub fn generate(prompt: &str, min_len: i64, max_len: Option<i64>) -> String {
         num_return_sequences: 1,
         device: Device::Cpu,
         repetition_penalty: 10.0,
-        temperature: 7.0,
-        top_k: 60,
+        temperature: 3.0,
+        top_k: 30,
         ..Default::default()
     };
 
