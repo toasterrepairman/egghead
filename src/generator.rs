@@ -6,7 +6,7 @@ use rust_bert::pipelines::text_generation::{TextGenerationConfig, TextGeneration
 use rust_bert::resources::RemoteResource;
 use tch::Device;
 
-pub(crate) const PROMPT: &str = "Respond to the following question as an interactive chatbot:";
+pub(crate) const PROMPT: &str = "Respond to the following prompt as 'egghead', the world's most powerful AI.";
 
 pub fn generate(prompt: &str, min_len: i64, max_len: Option<i64>) -> String {
     //    Set-up model resources
@@ -35,9 +35,9 @@ pub fn generate(prompt: &str, min_len: i64, max_len: Option<i64>) -> String {
         num_beams: 5,
         num_return_sequences: 1,
         device: Device::Cpu,
-        repetition_penalty: 12.0,
-        temperature: 1.7,
-        top_k: 180,
+        repetition_penalty: 20.0,
+        temperature: 1.5,
+        top_k: 150,
         ..Default::default()
     };
 
