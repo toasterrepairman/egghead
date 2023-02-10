@@ -220,9 +220,8 @@ async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
             &prompt.trim_start_matches(generator::PROMPT),
             35,
             Some(150)
-        ));
-        let answer = response.trim_start_matches("e.ask");
-        answer.clone_into(&mut std::string::String)
+        )).trim_start_matches("e.ask");
+       response
     });
     println!("still not dead!");
 
