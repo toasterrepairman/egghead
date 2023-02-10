@@ -35,9 +35,9 @@ pub fn generate(prompt: &str, min_len: i64, max_len: Option<i64>) -> String {
         num_beams: 3,
         num_return_sequences: 1,
         device: Device::Cpu,
-        repetition_penalty: 10.0,
-        temperature: 3.0,
-        top_k: 30,
+        repetition_penalty: 7.0,
+        temperature: 4.0,
+        top_k: 45,
         ..Default::default()
     };
 
@@ -45,7 +45,7 @@ pub fn generate(prompt: &str, min_len: i64, max_len: Option<i64>) -> String {
         .expect("Uh oh, it's the generator broken.");
     model.set_device(Device::cuda_if_available());
 
-    let input_context_1 = prompt;
+    let input_context_1 = prompt.starts_with("e.ask");
     let output: Vec<String> = model.generate(&[prompt, input_context_1], None);
 
     let response: String = output.into_iter().collect();
