@@ -45,9 +45,12 @@ pub fn generate(prompt: &str, min_len: i64, max_len: Option<i64>) -> String {
         .expect("Uh oh, it's the generator broken.");
     model.set_device(Device::cuda_if_available());
 
-    let input_context_1 = prompt;
+    let input_context_1 = prompt.trim_start_matches("e.ask");
     let output = model.generate(&[prompt, input_context_1], None);
 
-    let response: String = output.into_iter().collect();
+    let response: String = output
+        .into_iter()
+        .collect()
+        .trim_start_matches(PROMPT);
     return response
 }
