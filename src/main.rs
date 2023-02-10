@@ -212,17 +212,23 @@ async fn command_usage(ctx: &Context, msg: &Message, mut args: Args) -> CommandR
 
 #[command]
 async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
-    tokio::task::spawn_blocking(move || {
+    let prompt = msg.content.clone();
+    let runner = tokio::task::spawn_blocking(move || {
+        println!("not dead!");
         // This is running on a thread where blocking is fine.
-        let response = format!("{:?}", generator::generate(
-            &msg.content,
+        let response = format!("{}", generator::generate(
+            &prompt.trim_start_matches("e.ask"),
             50,
             Some(200)
         ));
-        msg.reply(
-            ctx,
-            response,
-        );
+        response
     });
+    println!("still not dead!");
+
+    msg.reply(
+        &ctx,
+        format!("{}", runner.await?),
+    ).await?;
+
     Ok(())
 }

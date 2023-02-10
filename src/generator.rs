@@ -33,11 +33,13 @@ pub fn generate(prompt: &str, min_len: i64, max_len: Option<i64>) -> String {
         num_beams: 4,
         num_return_sequences: 1,
         device: Device::Cpu,
-        repetition_penalty: 7.0,
+        repetition_penalty: 10.0,
+        temperature: 2.0,
         ..Default::default()
     };
 
-    let mut model = TextGenerationModel::new(generate_config).unwrap();
+    let mut model = TextGenerationModel::new(generate_config)
+        .expect("Uh oh, it's the generator broken.");
     model.set_device(Device::cuda_if_available());
 
     let input_context_1 = prompt;
