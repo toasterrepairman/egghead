@@ -218,8 +218,8 @@ async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
 
     let prompt = format!(msg.content.clone());
 
-    let discussion = msg.channel_id.0.clone()
-        .messages(&http, |retriever| retriever.after(msg.id).limit(10))
+    let discussion = msg.channel_id.clone()
+        .messages(ctx.http.clone(), |retriever| retriever.after(msg.id).limit(10))
         .await?;
 
     let runner = tokio::task::spawn_blocking(move || {
@@ -227,7 +227,7 @@ async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
         // This is running on a thread where blocking is fine.
         let response = format!("{}", generator::ask(
             &prompt,
-            discussion
+            discussion.into_iter().collect()
         ));
         println!("{}", &response);
         response
