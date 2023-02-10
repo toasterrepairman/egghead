@@ -2,9 +2,12 @@ use rust_bert::gpt_neo::{
     GptNeoConfigResources, GptNeoMergesResources, GptNeoModelResources, GptNeoVocabResources,
 };
 use rust_bert::pipelines::common::ModelType;
+use rust_bert::pipelines::masked_language::{MaskedLanguageConfig, MaskedLanguageModel};
 use rust_bert::pipelines::question_answering::{QaInput, QuestionAnsweringModel};
+use rust_bert::pipelines::sequence_classification::{SequenceClassificationConfig, SequenceClassificationModel};
 use rust_bert::pipelines::text_generation::{TextGenerationConfig, TextGenerationModel};
 use rust_bert::resources::RemoteResource;
+use rust_bert::roberta::{RobertaConfigResources, RobertaMergesResources, RobertaModelResources, RobertaVocabResources};
 use serenity::model::channel::Message;
 use tch::Device;
 
@@ -72,4 +75,35 @@ pub fn ask(question: &str, context: &str) -> String {
     //    Get answer
     let answers = qa_model.predict(&[qa_input_1], 1, 32);
     return format!("{:?}", answers);
+}
+
+pub fn code(prompt: &str) -> String {
+    //    Language identification
+    let sequence_classification_config = SequenceClassificationConfig::new(
+        ModelType::Roberta,
+        RemoteResource::from_pretrained(RobertaModelResources::CODEBERTA_LANGUAGE_ID),
+        RemoteResource::from_pretrained(RobertaConfigResources::CODEBERTA_LANGUAGE_ID),
+        RemoteResource::from_pretrained(RobertaVocabResources::CODEBERTA_LANGUAGE_ID),
+        Some(RemoteResource::from_pretrained(
+            RobertaMergesResources::CODEBERTA_LANGUAGE_ID,
+        )),
+        false,
+        None,
+        None,
+    );
+
+    let sequence_classification_model =
+        SequenceClassificationModel::new(sequence_classification_config)?;
+
+    //    Define input
+    let input = [prompt];
+
+    let mut response = String::new();
+
+    //    Run model
+    let output = sequence_classification_model.predict(input);
+    for label in output {
+        response.push_str(&label.text)
+    }
+    return response;
 }
