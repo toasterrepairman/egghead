@@ -37,7 +37,7 @@ pub fn generate(prompt: &str, min_len: i64, max_len: Option<i64>) -> String {
         temperature: 4.0,
         top_k: 40,
         no_repeat_ngram_size: 20,
-        length_penalty: 3,
+        length_penalty: 3.0,
         ..Default::default()
     };
 
