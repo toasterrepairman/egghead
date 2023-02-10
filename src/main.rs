@@ -230,7 +230,7 @@ async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
 
     msg.reply(
         ctx.clone(),
-        format!("{}", runner.await?).split_off(generator::PROMPT.len() + "e.ask".len()),
+        format!("{}", runner.await?).split_off(generator::PROMPT.len() + 5),
     ).await?;
 
     Ok(typing.stop().unwrap())
