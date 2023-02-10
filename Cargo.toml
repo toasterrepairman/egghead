@@ -1,0 +1,13 @@
+[package]
+name = "egghead"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+serenity = "0.11.5"
+anyhow = "1"
+rust-bert = "0.20.0"
+tch = "0.10.1"
+tokio = { version = "1.25.0", features = ["macros", "rt-multi-thread"] }
