@@ -5,7 +5,6 @@ mod generator;
 
 use std::collections::HashMap;
 use std::env;
-use std::ffi::c_void::__variant1;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
 
