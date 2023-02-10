@@ -217,9 +217,9 @@ async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
         println!("not dead!");
         // This is running on a thread where blocking is fine.
         let response = format!("{}", generator::generate(
-            &prompt.trim_start_matches("e.ask"),
-            50,
-            Some(200)
+            &prompt.trim_start_matches(generator::prompt),
+            35,
+            Some(150)
         ));
         response
     });
