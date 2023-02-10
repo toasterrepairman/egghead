@@ -35,6 +35,7 @@
                   pkgconfig
                   openssl.dev
                   rustup
+                  killall
                 ];
             };
           };
