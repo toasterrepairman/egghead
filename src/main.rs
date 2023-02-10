@@ -223,7 +223,7 @@ async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
         .messages(ctx.http.clone(), |retriever| retriever.after(msg.id).limit(10))
         .await?;
 
-    let mut disctx: String;
+    let mut disctx = "";
 
     for x in discussion {
         disctx.push_str(&x.content)
