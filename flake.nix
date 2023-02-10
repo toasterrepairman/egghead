@@ -34,6 +34,7 @@
                   libtorch-bin
                   pkgconfig
                   openssl.dev
+                  rustup
                 ];
             };
           };
