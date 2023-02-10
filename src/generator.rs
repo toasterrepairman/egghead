@@ -46,8 +46,8 @@ pub fn generate(prompt: &str, min_len: i64, max_len: Option<i64>) -> String {
     model.set_device(Device::cuda_if_available());
 
     let input_context_1 = prompt;
-    let output: Vec<String> = model.generate(&[PROMPT, input_context_1], None);
+    let output = model.generate(&[PROMPT, input_context_1], None).remove(0);
 
-    let response: String = output.into_iter().remove(0).collect();
+    let response: String = output.into_iter().collect();
     return response
 }
