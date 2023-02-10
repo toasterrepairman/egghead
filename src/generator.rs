@@ -5,6 +5,7 @@ use rust_bert::pipelines::common::ModelType;
 use rust_bert::pipelines::question_answering::{QaInput, QuestionAnsweringModel};
 use rust_bert::pipelines::text_generation::{TextGenerationConfig, TextGenerationModel};
 use rust_bert::resources::RemoteResource;
+use serenity::model::channel::Message;
 use tch::Device;
 
 pub(crate) const PROMPT: &str = "Answer ";

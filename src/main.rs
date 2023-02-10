@@ -216,18 +216,25 @@ async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
     let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
         .expect("Typing failed");
 
-    let prompt = format!(msg.content.clone());
+    let prompt = msg.content.clone();
 
+    // Get discussion context
     let discussion = msg.channel_id.clone()
         .messages(ctx.http.clone(), |retriever| retriever.after(msg.id).limit(10))
         .await?;
+
+    let mut disctx: String;
+
+    for x in discussion {
+        disctx.push_str(&x.content)
+    }
 
     let runner = tokio::task::spawn_blocking(move || {
         println!("Thread Spawned!");
         // This is running on a thread where blocking is fine.
         let response = format!("{}", generator::ask(
             &prompt,
-            discussion.into_iter().collect()
+            &disctx,
         ));
         println!("{}", &response);
         response
