@@ -222,13 +222,13 @@ async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
             Some(150)
         ));
         let answer = response.trim_start_matches("e.ask");
-        answer.clone()
+        answer.clone_into()
     });
     println!("still not dead!");
 
     msg.reply(
         &ctx,
-        format!("{}", runner.await?),
+        format!("{:?}", runner.await?),
     ).await?;
 
     Ok(())
