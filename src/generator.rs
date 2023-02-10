@@ -6,7 +6,7 @@ use rust_bert::pipelines::text_generation::{TextGenerationConfig, TextGeneration
 use rust_bert::resources::RemoteResource;
 use tch::Device;
 
-pub(crate) const PROMPT: &str = "";
+pub(crate) const PROMPT: &str = "Answer ";
 
 pub fn generate(prompt: &str, min_len: i64, max_len: Option<i64>) -> String {
     //    Set-up model resources
