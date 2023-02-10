@@ -28,13 +28,16 @@ pub fn generate(prompt: &str, min_len: i64, max_len: Option<i64>) -> String {
         merges_resource: Some(merges_resource),
         min_length: min_len,
         max_length: max_len,
-        do_sample: false,
+        do_sample: true,
         early_stopping: true,
         num_beams: 4,
         num_return_sequences: 1,
         device: Device::Cpu,
         repetition_penalty: 10.0,
-        temperature: 2.0,
+        temperature: 4.0,
+        top_k: 40,
+        no_repeat_ngram_size: 20,
+        length_penalty: 3,
         ..Default::default()
     };
 
