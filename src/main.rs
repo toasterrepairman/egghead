@@ -42,7 +42,7 @@ impl TypeMapKey for MessageCount {
 }
 
 #[group]
-#[commands(ping, command_usage, ask)]
+#[commands(ping, command_usage, ask, code)]
 struct General;
 
 #[hook]
@@ -218,14 +218,41 @@ async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
 
     let prompt = msg.content.clone();
     let runner = tokio::task::spawn_blocking(move || {
-        println!("not dead!");
+        println!("Thread Spawned!");
         // This is running on a thread where blocking is fine.
         let response = format!("{}", generator::generate(
             &prompt,
             20,
             Some(100)
         ));
-       response
+        println!("{}", &response);
+        response
+    });
+
+    msg.reply(
+        ctx.clone(),
+        format!("{}", runner.await?.split_off(generator::PROMPT.len())),
+    ).await?;
+
+    Ok(typing.stop().unwrap())
+}
+
+#[command]
+async fn code(ctx: &Context, msg: &Message) -> CommandResult {
+    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
+        .expect("Typing failed");
+
+    let prompt = format!("Respond with your answer wrapped in a code box outlined with '```'. {}", msg.content.clone());
+    let runner = tokio::task::spawn_blocking(move || {
+        println!("Thread Spawned!");
+        // This is running on a thread where blocking is fine.
+        let response = format!("{}", generator::generate(
+            &prompt,
+            20,
+            Some(100)
+        ));
+        println!("{}", &response);
+        response
     });
 
     msg.reply(
