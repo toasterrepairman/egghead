@@ -228,7 +228,7 @@ async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
     for x in discussion {
         disctx.push_str(&x.content)
     }
-    println!(&disctx);
+    println!("{}", &disctx);
 
     let runner = tokio::task::spawn_blocking(move || {
         println!("Thread Spawned!");
