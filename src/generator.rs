@@ -111,16 +111,16 @@ pub fn code(prompt: &str) -> String {
 
 pub fn gen(prompt: &str) -> String {
     let config_resource = Box::new(RemoteResource::from_pretrained(
-        GptNeoConfigResources::GPT_NEO_1_3B,
+        GptNeoConfigResources::GPT_NEO_125M,
     ));
     let vocab_resource = Box::new(RemoteResource::from_pretrained(
-        GptNeoVocabResources::GPT_NEO_1_3B,
+        GptNeoConfigResources::GPT_NEO_125M,
     ));
     let merges_resource = Box::new(RemoteResource::from_pretrained(
-        GptNeoMergesResources::GPT_NEO_1_3B,
+        GptNeoConfigResources::GPT_NEO_125M,
     ));
     let model_resource = Box::new(RemoteResource::from_pretrained(
-        GptNeoModelResources::GPT_NEO_1_3B,
+        GptNeoConfigResources::GPT_NEO_125M,
     ));
     let generate_config = TextGenerationConfig {
         model_type: ModelType::GPTNeo,
@@ -133,6 +133,7 @@ pub fn gen(prompt: &str) -> String {
         do_sample: false,
         early_stopping: true,
         num_beams: 3,
+        num_beam_groups: Some(3),
         num_return_sequences: 1,
         repetition_penalty: 30.0,
         length_penalty: 4.0,
