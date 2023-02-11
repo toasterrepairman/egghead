@@ -155,8 +155,6 @@ async fn main() {
         data.insert::<MessageCount>(Arc::new(AtomicUsize::new(0)));
     }
 
-    ctx.clone().set_activity(Activity::competing("against the competition 😎")).await;
-
     if let Err(why) = client.start().await {
         eprintln!("Client error: {:?}", why);
     }
