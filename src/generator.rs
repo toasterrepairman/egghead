@@ -132,10 +132,10 @@ pub fn gen(prompt: &str) -> String {
         max_length: Some(100),
         do_sample: false,
         early_stopping: true,
-        num_beams: 8,
+        num_beams: 5,
         num_return_sequences: 1,
-        repetition_penalty: 30.0,
-        length_penalty: 4.0,
+        repetition_penalty: 20.0,
+        length_penalty: 6.0,
         temperature: 1.7,
         device: Device::Cpu,
         ..Default::default()
