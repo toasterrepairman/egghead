@@ -114,13 +114,13 @@ pub fn gen(prompt: &str) -> String {
         GptNeoConfigResources::GPT_NEO_125M,
     ));
     let vocab_resource = Box::new(RemoteResource::from_pretrained(
-        GptNeoConfigResources::GPT_NEO_125M,
+        GptNeoVocabResources::GPT_NEO_125M,
     ));
     let merges_resource = Box::new(RemoteResource::from_pretrained(
-        GptNeoConfigResources::GPT_NEO_125M,
+        GptNeoMergesResources::GPT_NEO_125M,
     ));
     let model_resource = Box::new(RemoteResource::from_pretrained(
-        GptNeoConfigResources::GPT_NEO_125M,
+        GptNeoModelResources::GPT_NEO_125M,
     ));
     let generate_config = TextGenerationConfig {
         model_type: ModelType::GPTNeo,
