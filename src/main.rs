@@ -280,7 +280,7 @@ async fn gen(ctx: &Context, msg: &Message) -> CommandResult {
     let prompt = msg.content.clone();
     let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
         .expect("Typing failed");
-    ctx.clone().set_activity(Activity::playing("computing hard..... (do not disturb)")).await;
+    ctx.clone().set_activity(Activity::listening("to millions of code..... (do not disturb)")).await;
 
     // Load logic into runner
     let runner = tokio::task::spawn_blocking(move || {
@@ -293,7 +293,6 @@ async fn gen(ctx: &Context, msg: &Message) -> CommandResult {
 
     let response = runner.await?;
 
-    ctx.clone().set_activity(Activity::playing(format!("now playing:{}", &response))).await;
     // await on runner and return it's contents
     msg.reply(
         ctx.clone(),
