@@ -138,6 +138,7 @@ pub fn gen(prompt: &str) -> String {
         repetition_penalty: 20.0,
         length_penalty: 12.0,
         temperature: 1.85,
+        no_repeat_ngram_size: 5,
         device: Device::Cpu,
         ..Default::default()
     };
