@@ -153,7 +153,7 @@ pub fn gen(prompt: &str) -> String {
 
 pub fn analyze(context: String) {
     //    Set-up classifier
-    let sentiment_classifier = SentimentModel::new(Default::default())?;
+    let sentiment_classifier = SentimentModel::new(Default::default()).unwrap();
 
     //    Define input
     let input = [
