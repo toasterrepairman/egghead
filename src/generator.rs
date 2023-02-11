@@ -135,8 +135,8 @@ pub fn gen(prompt: &str) -> String {
         early_stopping: true,
         num_beams: 4,
         num_return_sequences: 1,
-        repetition_penalty: 10.0,
-        length_penalty: 6.0,
+        repetition_penalty: 20.0,
+        length_penalty: 12.0,
         temperature: 1.85,
         device: Device::Cpu,
         ..Default::default()
