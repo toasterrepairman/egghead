@@ -14,6 +14,7 @@ use serenity::framework::standard::{Args, CommandResult, StandardFramework};
 use serenity::http::Typing;
 use serenity::model::channel::Message;
 use serenity::model::gateway::Ready;
+use serenity::model::prelude::Activity;
 use serenity::prelude::*;
 use tokio::sync::RwLock;
 
@@ -279,6 +280,8 @@ async fn gen(ctx: &Context, msg: &Message) -> CommandResult {
     let prompt = msg.content.clone();
     let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
         .expect("Typing failed");
+    ctx.set_activity(Activity::playing("computing hard..... (do not disturb)")).await;
+
     // Load logic into runner
     let runner = tokio::task::spawn_blocking(move || {
         println!("Thread Spawned!");
@@ -287,10 +290,14 @@ async fn gen(ctx: &Context, msg: &Message) -> CommandResult {
         println!("{}", &response);
         response
     });
+
+    let response = runner.await?;
+
+    ctx.set_activity(Activity::playing(format!("now playing:{}", &response))).await;
     // await on runner and return it's contents
     msg.reply(
         ctx.clone(),
-        runner.await?,
+        &response,
     ).await.expect("TOTAL FAILURE");
 
     Ok(typing.stop().unwrap())
