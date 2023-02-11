@@ -31,7 +31,7 @@
             default = pkgs.mkShell {
               nativeBuildInputs =
                 with pkgs; [
-                  # libtorch-bin (you need this natively)
+                  libtorch-bin
                   pkgconfig
                   openssl.dev
                   rustup
