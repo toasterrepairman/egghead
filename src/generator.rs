@@ -2,16 +2,16 @@ use rust_bert::gpt_neo::{
     GptNeoConfigResources, GptNeoMergesResources, GptNeoModelResources, GptNeoVocabResources,
 };
 use rust_bert::pipelines::common::ModelType;
-use rust_bert::pipelines::masked_language::{MaskedLanguageConfig, MaskedLanguageModel};
 use rust_bert::pipelines::question_answering::{QaInput, QuestionAnsweringModel};
 use rust_bert::pipelines::sequence_classification::{SequenceClassificationConfig, SequenceClassificationModel};
 use rust_bert::pipelines::text_generation::{TextGenerationConfig, TextGenerationModel};
+use rust_bert::reformer::{ReformerConfigResources, ReformerModelResources, ReformerVocabResources};
 use rust_bert::resources::RemoteResource;
 use rust_bert::roberta::{RobertaConfigResources, RobertaMergesResources, RobertaModelResources, RobertaVocabResources};
 use serenity::model::channel::Message;
 use tch::Device;
 
-pub(crate) const PROMPT: &str = "Answer ";
+pub(crate) const PROMPT: &str = "Format a response to this prompt in Markdown:\n";
 
 pub fn generate(prompt: &str, min_len: i64, max_len: Option<i64>) -> String {
     //    Set-up model resources
@@ -36,13 +36,13 @@ pub fn generate(prompt: &str, min_len: i64, max_len: Option<i64>) -> String {
         min_length: min_len,
         max_length: max_len,
         do_sample: true,
-        early_stopping: true,
+        early_stopping: false,
         num_beams: 5,
         num_return_sequences: 1,
         device: Device::Cpu,
         repetition_penalty: 20.0,
-        temperature: 1.5,
-        top_k: 150,
+        temperature: 0.8,
+        top_k: 250,
         ..Default::default()
     };
 
@@ -58,6 +58,7 @@ pub fn generate(prompt: &str, min_len: i64, max_len: Option<i64>) -> String {
     let response: String = output.into_iter().collect();
     return response
 }
+
 
 pub fn ask(question: &str, context: &str) -> String {
     //    Set-up Question Answering model
@@ -106,4 +107,45 @@ pub fn code(prompt: &str) -> String {
         response.push_str(&label.text)
     }
     return response;
+}
+
+pub fn gen(prompt: &str) -> String {
+    let config_resource = Box::new(RemoteResource::from_pretrained(
+        GptNeoConfigResources::GPT_NEO_1_3B,
+    ));
+    let vocab_resource = Box::new(RemoteResource::from_pretrained(
+        GptNeoVocabResources::GPT_NEO_1_3B,
+    ));
+    let merges_resource = Box::new(RemoteResource::from_pretrained(
+        GptNeoMergesResources::GPT_NEO_1_3B,
+    ));
+    let model_resource = Box::new(RemoteResource::from_pretrained(
+        GptNeoModelResources::GPT_NEO_1_3B,
+    ));
+    let generate_config = TextGenerationConfig {
+        model_type: ModelType::GPTNeo,
+        model_resource,
+        config_resource,
+        vocab_resource,
+        merges_resource: Some(merges_resource),
+        min_length: 15,
+        max_length: Some(100),
+        do_sample: false,
+        early_stopping: true,
+        num_beams: 3,
+        num_return_sequences: 1,
+        repetition_penalty: 30.0,
+        length_penalty: 4.0,
+        temperature: 1.7,
+        device: Device::Cpu,
+        ..Default::default()
+    };
+
+    let mut model = TextGenerationModel::new(generate_config)
+        .expect("This regularly blows up");
+    model.set_device(Device::cuda_if_available());
+
+    let input_context_1 = prompt;
+    let mut output = model.generate(&[input_context_1], None);
+    return output.into_iter().collect()
 }

@@ -42,7 +42,7 @@ impl TypeMapKey for MessageCount {
 }
 
 #[group]
-#[commands(ping, command_usage, ask, code)]
+#[commands(ping, command_usage, ask, code, gen)]
 struct General;
 
 #[hook]
@@ -268,5 +268,29 @@ async fn code(ctx: &Context, msg: &Message) -> CommandResult {
         format!("{}", runner.await.expect("erm...")),
     ).await?;
 
-    Ok(())
+    Ok(typing.stop().unwrap())
+}
+
+
+#[command]
+async fn gen(ctx: &Context, msg: &Message) -> CommandResult {
+    // Initialize instance data
+    let prompt = msg.content.clone();
+    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
+        .expect("Typing failed");
+    // Load logic into runner
+    let runner = tokio::task::spawn_blocking(move || {
+        println!("Thread Spawned!");
+        // This is running on a thread where blocking is fine.
+        let response = format!("{}", generator::gen(&prompt));
+        println!("{}", &response);
+        response
+    });
+    // await on runner and return it's contents
+    msg.reply(
+        ctx.clone(),
+        runner.await?,
+    ).await.expect("TOTAL FAILURE");
+
+    Ok(typing.stop().unwrap())
 }
