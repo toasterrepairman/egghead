@@ -3,6 +3,7 @@ use rust_bert::gpt_neo::{
 };
 use rust_bert::pipelines::common::ModelType;
 use rust_bert::pipelines::question_answering::{QaInput, QuestionAnsweringModel};
+use rust_bert::pipelines::sentiment::SentimentModel;
 use rust_bert::pipelines::sequence_classification::{SequenceClassificationConfig, SequenceClassificationModel};
 use rust_bert::pipelines::text_generation::{TextGenerationConfig, TextGenerationModel};
 use rust_bert::reformer::{ReformerConfigResources, ReformerModelResources, ReformerVocabResources};
@@ -148,4 +149,17 @@ pub fn gen(prompt: &str) -> String {
     let input_context_1 = prompt;
     let mut output = model.generate(&[input_context_1], None);
     return output.into_iter().collect()
+}
+
+pub fn analyze(context: String) {
+    //    Set-up classifier
+    let sentiment_classifier = SentimentModel::new(Default::default())?;
+
+    //    Define input
+    let input = [
+
+    ];
+
+    //    Run model
+    let output = sentiment_classifier.predict(input);
 }
