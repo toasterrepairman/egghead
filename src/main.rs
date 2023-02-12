@@ -232,7 +232,7 @@ async fn stupid(ctx: &Context, msg: &Message) -> CommandResult {
 
     msg.reply(
         ctx.clone(),
-        format!("{}", runner.await?.split_off(5),
+        format!("{}", runner.await?.split_off(8),
     )).await?;
 
     Ok(typing.stop().unwrap())
@@ -250,7 +250,7 @@ async fn smart(ctx: &Context, msg: &Message) -> CommandResult {
     let runner = tokio::task::spawn_blocking(move || {
         println!("Thread Spawned!");
         // This is running on a thread where blocking is fine.
-        let response = format!("{}", generator::smart(&prompt)).split_off(5);
+        let response = format!("{}", generator::smart(&prompt)).split_off(7);
         println!("{}", &response);
         response
     });
