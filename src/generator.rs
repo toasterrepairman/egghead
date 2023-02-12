@@ -62,21 +62,47 @@ pub fn generate(prompt: &str, min_len: i64, max_len: Option<i64>) -> String {
 
 
 pub fn ask(question: &str, context: &str) -> String {
-    //    Set-up Question Answering model
-    let qa_model = QuestionAnsweringModel::new(Default::default())
-        .expect("Failed to initialize model.");
-
-    //    Define input
-    let question_1 = String::from(question);
-    let context_1 = String::from(context);
-    let qa_input_1 = QaInput {
-        question: question_1,
-        context: context_1,
+    let config_resource = Box::new(RemoteResource::from_pretrained(
+        GptNeoConfigResources::GPT_NEO_125M,
+    ));
+    let vocab_resource = Box::new(RemoteResource::from_pretrained(
+        GptNeoVocabResources::GPT_NEO_125M,
+    ));
+    let merges_resource = Box::new(RemoteResource::from_pretrained(
+        GptNeoMergesResources::GPT_NEO_125M,
+    ));
+    let model_resource = Box::new(RemoteResource::from_pretrained(
+        GptNeoModelResources::GPT_NEO_125M,
+    ));
+    let generate_config = TextGenerationConfig {
+        model_type: ModelType::GPTNeo,
+        model_resource,
+        config_resource,
+        vocab_resource,
+        merges_resource: Some(merges_resource),
+        min_length: 30,
+        max_length: Some(150),
+        do_sample: true,
+        top_k: 40,
+        early_stopping: true,
+        num_beams: 5,
+        num_beam_groups: Some(3),
+        num_return_sequences: 1,
+        repetition_penalty: 20.0,
+        length_penalty: 12.0,
+        temperature: 1.85,
+        no_repeat_ngram_size: 5,
+        device: Device::Cpu,
+        ..Default::default()
     };
 
-    //    Get answer
-    let answers = qa_model.predict(&[qa_input_1], 1, 32);
-    return format!("{:?}", answers);
+    let mut model = TextGenerationModel::new(generate_config)
+        .expect("This regularly blows up");
+    model.set_device(Device::cuda_if_available());
+
+    let input_context_1 = question;
+    let mut output = model.generate(&[input_context_1, context], None);
+    return output.into_iter().collect()
 }
 
 pub fn code(prompt: &str) -> String {
@@ -130,11 +156,11 @@ pub fn gen(prompt: &str) -> String {
         vocab_resource,
         merges_resource: Some(merges_resource),
         min_length: 15,
-        max_length: Some(60),
+        max_length: Some(50),
         do_sample: true,
         top_k: 40,
         early_stopping: true,
-        num_beams: 3,
+        num_beams: 1,
         num_return_sequences: 1,
         repetition_penalty: 20.0,
         length_penalty: 12.0,
