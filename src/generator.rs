@@ -154,7 +154,7 @@ pub fn gen(prompt: &str) -> String {
         vocab_resource,
         merges_resource: Some(merges_resource),
         min_length: 20,
-        max_length: Some(50),
+        max_length: Some(100),
         do_sample: false,
         early_stopping: true,
         num_beams: 1,
