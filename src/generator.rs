@@ -99,7 +99,7 @@ pub fn stupid(question: &str, context: &str) -> String {
     model.set_device(Device::cuda_if_available());
 
     let input_context_1 = question;
-    let mut output = model.generate(context, &[input_context_1]);
+    let mut output = model.generate((&[context, input_context_1]), None);
     return output.into_iter().collect()
 }
 
