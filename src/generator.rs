@@ -87,9 +87,9 @@ pub fn ask(question: &str, context: &str) -> String {
         num_beams: 1,
         num_return_sequences: 1,
         diversity_penalty: Some(30.0),
-        repetition_penalty: 20.0,
+        repetition_penalty: 110.0,
         length_penalty: 12.0,
-        temperature: 1.65,
+        temperature: 1.35,
         device: Device::Cpu,
         ..Default::default()
     };
