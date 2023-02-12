@@ -61,7 +61,7 @@ pub fn generate(prompt: &str, min_len: i64, max_len: Option<i64>) -> String {
 }
 
 
-pub fn ask(question: &str, context: &str) -> String {
+pub fn stupid(question: &str, context: &str) -> String {
     let config_resource = Box::new(RemoteResource::from_pretrained(
         GptNeoConfigResources::GPT_NEO_125M,
     ));
@@ -99,42 +99,11 @@ pub fn ask(question: &str, context: &str) -> String {
     model.set_device(Device::cuda_if_available());
 
     let input_context_1 = question;
-    let mut output = model.generate(&[input_context_1, context], None);
+    let mut output = model.generate(context, &[input_context_1]);
     return output.into_iter().collect()
 }
 
-pub fn code(prompt: &str) -> String {
-    //    Language identification
-    let sequence_classification_config = SequenceClassificationConfig::new(
-        ModelType::Roberta,
-        RemoteResource::from_pretrained(RobertaModelResources::CODEBERTA_LANGUAGE_ID),
-        RemoteResource::from_pretrained(RobertaConfigResources::CODEBERTA_LANGUAGE_ID),
-        RemoteResource::from_pretrained(RobertaVocabResources::CODEBERTA_LANGUAGE_ID),
-        Some(RemoteResource::from_pretrained(
-            RobertaMergesResources::CODEBERTA_LANGUAGE_ID,
-        )),
-        false,
-        None,
-        None,
-    );
-
-    let sequence_classification_model =
-        SequenceClassificationModel::new(sequence_classification_config).expect("awkward");
-
-    //    Define input
-    let input = [prompt];
-
-    let mut response = String::new();
-
-    //    Run model
-    let output = sequence_classification_model.predict(input);
-    for label in output {
-        response.push_str(&label.text)
-    }
-    return response;
-}
-
-pub fn gen(prompt: &str) -> String {
+pub fn smart(prompt: &str) -> String {
     let config_resource = Box::new(RemoteResource::from_pretrained(
         GptNeoConfigResources::GPT_NEO_1_3B,
     ));
@@ -173,6 +142,38 @@ pub fn gen(prompt: &str) -> String {
     let input_context_1 = prompt;
     let mut output = model.generate(&[input_context_1], None);
     return output.into_iter().collect()
+}
+
+
+pub fn code(prompt: &str) -> String {
+    //    Language identification
+    let sequence_classification_config = SequenceClassificationConfig::new(
+        ModelType::Roberta,
+        RemoteResource::from_pretrained(RobertaModelResources::CODEBERTA_LANGUAGE_ID),
+        RemoteResource::from_pretrained(RobertaConfigResources::CODEBERTA_LANGUAGE_ID),
+        RemoteResource::from_pretrained(RobertaVocabResources::CODEBERTA_LANGUAGE_ID),
+        Some(RemoteResource::from_pretrained(
+            RobertaMergesResources::CODEBERTA_LANGUAGE_ID,
+        )),
+        false,
+        None,
+        None,
+    );
+
+    let sequence_classification_model =
+        SequenceClassificationModel::new(sequence_classification_config).expect("awkward");
+
+    //    Define input
+    let input = [prompt];
+
+    let mut response = String::new();
+
+    //    Run model
+    let output = sequence_classification_model.predict(input);
+    for label in output {
+        response.push_str(&label.text)
+    }
+    return response;
 }
 
 pub fn analyze(context: String) {

@@ -43,7 +43,7 @@ impl TypeMapKey for MessageCount {
 }
 
 #[group]
-#[commands(ping, command_usage, ask, code, gen)]
+#[commands(ping, command_usage, smart, stupid, code)]
 struct General;
 
 #[hook]
@@ -213,30 +213,18 @@ async fn command_usage(ctx: &Context, msg: &Message, mut args: Args) -> CommandR
 }
 
 #[command]
-async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
+async fn stupid(ctx: &Context, msg: &Message) -> CommandResult {
     let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
         .expect("Typing failed");
 
     let prompt = msg.content.clone();
 
-    // Get discussion context
-    let discussion = msg.channel_id.clone()
-        .messages(ctx.http.clone(), |retriever| retriever.after(msg.id).limit(10))
-        .await?;
-
-    let mut disctx = String::new();
-
-    for x in discussion {
-        disctx.push_str(&x.content)
-    }
-    println!("{}", &disctx);
-
     let runner = tokio::task::spawn_blocking(move || {
         println!("Thread Spawned!");
         // This is running on a thread where blocking is fine.
-        let response = format!("{}", generator::ask(
+        let response = format!("{}", generator::stupid(
             &prompt,
-            &disctx,
+            "Respond to the following prompt:\n",
         ));
         println!("{}", &response);
         response
@@ -246,6 +234,34 @@ async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
         ctx.clone(),
         format!("{}", runner.await?.split_off(5),
     )).await?;
+
+    Ok(typing.stop().unwrap())
+}
+
+#[command]
+async fn smart(ctx: &Context, msg: &Message) -> CommandResult {
+    // Initialize instance data
+    let prompt = msg.content.clone();
+    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
+        .expect("Typing failed");
+    ctx.clone().set_activity(Activity::listening("to millions of code..... (do not disturb)")).await;
+
+    // Load logic into runner
+    let runner = tokio::task::spawn_blocking(move || {
+        println!("Thread Spawned!");
+        // This is running on a thread where blocking is fine.
+        let response = format!("{}", generator::smart(&prompt)).split_off(5);
+        println!("{}", &response);
+        response
+    });
+
+    let response = runner.await?;
+
+    // await on runner and return it's contents
+    msg.reply(
+        ctx.clone(),
+        &response,
+    ).await.expect("TOTAL FAILURE");
 
     Ok(typing.stop().unwrap())
 }
@@ -273,31 +289,3 @@ async fn code(ctx: &Context, msg: &Message) -> CommandResult {
     Ok(typing.stop().unwrap())
 }
 
-
-#[command]
-async fn gen(ctx: &Context, msg: &Message) -> CommandResult {
-    // Initialize instance data
-    let prompt = msg.content.clone();
-    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
-        .expect("Typing failed");
-    ctx.clone().set_activity(Activity::listening("to millions of code..... (do not disturb)")).await;
-
-    // Load logic into runner
-    let runner = tokio::task::spawn_blocking(move || {
-        println!("Thread Spawned!");
-        // This is running on a thread where blocking is fine.
-        let response = format!("{}", generator::gen(&prompt)).split_off(5);
-        println!("{}", &response);
-        response
-    });
-
-    let response = runner.await?;
-
-    // await on runner and return it's contents
-    msg.reply(
-        ctx.clone(),
-        &response,
-    ).await.expect("TOTAL FAILURE");
-
-    Ok(typing.stop().unwrap())
-}
