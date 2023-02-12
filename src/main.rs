@@ -245,7 +245,7 @@ async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
     msg.reply(
         ctx.clone(),
         format!("{}", runner.await?.split_off(5),
-    ).await?;
+    )).await?;
 
     Ok(typing.stop().unwrap())
 }
