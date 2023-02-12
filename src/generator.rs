@@ -86,7 +86,7 @@ pub fn ask(question: &str, context: &str) -> String {
         top_k: 40,
         early_stopping: true,
         num_beams: 5,
-        num_beam_groups: Some(3),
+        num_beam_groups: Some(4),
         num_return_sequences: 1,
         repetition_penalty: 20.0,
         length_penalty: 12.0,
