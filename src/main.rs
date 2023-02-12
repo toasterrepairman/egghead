@@ -244,7 +244,7 @@ async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
 
     msg.reply(
         ctx.clone(),
-        format!("{}", runner.await?.split_off(generator::PROMPT.len())),
+        format!("{}", runner.await?.split_off(5),
     ).await?;
 
     Ok(typing.stop().unwrap())
@@ -286,7 +286,7 @@ async fn gen(ctx: &Context, msg: &Message) -> CommandResult {
     let runner = tokio::task::spawn_blocking(move || {
         println!("Thread Spawned!");
         // This is running on a thread where blocking is fine.
-        let response = format!("{}", generator::gen(&prompt));
+        let response = format!("{}", generator::gen(&prompt)).split_off(5);
         println!("{}", &response);
         response
     });
