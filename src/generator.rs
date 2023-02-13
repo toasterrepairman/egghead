@@ -33,14 +33,15 @@ pub fn ask(question: &str, context: &str) -> String {
         vocab_resource,
         merges_resource: merges_resource,
         min_length: 20,
-        max_length: 160,
-        do_sample: false,
+        max_length: 150,
+        do_sample: true,
+        top_p: 0.85,
         early_stopping: true,
-        num_beams: 1,
+        num_beams: 3,
         num_return_sequences: 1,
         device: Device::Cpu,
-        repetition_penalty: 50.0,
-        temperature: 4.0,
+        repetition_penalty: 44.0,
+        temperature: 2.25,
         ..Default::default()
     };
 
