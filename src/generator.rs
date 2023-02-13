@@ -33,13 +33,13 @@ pub fn stupid(question: &str, context: &str) -> String {
         vocab_resource,
         merges_resource: merges_resource,
         min_length: 20,
-        max_length: 100,
+        max_length: 160,
         do_sample: false,
         early_stopping: true,
         num_beams: 1,
         num_return_sequences: 1,
         device: Device::Cpu,
-        repetition_penalty: 40.0,
+        repetition_penalty: 50.0,
         temperature: 4.0,
         ..Default::default()
     };
