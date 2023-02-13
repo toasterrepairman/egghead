@@ -291,14 +291,14 @@ async fn code(ctx: &Context, msg: &Message) -> CommandResult {
 
 #[command]
 async fn help(ctx: &Context, msg: &Message) -> CommandResult {
-    let message = "I'm egghead, the workd's smartest computer. My vast processing resources facilitate understanding beyond human capacity.\
-    \
-    *USAGE*\
-    `e.help` - Displays this help message.\
-    `e.smart <PROMPT>` - Runs a user-submitted prompt on the large, slow model.\
-    `e.stupid <PROMPT>` - Runs a user-submitted prompt on the small, unreliable model.\
-    (Coming soon) `e.see <PROMPT>` - Generate an image with Stable Diffusion.
-    \
+    let message = "I'm egghead, the workd's smartest computer. My vast processing resources facilitate understanding beyond human capacity.\n
+    \n
+    *USAGE*\n
+    `e.help` - Displays this help message.\n
+    `e.smart <PROMPT>` - Runs a user-submitted prompt on the large, slow model.\n
+    `e.stupid <PROMPT>` - Runs a user-submitted prompt on the small, unreliable model.\n
+    (Coming soon) `e.see <PROMPT>` - Generate an image with Stable Diffusion.\n
+    \n
     Report serious issues to `toaster repairguy#1101`. Liability ";
 
     msg.reply(
