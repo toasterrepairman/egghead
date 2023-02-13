@@ -53,7 +53,7 @@ pub fn stupid(question: &str, context: &str) -> String {
 
     let input_context_1 = question;
     let mut output = model.generate((&[PROMPT, input_context_1]), None);
-    return output.into_iter().collect()
+    return output.into_iter().1.collect()
 }
 
 pub fn smart(prompt: &str) -> String {
@@ -95,8 +95,7 @@ pub fn smart(prompt: &str) -> String {
 
     let input_context_1 = prompt;
     let mut output = model.generate(&[PROMPT, input_context_1], None);
-    println!("{:?}", output.into_iter().collect());
-    return output.into_iter().collect()
+    return output.into_iter().1.collect()
 }
 
 
