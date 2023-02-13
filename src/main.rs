@@ -217,7 +217,7 @@ async fn stupid(ctx: &Context, msg: &Message) -> CommandResult {
     let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
         .expect("Typing failed");
 
-    let prompt = msg.content.clone();
+    let prompt = msg.content.clone().split_off(8);
 
     let runner = tokio::task::spawn_blocking(move || {
         println!("Thread Spawned!");
@@ -241,7 +241,7 @@ async fn stupid(ctx: &Context, msg: &Message) -> CommandResult {
 #[command]
 async fn smart(ctx: &Context, msg: &Message) -> CommandResult {
     // Initialize instance data
-    let prompt = msg.content.clone();
+    let prompt = msg.content.clone().split_off(7);
     let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
         .expect("Typing failed");
     ctx.clone().set_activity(Activity::listening("thinkimg...")).await;

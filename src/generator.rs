@@ -51,7 +51,7 @@ pub fn stupid(question: &str, context: &str) -> String {
         .expect("This regularly blows up");
     model.set_device(Device::cuda_if_available());
 
-    let input_context_1 = question.split_off(7);
+    let input_context_1 = question;
     let mut output = model.generate((&[PROMPT, input_context_1]), None);
     return output.into_iter().collect()
 }
@@ -92,7 +92,7 @@ pub fn smart(prompt: &str) -> String {
         .expect("This regularly blows up");
     model.set_device(Device::cuda_if_available());
 
-    let input_context_1 = prompt.split_off(8);
+    let input_context_1 = prompt;
     let mut output = model.generate(&[PROMPT, input_context_1], None);
     return output.into_iter().collect()
 }
