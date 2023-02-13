@@ -43,7 +43,7 @@ impl TypeMapKey for MessageCount {
 }
 
 #[group]
-#[commands(ping, command_usage, smart, stupid, help)]
+#[commands(ping, command_usage, gen, help)]
 struct General;
 
 #[hook]
@@ -213,7 +213,7 @@ async fn command_usage(ctx: &Context, msg: &Message, mut args: Args) -> CommandR
 }
 
 #[command]
-async fn stupid(ctx: &Context, msg: &Message) -> CommandResult {
+async fn gen(ctx: &Context, msg: &Message) -> CommandResult {
     let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
         .expect("Typing failed");
 
@@ -240,45 +240,15 @@ async fn stupid(ctx: &Context, msg: &Message) -> CommandResult {
 }
 
 #[command]
-async fn smart(ctx: &Context, msg: &Message) -> CommandResult {
-    // Initialize instance data
-    let prompt = msg.content.clone().split_off(7);
-    println!("{:?}", prompt);
-    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
-        .expect("Typing failed");
-    ctx.clone().set_activity(Activity::listening("thinkimg...")).await;
-
-    // Load logic into runner
-    let runner = tokio::task::spawn_blocking(move || {
-        println!("Thread Spawned!");
-        // This is running on a thread where blocking is fine.
-        let response = format!("{}", generator::smart(&prompt));
-        println!("{}", &response);
-        response
-    });
-
-    let response = runner.await?;
-
-    // await on runner and return it's contents
-    msg.reply(
-        ctx.clone(),
-        &response,
-    ).await.expect("TOTAL FAILURE");
-
-    Ok(typing.stop().unwrap())
-}
-
-#[command]
 async fn help(ctx: &Context, msg: &Message) -> CommandResult {
     let message = "I'm egghead, the workd's smartest computer. My vast processing resources facilitate understanding beyond human capacity.\n
     \n
     *USAGE*\n
     `e.help` - Displays this help message.\n
-    `e.smart <PROMPT>` - Runs a user-submitted prompt on the large, slow model.\n
-    `e.stupid <PROMPT>` - Runs a user-submitted prompt on the small, unreliable model.\n
+    `e.gen <PROMPT>` - Runs a user-submitted prompt on the large, slow model.\n
     (Coming soon) `e.see <PROMPT>` - Generate an image with Stable Diffusion.\n
     \n
-    Report serious issues to `toaster repairguy#1101`. Liability ";
+    Report serious issues to `toaster repairguy#1101`.";
 
     msg.reply(
         ctx.clone(),
