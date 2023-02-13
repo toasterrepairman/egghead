@@ -306,6 +306,6 @@ async fn help(ctx: &Context, msg: &Message) -> CommandResult {
         &message
     );
 
-    Ok(typing.stop().unwrap())
+    Ok(())
 }
 
