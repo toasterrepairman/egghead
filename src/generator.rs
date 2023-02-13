@@ -34,8 +34,6 @@ pub fn ask(question: &str, context: &str) -> String {
         merges_resource: merges_resource,
         min_length: 20,
         max_length: 150,
-        do_sample: true,
-        top_p: 0.85,
         early_stopping: true,
         num_beams: 3,
         num_return_sequences: 1,
