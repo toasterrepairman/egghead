@@ -43,7 +43,7 @@ impl TypeMapKey for MessageCount {
 }
 
 #[group]
-#[commands(ping, command_usage, smart, stupid, code)]
+#[commands(ping, command_usage, smart, stupid, code, help)]
 struct General;
 
 #[hook]
@@ -244,7 +244,7 @@ async fn smart(ctx: &Context, msg: &Message) -> CommandResult {
     let prompt = msg.content.clone();
     let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
         .expect("Typing failed");
-    ctx.clone().set_activity(Activity::listening("to millions of code..... (do not disturb)")).await;
+    ctx.clone().set_activity(Activity::listening("thinkimg...")).await;
 
     // Load logic into runner
     let runner = tokio::task::spawn_blocking(move || {
@@ -285,6 +285,26 @@ async fn code(ctx: &Context, msg: &Message) -> CommandResult {
         ctx.clone(),
         format!("{}", runner.await.expect("erm...")),
     ).await?;
+
+    Ok(typing.stop().unwrap())
+}
+
+#[command]
+async fn help(ctx: &Context, msg: &Message) -> CommandResult {
+    let message = "I'm egghead, the workd's smartest computer. My vast processing resources facilitate understanding beyond human capacity.\
+    \
+    *USAGE*\
+    `e.help` - Displays this help message.\
+    `e.smart <PROMPT>` - Runs a user-submitted prompt on the large, slow model.\
+    `e.stupid <PROMPT>` - Runs a user-submitted prompt on the small, unreliable model.\
+    (Coming soon) `e.see <PROMPT>` - Generate an image with Stable Diffusion.
+    \
+    Report serious issues to `toaster repairguy#1101`. Liability ";
+
+    msg.reply(
+        ctx.clone(),
+        &message
+    );
 
     Ok(typing.stop().unwrap())
 }
