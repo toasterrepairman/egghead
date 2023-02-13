@@ -304,7 +304,7 @@ async fn help(ctx: &Context, msg: &Message) -> CommandResult {
     msg.reply(
         ctx.clone(),
         &message
-    );
+    ).await.unwrap();
 
     Ok(())
 }
