@@ -39,8 +39,8 @@ pub fn stupid(question: &str, context: &str) -> String {
         num_beams: 1,
         num_return_sequences: 1,
         device: Device::Cpu,
-        repetition_penalty: 30.0,
-        temperature: 2.0,
+        repetition_penalty: 40.0,
+        temperature: 4.0,
         ..Default::default()
     };
 
@@ -74,8 +74,7 @@ pub fn smart(prompt: &str) -> String {
         merges_resource: merges_resource,
         min_length: 20,
         max_length: 80,
-        do_sample: true,
-        top_k: 50,
+        do_sample: false,
         early_stopping: true,
         num_beams: 1,
         num_return_sequences: 1,
