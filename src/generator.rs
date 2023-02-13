@@ -35,11 +35,11 @@ pub fn ask(question: &str, context: &str) -> String {
         min_length: 20,
         max_length: 150,
         early_stopping: true,
-        num_beams: 3,
+        num_beams: 1,
         num_return_sequences: 1,
         device: Device::Cpu,
-        repetition_penalty: 60.0,
-        temperature: 6.0,
+        repetition_penalty: 30.0,
+        temperature: 4.0,
         ..Default::default()
     };
 
