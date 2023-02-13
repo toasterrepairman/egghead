@@ -13,7 +13,7 @@ use tch::Device;
 
 pub(crate) const PROMPT: &str = "Q:";
 
-pub fn gen(question: &str, context: &str) -> String {
+pub fn ask(question: &str, context: &str) -> String {
     let config_resource = Box::new(RemoteResource::from_pretrained(
         GptNeoConfigResources::GPT_NEO_125M,
     ));

@@ -43,7 +43,7 @@ impl TypeMapKey for MessageCount {
 }
 
 #[group]
-#[commands(ping, command_usage, gen, help)]
+#[commands(ping, command_usage, ask, help)]
 struct General;
 
 #[hook]
@@ -213,7 +213,7 @@ async fn command_usage(ctx: &Context, msg: &Message, mut args: Args) -> CommandR
 }
 
 #[command]
-async fn gen(ctx: &Context, msg: &Message) -> CommandResult {
+async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
     let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
         .expect("Typing failed");
 
@@ -245,7 +245,7 @@ async fn help(ctx: &Context, msg: &Message) -> CommandResult {
     \n
     *USAGE*\n
     `e.help` - Displays this help message.\n
-    `e.gen <PROMPT>` - Runs a user-submitted prompt on the large, slow model.\n
+    `e.ask <PROMPT>` - Asks the model a user-submitted question. May fail with elaborate prompts.\n
     (Coming soon) `e.see <PROMPT>` - Generate an image with Stable Diffusion.\n
     \n
     Report serious issues to `toaster repairguy#1101`.";
