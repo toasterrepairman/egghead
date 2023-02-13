@@ -33,17 +33,15 @@ pub fn stupid(question: &str, context: &str) -> String {
         config_resource,
         vocab_resource,
         merges_resource: Some(merges_resource),
-        min_length: 60,
-        max_length: Some(150),
+        min_length: min_len,
+        max_length: max_len,
         do_sample: false,
         early_stopping: true,
-        num_beams: 1,
+        num_beams: 4,
         num_return_sequences: 1,
-        diversity_penalty: Some(30.0),
-        repetition_penalty: 110.0,
-        length_penalty: 12.0,
-        temperature: 1.35,
         device: Device::Cpu,
+        repetition_penalty: 10.0,
+        temperature: 2.0,
         ..Default::default()
     };
 
