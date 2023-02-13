@@ -2,7 +2,6 @@ use rust_bert::gpt_neo::{
     GptNeoConfigResources, GptNeoMergesResources, GptNeoModelResources, GptNeoVocabResources,
 };
 use rust_bert::pipelines::common::ModelType;
-use rust_bert::pipelines::question_answering::{QaInput, QuestionAnsweringModel};
 use rust_bert::pipelines::sentiment::SentimentModel;
 use rust_bert::pipelines::sequence_classification::{SequenceClassificationConfig, SequenceClassificationModel};
 use rust_bert::pipelines::text_generation::{TextGenerationConfig, TextGenerationModel};
@@ -32,9 +31,9 @@ pub fn stupid(question: &str, context: &str) -> String {
         model_resource,
         config_resource,
         vocab_resource,
-        merges_resource: Some(merges_resource),
+        merges_resource: merges_resource,
         min_length: 20,
-        max_length: Some(200),
+        max_length: 200,
         do_sample: false,
         early_stopping: true,
         num_beams: 4,
@@ -72,9 +71,9 @@ pub fn smart(prompt: &str) -> String {
         model_resource,
         config_resource,
         vocab_resource,
-        merges_resource: Some(merges_resource),
+        merges_resource: merges_resource,
         min_length: 20,
-        max_length: Some(180),
+        max_length: 180,
         do_sample: true,
         top_k: 50,
         early_stopping: true,
@@ -94,38 +93,6 @@ pub fn smart(prompt: &str) -> String {
     let input_context_1 = prompt;
     let mut output = model.generate(&[PROMPT, input_context_1], None).pop();
     return output.unwrap()
-}
-
-
-pub fn code(prompt: &str) -> String {
-    //    Language identification
-    let sequence_classification_config = SequenceClassificationConfig::new(
-        ModelType::Roberta,
-        RemoteResource::from_pretrained(RobertaModelResources::CODEBERTA_LANGUAGE_ID),
-        RemoteResource::from_pretrained(RobertaConfigResources::CODEBERTA_LANGUAGE_ID),
-        RemoteResource::from_pretrained(RobertaVocabResources::CODEBERTA_LANGUAGE_ID),
-        Some(RemoteResource::from_pretrained(
-            RobertaMergesResources::CODEBERTA_LANGUAGE_ID,
-        )),
-        false,
-        None,
-        None,
-    );
-
-    let sequence_classification_model =
-        SequenceClassificationModel::new(sequence_classification_config).expect("awkward");
-
-    //    Define input
-    let input = [prompt];
-
-    let mut response = String::new();
-
-    //    Run model
-    let output = sequence_classification_model.predict(input);
-    for label in output {
-        response.push_str(&label.text)
-    }
-    return response;
 }
 
 pub fn analyze(context: String) {
