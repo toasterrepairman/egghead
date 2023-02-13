@@ -269,29 +269,6 @@ async fn smart(ctx: &Context, msg: &Message) -> CommandResult {
 }
 
 #[command]
-async fn code(ctx: &Context, msg: &Message) -> CommandResult {
-    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
-        .expect("Typing failed");
-
-    let prompt = msg.content.clone();
-
-    let runner = tokio::task::spawn_blocking(move || {
-        println!("Thread Spawned!");
-        // This is running on a thread where blocking is fine.
-        let response = format!("{}", generator::code(&prompt));
-        println!("{}", &response);
-        response
-    });
-
-    msg.reply(
-        ctx.clone(),
-        format!("{}", runner.await.expect("erm...")),
-    ).await?;
-
-    Ok(typing.stop().unwrap())
-}
-
-#[command]
 async fn help(ctx: &Context, msg: &Message) -> CommandResult {
     let message = "I'm egghead, the workd's smartest computer. My vast processing resources facilitate understanding beyond human capacity.\n
     \n
