@@ -224,7 +224,7 @@ async fn stupid(ctx: &Context, msg: &Message) -> CommandResult {
         // This is running on a thread where blocking is fine.
         let response = format!("{}", generator::stupid(
             &prompt,
-            "Respond to the following prompt:\n",
+            "",
         ));
         println!("{}", &response);
         response
