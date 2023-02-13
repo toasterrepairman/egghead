@@ -12,55 +12,7 @@ use rust_bert::roberta::{RobertaConfigResources, RobertaMergesResources, Roberta
 use serenity::model::channel::Message;
 use tch::Device;
 
-pub(crate) const PROMPT: &str = "Format a response to this prompt in Markdown:\n";
-
-pub fn generate(prompt: &str, min_len: i64, max_len: Option<i64>) -> String {
-    //    Set-up model resources
-    let config_resource = Box::new(RemoteResource::from_pretrained(
-        GptNeoConfigResources::GPT_NEO_125M,
-    ));
-    let vocab_resource = Box::new(RemoteResource::from_pretrained(
-        GptNeoVocabResources::GPT_NEO_125M,
-    ));
-    let merges_resource = Box::new(RemoteResource::from_pretrained(
-        GptNeoMergesResources::GPT_NEO_125M,
-    ));
-    let model_resource = Box::new(RemoteResource::from_pretrained(
-        GptNeoModelResources::GPT_NEO_125M,
-    ));
-    let generate_config = TextGenerationConfig {
-        model_type: ModelType::GPTNeo,
-        model_resource,
-        config_resource,
-        vocab_resource,
-        merges_resource: Some(merges_resource),
-        min_length: 60,
-        max_length: Some(150),
-        do_sample: false,
-        early_stopping: true,
-        num_beams: 1,
-        num_return_sequences: 1,
-        diversity_penalty: Some(30.0),
-        repetition_penalty: 110.0,
-        length_penalty: 12.0,
-        temperature: 1.35,
-        device: Device::Cpu,
-        ..Default::default()
-    };
-
-    let mut model = TextGenerationModel::new(generate_config)
-        .expect("Uh oh, it's the generator broken.");
-    model.set_device(Device::cuda_if_available());
-
-    let input_context_1 = prompt;
-    let output = model.generate(&[PROMPT, &input_context_1
-        .to_string()
-        .split_off(5)], None);
-
-    let response: String = output.into_iter().collect();
-    return response
-}
-
+pub(crate) const PROMPT: &str = "Q:";
 
 pub fn stupid(question: &str, context: &str) -> String {
     let config_resource = Box::new(RemoteResource::from_pretrained(
@@ -99,8 +51,8 @@ pub fn stupid(question: &str, context: &str) -> String {
         .expect("This regularly blows up");
     model.set_device(Device::cuda_if_available());
 
-    let input_context_1 = question;
-    let mut output = model.generate((&[context, input_context_1]), None);
+    let input_context_1 = question.split_off(7);
+    let mut output = model.generate((&[PROMPT, input_context_1]), None);
     return output.into_iter().collect()
 }
 
@@ -140,8 +92,8 @@ pub fn smart(prompt: &str) -> String {
         .expect("This regularly blows up");
     model.set_device(Device::cuda_if_available());
 
-    let input_context_1 = prompt;
-    let mut output = model.generate(&[input_context_1], None);
+    let input_context_1 = prompt.split_off(8);
+    let mut output = model.generate(&[PROMPT, input_context_1], None);
     return output.into_iter().collect()
 }
 
