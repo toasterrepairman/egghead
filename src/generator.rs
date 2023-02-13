@@ -39,7 +39,7 @@ pub fn stupid(question: &str, context: &str) -> String {
         num_beams: 4,
         num_return_sequences: 1,
         device: Device::Cpu,
-        repetition_penalty: 10.0,
+        repetition_penalty: 30.0,
         temperature: 2.0,
         ..Default::default()
     };
