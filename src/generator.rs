@@ -74,7 +74,7 @@ pub fn smart(prompt: &str) -> String {
         vocab_resource,
         merges_resource: Some(merges_resource),
         min_length: 20,
-        max_length: Some(100),
+        max_length: Some(180),
         do_sample: true,
         top_k: 50,
         early_stopping: true,
