@@ -77,13 +77,14 @@ pub fn smart(prompt: &str) -> String {
         merges_resource: Some(merges_resource),
         min_length: 20,
         max_length: Some(100),
-        do_sample: false,
+        do_sample: true,
+        top_k: 50,
         early_stopping: true,
-        num_beams: 1,
+        num_beams: 3,
         num_return_sequences: 1,
-        repetition_penalty: 20.0,
-        length_penalty: 12.0,
-        temperature: 1.65,
+        repetition_penalty: 18.0,
+        length_penalty: 16.0,
+        temperature: 1.70,
         device: Device::Cpu,
         ..Default::default()
     };
@@ -94,6 +95,7 @@ pub fn smart(prompt: &str) -> String {
 
     let input_context_1 = prompt;
     let mut output = model.generate(&[PROMPT, input_context_1], None);
+    println!("{:?}", output.into_iter().collect());
     return output.into_iter().collect()
 }
 
