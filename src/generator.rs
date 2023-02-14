@@ -31,7 +31,7 @@ pub fn ask(question: &str, context: &str) -> String {
         vocab_resource,
         merges_resource: merges_resource,
         min_length: 20,
-        max_length: 80,
+        max_length: 120,
         early_stopping: true,
         do_sample: false,
         num_beams: 1,
