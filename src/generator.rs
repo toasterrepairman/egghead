@@ -48,8 +48,8 @@ pub fn ask(question: &str, context: &str) -> String {
         .expect("This regularly blows up");
     model.set_device(Device::cuda_if_available());
 
-    let input_context_1 = question;
-    let mut output = model.generate((&[PROMPT, input_context_1, "\nAnswer: "]), None).pop();
+    let input_context_1 = format!("Question: {}\nAnswer:", question);
+    let mut output = model.generate((&[input_context_1]), None).pop();
     return output.unwrap()
 }
 
