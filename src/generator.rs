@@ -11,7 +11,7 @@ use rust_bert::roberta::{RobertaConfigResources, RobertaMergesResources, Roberta
 use serenity::model::channel::Message;
 use tch::Device;
 
-pub(crate) const PROMPT: &str = "Q:";
+pub(crate const PROMPT: &str = "Question:";
 
 pub fn ask(question: &str, context: &str) -> String {
     let config_resource = Box::new(RemoteResource::from_pretrained(
@@ -49,7 +49,7 @@ pub fn ask(question: &str, context: &str) -> String {
     model.set_device(Device::cuda_if_available());
 
     let input_context_1 = question;
-    let mut output = model.generate((&[PROMPT, input_context_1]), None).pop();
+    let mut output = model.generate((&[PROMPT, input_context_1, "Answer: "]), None).pop();
     return output.unwrap()
 }
 
