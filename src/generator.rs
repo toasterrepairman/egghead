@@ -49,7 +49,7 @@ pub fn ask(question: &str, context: &str) -> String {
     model.set_device(Device::cuda_if_available());
 
     let input_context_1 = question;
-    let mut output = model.generate((&[PROMPT, input_context_1, "Answer: "]), None).pop();
+    let mut output = model.generate((&[PROMPT, input_context_1, "\nAnswer: "]), None).pop();
     return output.unwrap()
 }
 
