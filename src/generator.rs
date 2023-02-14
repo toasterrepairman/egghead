@@ -34,7 +34,7 @@ pub fn ask(question: &str, context: &str) -> String {
         max_length: 120,
         early_stopping: true,
         do_sample: false,
-        num_beams: 1,
+        num_beams: 5,
         num_return_sequences: 1,
         repetition_penalty: 65.0,
         temperature: 3.5,
