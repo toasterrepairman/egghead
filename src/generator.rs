@@ -11,8 +11,6 @@ use rust_bert::roberta::{RobertaConfigResources, RobertaMergesResources, Roberta
 use serenity::model::channel::Message;
 use tch::Device;
 
-pub const PROMPT: &str = "Question:";
-
 pub fn ask(question: &str, context: &str) -> String {
     let config_resource = Box::new(RemoteResource::from_pretrained(
         GptNeoConfigResources::GPT_NEO_125M,
@@ -33,7 +31,7 @@ pub fn ask(question: &str, context: &str) -> String {
         vocab_resource,
         merges_resource: merges_resource,
         min_length: 20,
-        max_length: 150,
+        max_length: 80,
         early_stopping: true,
         do_sample: false,
         num_beams: 1,
