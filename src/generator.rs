@@ -11,7 +11,7 @@ use rust_bert::roberta::{RobertaConfigResources, RobertaMergesResources, Roberta
 use serenity::model::channel::Message;
 use tch::Device;
 
-pub(crate const PROMPT: &str = "Question:");
+pub const PROMPT: &str = "Question:";
 
 pub fn ask(question: &str, context: &str) -> String {
     let config_resource = Box::new(RemoteResource::from_pretrained(
