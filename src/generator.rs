@@ -13,16 +13,16 @@ use tch::Device;
 
 pub fn ask(question: &str, context: &str) -> String {
     let config_resource = Box::new(RemoteResource::from_pretrained(
-        GptNeoConfigResources::GPT_NEO_1_3B,
+        GptNeoConfigResources::GPT_NEO_125M,
     ));
     let vocab_resource = Box::new(RemoteResource::from_pretrained(
-        GptNeoVocabResources::GPT_NEO_1_3B,
+        GptNeoVocabResources::GPT_NEO_125M,
     ));
     let merges_resource = Box::new(RemoteResource::from_pretrained(
-        GptNeoMergesResources::GPT_NEO_1_3B,
+        GptNeoMergesResources::GPT_NEO_125M,
     ));
     let model_resource = Box::new(RemoteResource::from_pretrained(
-        GptNeoModelResources::GPT_NEO_1_3B,
+        GptNeoModelResources::GPT_NEO_125M,
     ));
     let generate_config = TextGenerationConfig {
         model_type: ModelType::GPTNeo,
@@ -31,13 +31,13 @@ pub fn ask(question: &str, context: &str) -> String {
         vocab_resource,
         merges_resource: merges_resource,
         min_length: 20,
-        max_length: 120,
+        max_length: 150,
         early_stopping: true,
         do_sample: false,
         num_beams: 1,
         num_return_sequences: 1,
-        repetition_penalty: 65.0,
-        temperature: 3.5,
+        repetition_penalty: 75.0,
+        temperature: 4.2,
         no_repeat_ngram_size: 3,
         device: Device::Cpu,
         ..Default::default()
