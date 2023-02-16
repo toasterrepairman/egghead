@@ -37,7 +37,7 @@ pub fn ask(question: &str, context: &str) -> String {
         num_beams: 1,
         num_return_sequences: 1,
         repetition_penalty: 55.0,
-        temperature: 3.3,
+        temperature: 7.3,
         no_repeat_ngram_size: 3,
         device: Device::Cpu,
         ..Default::default()
