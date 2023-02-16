@@ -48,7 +48,7 @@ pub fn ask(question: &str, context: &str) -> String {
         .expect("This regularly blows up");
     model.set_device(Device::cuda_if_available());
 
-    let input_context_1 = format!("Respond to the following prompt in less than 200 characters: {}\n", question);
+    let input_context_1 = format!("Succinctly respond to the following prompt in less than 80 words: {}\n", question);
     let mut output = model.generate((&[&input_context_1]), None).pop();
     return output.unwrap().split_off(input_context_1.len())
 }
