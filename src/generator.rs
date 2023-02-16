@@ -49,7 +49,7 @@ pub fn ask(question: &str, context: &str) -> String {
     model.set_device(Device::cuda_if_available());
 
     let input_context_1 = format!("Respond to the following prompt in less than 200 characters: {}\n", question);
-    let mut output = model.generate((&[input_context_1]), None).pop();
+    let mut output = model.generate((&[&input_context_1]), None).pop();
     return output.unwrap().split_off(input_context_1.len())
 }
 
