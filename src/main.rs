@@ -247,7 +247,7 @@ async fn news(ctx: &Context, msg: &Message) -> CommandResult {
 
     let prompt = fetcher::get_random_headline_from_rss_link(
         "http://rss.cnn.com/rss/cnn_allpolitics.rss"
-    ).await.unwrap();
+    ).await.expect("couldnt rss right");
     println!("{:?}", prompt);
 
     let runner = tokio::task::spawn_blocking(move || {
