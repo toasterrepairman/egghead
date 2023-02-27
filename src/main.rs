@@ -2,6 +2,7 @@
 //! And how to use locks correctly to avoid deadlocking the bot.
 
 mod generator;
+mod fetcher;
 
 use std::collections::HashMap;
 use std::env;
@@ -244,7 +245,9 @@ async fn news(ctx: &Context, msg: &Message) -> CommandResult {
     let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
         .expect("Typing failed");
 
-    let prompt = msg.content.clone().split_off(6);
+    let prompt = fetcher::get_random_headline_from_rss_link(
+        "http://rss.cnn.com/rss/cnn_allpolitics.rss"
+    ).await.unwrap();
     println!("{:?}", prompt);
 
     let runner = tokio::task::spawn_blocking(move || {
