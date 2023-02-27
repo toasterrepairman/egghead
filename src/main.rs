@@ -263,7 +263,7 @@ async fn news(ctx: &Context, msg: &Message) -> CommandResult {
 
     msg.reply(
         ctx.clone(),
-        format!("{}", runner.await?,
+        format!("Title: {:0} \n{:1}", prompt, runner.await?,
         )).await?;
 
     Ok(typing.stop().unwrap())
