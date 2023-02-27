@@ -248,7 +248,7 @@ async fn news(ctx: &Context, msg: &Message) -> CommandResult {
     let prompt = fetcher::get_random_headline_from_rss_link(
         "http://rss.cnn.com/rss/cnn_allpolitics.rss"
     ).await.expect("couldnt rss right");
-    println!("{:?}", prompt);
+    println!("{:?}", &prompt);
 
     let runner = tokio::task::spawn_blocking(move || {
         println!("Thread Spawned!");
@@ -263,7 +263,7 @@ async fn news(ctx: &Context, msg: &Message) -> CommandResult {
 
     msg.reply(
         ctx.clone(),
-        format!("Title: {:0} \n{:1}", prompt, runner.await?,
+        format!("Title: {:0} \n{:1}", &prompt, runner.await?,
         )).await?;
 
     Ok(typing.stop().unwrap())
