@@ -250,11 +250,11 @@ async fn news(ctx: &Context, msg: &Message) -> CommandResult {
     ).await.expect("couldnt rss right");
     println!("{:?}", &prompt);
 
-    let runner = tokio::task::spawn_blocking(move |&prompt| {
+    let runner = tokio::task::spawn_blocking(move || {
         println!("Thread Spawned!");
         // This is running on a thread where blocking is fine.
         let response = format!("{}", generator::ask(
-            prompt,
+            &prompt,
             "",
         ));
         println!("{}", &response);
