@@ -245,7 +245,7 @@ async fn news(ctx: &Context, msg: &Message) -> CommandResult {
     let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
         .expect("Typing failed");
 
-    let prompt = &fetcher::get_random_headline_from_rss_link(
+    let prompt = fetcher::get_random_headline_from_rss_link(
         "http://rss.cnn.com/rss/cnn_allpolitics.rss"
     ).await.expect("couldnt rss right");
     println!("{:?}", &prompt);
@@ -254,7 +254,7 @@ async fn news(ctx: &Context, msg: &Message) -> CommandResult {
         println!("Thread Spawned!");
         // This is running on a thread where blocking is fine.
         let response = format!("{}", generator::ask(
-            &prompt,
+            &prompt.clone(),
             "",
         ));
         println!("{}", &response);
