@@ -275,15 +275,14 @@ async fn see(ctx: &Context, msg: &Message) -> CommandResult {
     let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
         .expect("Typing failed");
 
-    let prompt = "Test";
-    println!("{:?}", &prompt);
+    let prompt = msg.content.clone().split_off(5);
+    println!("{:?}", prompt);
 
     let runner = tokio::task::spawn_blocking(move || {
         println!("Thread Spawned!");
         // This is running on a thread where blocking is fine.
-        let response = format!("{}", generator::ask(
-            &prompt,
-            "",
+        let response = format!("{}", generator::look(
+            &prompt
         ));
         println!("{}", &response);
         response

@@ -62,14 +62,15 @@ pub fn ask(question: &str, context: &str) -> String {
     return output.unwrap().split_off(input_context_1.len())
 }
 
-pub fn look(prompt: &str) {
-    let environment = Arc::new(Environment::builder().build()?);
+pub fn look(prompt: &str) -> String {
+    let environment = OrtEnvironment::default().into_arc();
     let mut scheduler = EulerDiscreteScheduler::stable_diffusion_v1_optimized_default()?;
-    let pipeline = StableDiffusionPipeline::new(&environment, "./stable-diffusion-v1-5", &StableDiffusionOptions::default())?;
+    let pipeline = StableDiffusionMemoryOptimizedPipeline::new(&environment, "./stable-diffusion-v1-5/", StableDiffusionOptions::default())?;
 
-    let imgs = pipeline.txt2img(prompt, &mut scheduler, &StableDiffusionTxt2ImgOptions::default())?;
+    let imgs = pipeline.txt2img(prompt, &mut scheduler, StableDiffusionTxt2ImgOptions { steps: 20, ..Default::default() })?;
     let imgname = Uuid::new_v4();
     imgs[0].clone().into_rgb8().save(imgname)?;
+    return format!("{:?}.png", &imgname)
 }
 
 pub fn analyze(context: String) {
