@@ -13,10 +13,7 @@ use tch::Device;
 use std::sync::Arc;
 use uuid::{Uuid, Version};
 
-use pyke_diffusers::{
-    EulerDiscreteScheduler, OrtEnvironment, SchedulerOptimizedDefaults, StableDiffusionMemoryOptimizedPipeline, StableDiffusionOptions,
-    StableDiffusionTxt2ImgOptions
-};
+use pyke_diffusers::{EulerDiscreteScheduler, OrtEnvironment, SchedulerOptimizedDefaults, StableDiffusionMemoryOptimizedPipeline, StableDiffusionOptions, StableDiffusionPipeline, StableDiffusionTxt2ImgOptions};
 
 pub fn ask(question: &str, context: &str) -> String {
     let config_resource = Box::new(RemoteResource::from_pretrained(
@@ -61,9 +58,9 @@ pub fn ask(question: &str, context: &str) -> String {
 }
 
 pub fn look(prompt: &str) -> Result<String, E> {
-    let environment = OrtEnvironment::builder().with_name("test").with_log_level(LoggingLevel::Verbose).build()?.into_arc();
+    let environment = Arc::new(Environment::builder().build()?);
     let mut scheduler = EulerDiscreteScheduler::stable_diffusion_v1_optimized_default()?;
-    let pipeline = StableDiffusionMemoryOptimizedPipeline::new(&environment, "./stable-diffusion-v1-5/", StableDiffusionOptions::default())?;
+    let pipeline = StableDiffusionPipeline::new(&environment, "./stable-diffusion-v1-5", StableDiffusionOptions::default())?;
 
     let imgs = pipeline.txt2img(prompt, &mut scheduler, StableDiffusionTxt2ImgOptions { steps: 20, ..Default::default() })?;
     let imgname = Uuid::new_v4().to_string();
