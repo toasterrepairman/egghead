@@ -60,7 +60,7 @@ pub fn ask(question: &str, context: &str) -> String {
     return output.unwrap().split_off(input_context_1.len())
 }
 
-pub fn look(prompt: &str) -> Result<String, Eq> {
+pub fn look(prompt: &str) -> String {
     let environment = Arc::new(OrtEnvironment::builder().build()?);
     let mut scheduler = EulerDiscreteScheduler::stable_diffusion_v1_optimized_default()?;
     let pipeline = StableDiffusionPipeline::new(&environment, "./stable-diffusion-v1-5", &StableDiffusionOptions::default())?;
@@ -68,7 +68,7 @@ pub fn look(prompt: &str) -> Result<String, Eq> {
     let imgs = pipeline.txt2img(prompt, &mut scheduler, &StableDiffusionTxt2ImgOptions { steps: 20, ..Default::default() })?;
     let imgname = Uuid::new_v4().to_string();
     imgs[0].clone().into_rgb8().save(imgname)?;
-    return Ok(format!("{:?}.png", &imgname))
+    return format!("{:?}.png", &imgname)
 }
 
 pub fn analyze(context: String) {

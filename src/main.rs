@@ -286,7 +286,7 @@ async fn see(ctx: &Context, msg: &Message) -> CommandResult {
         // This is running on a thread where blocking is fine.
         let response = format!("{}", generator::look(
             &prompt
-        ).unwrap());
+        ));
         println!("{}", &response);
         response
     });
