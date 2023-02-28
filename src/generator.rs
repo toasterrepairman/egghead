@@ -78,10 +78,10 @@ pub fn script(task: &str, context: &str) -> String {
         do_sample: false,
         num_beams: 1,
         num_return_sequences: 1,
-        repetition_penalty: 104.5,
-        temperature: 3.4,
-        diversity_penalty: Some(9.0),
-        no_repeat_ngram_size: 3,
+        repetition_penalty: 150.5,
+        temperature: 2.1,
+        diversity_penalty: Some(15.0),
+        no_repeat_ngram_size: 1,
         device: Device::Cpu,
         ..Default::default()
     };
