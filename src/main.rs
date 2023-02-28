@@ -13,14 +13,14 @@ use serenity::async_trait;
 use serenity::framework::standard::macros::{command, group, hook};
 use serenity::framework::standard::{Args, CommandResult, StandardFramework};
 use serenity::http::Typing;
-use serenity::model::channel::Message;
+use serenity::model::channel::{AttachmentType, Message};
 use serenity::model::gateway::Ready;
 use serenity::model::prelude::Activity;
 use serenity::prelude::*;
 use tokio::sync::RwLock;
 
 use std::io::Cursor;
-use image::io::Reader as ImageReader;
+use std::path::PathBuf;
 
 // A container type is created for inserting into the Client's `data`, which
 // allows for data to be accessible across all events and framework commands, or
@@ -291,11 +291,12 @@ async fn see(ctx: &Context, msg: &Message) -> CommandResult {
         response
     });
 
-    let image = ImageReader::open(runner.await)?.decode()?;
+    let image_path = PathBuf::from(runner.await);
+    let image_attachment = AttachmentType::Path(&image_path);
 
-    msg.channel_id
-        .send_message(&ctx.http, |m| image.as_embed(m))
-        .await?;
+    let _ = msg.channel_id.send_message(&ctx.http, |m| {
+        m.add_file(image_attachment)
+    }).await;
 
     Ok(typing.stop().unwrap())
 }
