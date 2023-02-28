@@ -19,6 +19,9 @@ use serenity::model::prelude::Activity;
 use serenity::prelude::*;
 use tokio::sync::RwLock;
 
+use std::io::Cursor;
+use image::io::Reader as ImageReader;
+
 // A container type is created for inserting into the Client's `data`, which
 // allows for data to be accessible across all events and framework commands, or
 // anywhere else that has a copy of the `data` Arc.
@@ -288,7 +291,7 @@ async fn see(ctx: &Context, msg: &Message) -> CommandResult {
         response
     });
 
-    let image = img = ImageReader::open(runner.await)?.decode()?;
+    let image = ImageReader::open(runner.await)?.decode()?;
 
     msg.channel_id
         .send_message(&ctx.http, |m| image.as_embed(m))
