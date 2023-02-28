@@ -14,7 +14,7 @@ use std::sync::Arc;
 use uuid::{Uuid, Version};
 
 use pyke_diffusers::{
-    EulerDiscreteScheduler, OrtEnvironment, SchedulerOptimizedDefaults, StableDiffusionMemoryOptimizedPipeline, StableDiffusionOptions,
+    EulerDiscreteScheduler, OrtEnvironment, SchedulerOptimizedDefaults, StableDiffusionPipeline, StableDiffusionOptions,
     StableDiffusionTxt2ImgOptions
 };
 
