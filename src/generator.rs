@@ -67,7 +67,7 @@ pub fn look(prompt: &str) -> String {
 
     let imgs = pipeline.txt2img(prompt, &mut scheduler, &StableDiffusionTxt2ImgOptions { steps: 20, ..Default::default() }).unwrap();
     let imgname = Uuid::new_v4().to_string();
-    imgs[0].clone().into_rgb8().save(imgname).unwrap();
+    imgs[0].clone().into_rgb8().save(&imgname).unwrap();
     return format!("{:?}.png", &imgname)
 }
 
