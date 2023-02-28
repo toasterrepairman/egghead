@@ -61,7 +61,7 @@ pub fn ask(question: &str, context: &str) -> String {
 }
 
 pub fn look(prompt: &str) -> Result<String, E> {
-    let environment = OrtEnvironment::builder().into_arc();
+    let environment = Environment::builder().with_name("test").with_log_level(LoggingLevel::Verbose).build()?;
     let mut scheduler = EulerDiscreteScheduler::stable_diffusion_v1_optimized_default()?;
     let pipeline = StableDiffusionMemoryOptimizedPipeline::new(&environment, "./stable-diffusion-v1-5/", StableDiffusionOptions::default())?;
 
