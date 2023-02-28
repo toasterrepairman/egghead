@@ -291,7 +291,7 @@ async fn see(ctx: &Context, msg: &Message) -> CommandResult {
         response
     });
 
-    let image_path = PathBuf::from(runner.await);
+    let image_path = PathBuf::from(runner.await.unwrap());
     let image_attachment = AttachmentType::Path(&image_path);
 
     let _ = msg.channel_id.send_message(&ctx.http, |m| {
