@@ -53,6 +53,48 @@ pub fn ask(question: &str, context: &str) -> String {
     return output.unwrap().split_off(input_context_1.len())
 }
 
+pub fn script(task: &str, context: &str) -> String {
+    let config_resource = Box::new(RemoteResource::from_pretrained(
+        GptNeoConfigResources::GPT_NEO_1_3B,
+    ));
+    let vocab_resource = Box::new(RemoteResource::from_pretrained(
+        GptNeoVocabResources::GPT_NEO_1_3B,
+    ));
+    let merges_resource = Box::new(RemoteResource::from_pretrained(
+        GptNeoMergesResources::GPT_NEO_1_3B,
+    ));
+    let model_resource = Box::new(RemoteResource::from_pretrained(
+        GptNeoModelResources::GPT_NEO_1_3B,
+    ));
+    let generate_config = TextGenerationConfig {
+        model_type: ModelType::GPTNeo,
+        model_resource,
+        config_resource,
+        vocab_resource,
+        merges_resource: merges_resource,
+        min_length: 20,
+        max_length: 150,
+        early_stopping: true,
+        do_sample: false,
+        num_beams: 1,
+        num_return_sequences: 1,
+        repetition_penalty: 104.5,
+        temperature: 3.4,
+        diversity_penalty: Some(9.0),
+        no_repeat_ngram_size: 3,
+        device: Device::Cpu,
+        ..Default::default()
+    };
+
+    let mut model = TextGenerationModel::new(generate_config)
+        .expect("This regularly blows up");
+    model.set_device(Device::cuda_if_available());
+
+    let input_context_1 = format!("Here is a Bash script that will {}: \n#!/bin/bash", task);
+    let mut output = model.generate((&[&input_context_1]), None).pop();
+    return output.unwrap().split_off(input_context_1.len())
+}
+
 pub fn analyze(context: String) {
     //    Set-up classifier
     let sentiment_classifier = SentimentModel::new(Default::default()).unwrap();
