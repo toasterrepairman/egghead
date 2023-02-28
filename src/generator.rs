@@ -18,7 +18,7 @@ use pyke_diffusers::{
     StableDiffusionTxt2ImgOptions
 };
 
-fn ask(question: &str, context: &str) -> String {
+pub fn ask(question: &str, context: &str) -> String {
     let config_resource = Box::new(RemoteResource::from_pretrained(
         GptNeoConfigResources::GPT_NEO_125M,
     ));
@@ -60,7 +60,7 @@ fn ask(question: &str, context: &str) -> String {
     return output.unwrap().split_off(input_context_1.len())
 }
 
-pub fn look(prompt: &str) -> Result<String, E> {
+pub fn look(prompt: &str) -> Result<String, Eq> {
     let environment = Arc::new(OrtEnvironment::builder().build()?);
     let mut scheduler = EulerDiscreteScheduler::stable_diffusion_v1_optimized_default()?;
     let pipeline = StableDiffusionPipeline::new(&environment, "./stable-diffusion-v1-5", &StableDiffusionOptions::default())?;
