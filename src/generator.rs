@@ -90,7 +90,7 @@ pub fn script(task: &str, context: &str) -> String {
         .expect("This regularly blows up");
     model.set_device(Device::cuda_if_available());
 
-    let input_context_1 = format!("Here is a Bash script that will {}: \n#!/bin/bash", task);
+    let input_context_1 = format!("Here is a Bash script that will {}: \n#!/bin/bash\n", task);
     let mut output = model.generate((&[&input_context_1]), None).pop();
     return output.unwrap().split_off(input_context_1.len())
 }
