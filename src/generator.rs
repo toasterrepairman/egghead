@@ -14,11 +14,9 @@ use std::sync::Arc;
 use uuid::{Uuid, Version};
 
 use pyke_diffusers::{
-    Environment, EulerDiscreteScheduler, SchedulerOptimizedDefaults, StableDiffusionOptions, StableDiffusionPipeline,
+    OrtEnvironment, EulerDiscreteScheduler, SchedulerOptimizedDefaults, StableDiffusionOptions, StableDiffusionPipeline,
     StableDiffusionTxt2ImgOptions
 };
-
-
 
 pub fn ask(question: &str, context: &str) -> String {
     let config_resource = Box::new(RemoteResource::from_pretrained(
