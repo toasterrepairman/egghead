@@ -308,7 +308,6 @@ async fn help(ctx: &Context, msg: &Message) -> CommandResult {
     *USAGE*\n
     `e.help` - Displays this help message.\n
     `e.ask <PROMPT>` - Asks the model a user-submitted question. May fail with elaborate prompts.\n
-    `e.news` - Instantly generates disinformation.
     (Coming soon) `e.see <PROMPT>` - Generate an image with Stable Diffusion.\n
     \n
     Report serious issues to `toaster repairguy#1101`.";
