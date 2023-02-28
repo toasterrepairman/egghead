@@ -19,6 +19,9 @@ use serenity::model::prelude::Activity;
 use serenity::prelude::*;
 use tokio::sync::RwLock;
 
+mod res;
+use super::res::{delete_if_linked, link, Images};
+
 // A container type is created for inserting into the Client's `data`, which
 // allows for data to be accessible across all events and framework commands, or
 // anywhere else that has a copy of the `data` Arc.
