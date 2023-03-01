@@ -2,6 +2,7 @@ use std::error::Error;
 use rss::{Channel, Item};
 use reqwest;
 use rand::Rng;
+use reqwest::header;
 
 pub async fn get_random_headline_from_rss_link(rss_link: &str) -> Result<String, Box<dyn Error>> {
     // Send an HTTP GET request to the RSS link using reqwest
@@ -19,3 +20,28 @@ pub async fn get_random_headline_from_rss_link(rss_link: &str) -> Result<String,
     // Return the title of the item as a string
     Ok(item.title().unwrap_or_default().to_string())
 }
+
+pub async fn get_wikipedia_summary(article: Option<&str>) -> Result<String, reqwest::Error> {
+    let url = if let Some(article_name) = article {
+        format!("https://en.wikipedia.org/api/rest_v1/page/summary/{}", article_name)
+    } else {
+        "https://en.wikipedia.org/api/rest_v1/page/random/summary".to_string()
+    };
+
+    let client = reqwest::Client::new();
+    let mut headers = header::HeaderMap::new();
+    headers.insert(header::USER_AGENT, header::HeaderValue::from_static("reqwest"));
+    let response = client
+        .get(&url)
+        .headers(headers)
+        .send()
+        .await?
+        .json::<serde_json::Value>()
+        .await?;
+
+    let title = response["title"].as_str().unwrap_or("Unknown").to_owned();
+    let summary = response["extract"].as_str().unwrap_or("").chars().take(15).collect::<String>();
+
+    Ok(format!("{}\n{}", title, summary))
+}
+

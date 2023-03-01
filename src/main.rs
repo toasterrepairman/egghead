@@ -47,7 +47,7 @@ impl TypeMapKey for MessageCount {
 }
 
 #[group]
-#[commands(ping, command_usage, ask, help, news, script)]
+#[commands(ping, command_usage, ask, help, news, wiki, script)]
 struct General;
 
 #[hook]
@@ -295,6 +295,38 @@ async fn news(ctx: &Context, msg: &Message) -> CommandResult {
     msg.reply(
         ctx.clone(),
         format!("Title: {:0} \n{:1}", title, runner.await?,
+        )).await?;
+
+    Ok(typing.stop().unwrap())
+}
+
+#[command]
+async fn wiki(ctx: &Context, msg: &Message) -> CommandResult {
+    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
+        .expect("Typing failed");
+
+    let input = match &msg.content.len() {
+        6 => None,
+        _ => Some(msg.content.as_str())
+    };
+
+    let prompt = fetcher::get_wikipedia_summary(input).await.unwrap();
+    println!("{:?}", &input);
+
+    let runner = tokio::task::spawn_blocking(move || {
+        println!("Thread Spawned!");
+        // This is running on a thread where blocking is fine.
+        let response = format!("{}", generator::wiki(
+            &prompt,
+            "",
+        ));
+        println!("{}", &response);
+        response
+    });
+
+    msg.reply(
+        ctx.clone(),
+        format!("{}", runner.await?,
         )).await?;
 
     Ok(typing.stop().unwrap())
