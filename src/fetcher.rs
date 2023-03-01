@@ -29,7 +29,7 @@ pub async fn get_wikipedia_summary(article: Option<&str>) -> Result<String, reqw
     };
 
     let client = reqwest::Client::new();
-    let mut headers = header::HeaderMap::new();
+    let mut headers = header::HeaderMap:: new();
     headers.insert(header::USER_AGENT, header::HeaderValue::from_static("reqwest"));
     let response = client
         .get(&url)
