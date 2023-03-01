@@ -307,7 +307,7 @@ async fn wiki(ctx: &Context, msg: &Message) -> CommandResult {
 
     let input = match &msg.content.len() {
         6 => None,
-        _ => Some(msg.content.as_str())
+        _ => Some(msg.content.as_str().split_at(7))
     };
 
     let prompt = fetcher::get_wikipedia_summary(input).await.unwrap();
