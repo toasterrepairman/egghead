@@ -73,7 +73,7 @@ pub fn wiki(question: &str, context: &str) -> String {
         vocab_resource,
         merges_resource: merges_resource,
         min_length: 20,
-        max_length: 240,
+        max_length: 130,
         early_stopping: true,
         do_sample: false,
         num_beams: 1,

@@ -40,7 +40,7 @@ pub async fn get_wikipedia_summary(article: Option<&str>) -> Result<String, reqw
         .await?;
 
     let title = response["title"].as_str().unwrap_or("Unknown").to_owned();
-    let summary = response["extract"].as_str().unwrap_or("").chars().take(30).collect::<String>();
+    let summary = response["extract"].as_str().unwrap_or("").chars().take(55).collect::<String>();
 
     Ok(format!("{}\n{}", title, summary))
 }
