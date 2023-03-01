@@ -92,7 +92,7 @@ pub fn wiki(question: &str, context: &str) -> String {
 
     let input_context_1 = format!("Succinctly respond to the following prompt in less than 80 words: {}\n", question);
     let mut output = model.generate((&[&input_context_1]), None).pop();
-    return output.unwrap().split_off(input_context_1.len())
+    return output.unwrap()
 }
 
 pub fn script(task: &str, context: &str) -> String {
