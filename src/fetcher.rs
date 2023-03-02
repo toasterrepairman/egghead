@@ -59,7 +59,7 @@ pub async fn get_hacker_news_comment() -> Result<String, reqwest::Error> {
     let comment = client.get(&comments_url).send().await?.json::<serde_json::Value>().await?;
 
     // extract the first 20 characters of the comment
-    let comment_text = comment["text"].as_str().unwrap_or("");
+    let comment_text = comment["text"].as_str().unwrap_or("oops");
     let first_20_chars = comment_text.chars().take(20).collect();
     println!("{}", &first_20_chars);
 
