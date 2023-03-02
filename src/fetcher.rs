@@ -51,7 +51,7 @@ pub async fn get_hacker_news_comment() -> Result<String, reqwest::Error> {
     let client = Client::new();
 
     // send a GET request to the Hacker News API to get the IDs of the most recent items
-    let ids_url = "https://hacker-news.firebaseio.com/v0/newstories.json";
+    let ids_url = "http://hn.algolia.com/api/v1/search_by_date?tags=comment";
     let ids = client.get(ids_url).send().await?.json::<Vec<u64>>().await?;
 
     // get the ID of the most recent comment
