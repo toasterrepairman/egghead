@@ -47,7 +47,7 @@ impl TypeMapKey for MessageCount {
 }
 
 #[group]
-#[commands(ping, command_usage, ask, help, news, wiki, script)]
+#[commands(ping, command_usage, ask, help, news, wiki, hn, script)]
 struct General;
 
 #[hook]
@@ -333,13 +333,48 @@ async fn wiki(ctx: &Context, msg: &Message) -> CommandResult {
 }
 
 #[command]
+async fn hn(ctx: &Context, msg: &Message) -> CommandResult {
+    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
+        .expect("Typing failed");
+
+    let input = match &msg.content.len() {
+        6 => None,
+        _ => Some(msg.content.as_str().split_at(5).1)
+    };
+
+    let prompt = fetcher::get_latest_hn_comment().await.unwrap();
+    println!("{:?}", &input);
+
+    let runner = tokio::task::spawn_blocking(move || {
+        println!("Thread Spawned!");
+        // This is running on a thread where blocking is fine.
+        let response = format!("{}", generator::wiki(
+            &prompt,
+            "",
+        ));
+        println!("{}", &response);
+        response
+    });
+
+    msg.reply(
+        ctx.clone(),
+        format!("{}", runner.await?,
+        )).await?;
+
+    Ok(typing.stop().unwrap())
+}
+
+
+#[command]
 async fn help(ctx: &Context, msg: &Message) -> CommandResult {
     let message = "I'm egghead, the workd's smartest computer. My vast processing resources facilitate understanding beyond human capacity.\n
     \n
-    *USAGE*\n
-    `e.help` - Displays this help message.\n
-    `e.ask <PROMPT>` - Asks the model a user-submitted question. May fail with elaborate prompts.\n
-    (Coming soon) `e.see <PROMPT>` - Generate an image with Stable Diffusion.\n
+    *USAGE*
+    `e.help` - Displays this help message.
+    `e.ask <PROMPT>` - Asks the model a user-submitted question. May fail with elaborate prompts.
+    (Coming soon) `e.see <PROMPT>` - Generate an image with Stable Diffusion.
+    `e.wiki <PROMPT>` - Finishes the listed (or random if <PROMPT> is blank) article with AI.
+    `e.hn` - Finishes the latest HN comment with AI.
     \n
     Report serious issues to `toaster repairguy#1101`.";
 

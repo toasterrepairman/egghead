@@ -45,3 +45,21 @@ pub async fn get_wikipedia_summary(article: Option<&str>) -> Result<String, reqw
     Ok(format!("{}\n{}", title, summary))
 }
 
+pub async fn get_latest_hn_comment() -> Result<String, Error> {
+    let url = "https://hacker-news.firebaseio.com/v0/topstories.json";
+    let top_stories = reqwest::get(url).await?.json::<Vec<i32>>().await?;
+
+    let first_story_id = top_stories.first().unwrap();
+    let story_url = format!("https://hacker-news.firebaseio.com/v0/item/{}.json", first_story_id);
+    let story = reqwest::get(&story_url).await?.json::<serde_json::Value>().await?;
+
+    let kids = story.get("kids").unwrap().as_array().unwrap();
+    let latest_comment_id = kids.last().unwrap().as_i64().unwrap();
+    let comment_url = format!("https://hacker-news.firebaseio.com/v0/item/{}.json", latest_comment_id);
+    let comment = reqwest::get(&comment_url).await?.json::<serde_json::Value>().await?;
+
+    let text = comment.get("text").unwrap().as_str().unwrap();
+    let first_20_chars = text.chars().take(20).collect();
+
+    Ok(first_20_chars)
+}
