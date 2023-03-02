@@ -45,7 +45,7 @@ pub async fn get_wikipedia_summary(article: Option<&str>) -> Result<String, reqw
     Ok(format!("{}\n{}", title, summary))
 }
 
-pub async fn get_latest_hn_comment() -> Result<String, Error> {
+pub async fn get_latest_hn_comment() -> Result<String, reqwest::Error> {
     let url = "https://hacker-news.firebaseio.com/v0/topstories.json";
     let top_stories = reqwest::get(url).await?.json::<Vec<i32>>().await?;
 
