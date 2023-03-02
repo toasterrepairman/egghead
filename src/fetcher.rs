@@ -61,6 +61,7 @@ pub async fn get_hacker_news_comment() -> Result<String, reqwest::Error> {
     // extract the first 20 characters of the comment
     let comment_text = comment["text"].as_str().unwrap_or("");
     let first_20_chars = comment_text.chars().take(20).collect();
+    println!("{}", &first_20_chars);
 
     Ok(first_20_chars)
 }
