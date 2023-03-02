@@ -337,13 +337,7 @@ async fn hn(ctx: &Context, msg: &Message) -> CommandResult {
     let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
         .expect("Typing failed");
 
-    let input = match &msg.content.len() {
-        6 => None,
-        _ => Some(msg.content.as_str().split_at(5).1)
-    };
-
     let prompt = fetcher::get_latest_hn_comment().await.unwrap();
-    println!("{:?}", &input);
 
     let runner = tokio::task::spawn_blocking(move || {
         println!("Thread Spawned!");
