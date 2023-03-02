@@ -3,6 +3,7 @@ use rss::{Channel, Item};
 use reqwest;
 use rand::Rng;
 use reqwest::header;
+use reqwest::Client;
 
 pub async fn get_random_headline_from_rss_link(rss_link: &str) -> Result<String, Box<dyn Error>> {
     // Send an HTTP GET request to the RSS link using reqwest
@@ -45,21 +46,21 @@ pub async fn get_wikipedia_summary(article: Option<&str>) -> Result<String, reqw
     Ok(format!("{}\n{}", title, summary))
 }
 
-pub async fn get_latest_hn_comment() -> Result<String, reqwest::Error> {
-    let url = "https://hacker-news.firebaseio.com/v0/topstories.json";
-    let top_stories = reqwest::get(url).await?.json::<Vec<i32>>().await?;
+pub async fn get_hacker_news_comment() -> Result<String, reqwest::Error> {
+    // create a reqwest client
+    let client = Client::new();
 
-    let first_story_id = top_stories.first().unwrap();
-    let story_url = format!("https://hacker-news.firebaseio.com/v0/item/{}.json", first_story_id);
-    let story = reqwest::get(&story_url).await?.json::<serde_json::Value>().await?;
+    // send a GET request to the Hacker News API to get the IDs of the most recent items
+    let ids_url = "https://hacker-news.firebaseio.com/v0/newstories.json";
+    let ids = client.get(ids_url).send().await?.json::<Vec<u64>>().await?;
 
-    let kids = story.get("kids").unwrap().as_array().unwrap();
-    let latest_comment_id = kids.last().unwrap().as_i64().unwrap();
-    let comment_url = format!("https://hacker-news.firebaseio.com/v0/item/{}.json", latest_comment_id);
-    let comment = reqwest::get(&comment_url).await?.json::<serde_json::Value>().await?;
+    // get the ID of the most recent comment
+    let comments_url = format!("https://hacker-news.firebaseio.com/v0/item/{}.json", ids[0]);
+    let comment = client.get(&comments_url).send().await?.json::<serde_json::Value>().await?;
 
-    let text = comment.get("text").unwrap().as_str().unwrap();
-    let first_20_chars = text.chars().take(20).collect();
+    // extract the first 20 characters of the comment
+    let comment_text = comment["text"].as_str().unwrap_or("");
+    let first_20_chars = comment_text.chars().take(20).collect();
 
     Ok(first_20_chars)
 }
