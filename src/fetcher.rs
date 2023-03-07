@@ -46,22 +46,10 @@ pub async fn get_wikipedia_summary(article: Option<&str>) -> Result<String, reqw
     Ok(format!("{}\n{}", title, summary))
 }
 
-pub async fn get_hacker_news_comment() -> Result<String, reqwest::Error> {
-    // create a reqwest client
+pub async fn get_latest_hn_comment() -> Result<String, reqwest::Error> {
     let client = Client::new();
-
-    // send a GET request to the Hacker News API to get the IDs of the most recent items
-    let ids_url = "http://hn.algolia.com/api/v1/search_by_date?tags=comment";
-    let ids = client.get(ids_url).send().await?.json::<Vec<u64>>().await?;
-
-    // get the ID of the most recent comment
-    let comments_url = format!("https://hacker-news.firebaseio.com/v0/item/{}.json", ids[0]);
-    let comment = client.get(&comments_url).send().await?.json::<serde_json::Value>().await?;
-
-    // extract the first 20 characters of the comment
-    let comment_text = comment["text"].as_str().unwrap_or("oops");
-    let first_20_chars = comment_text.chars().take(20).collect();
-    println!("{}", &first_20_chars);
-
-    Ok(first_20_chars)
+    let url = "https://hn.algolia.com/api/v1/search?tags=comment";
+    let response = client.get(url).send().await?.json::<serde_json::Value>().await?;
+    let latest_comment = response["hits"][0]["comment_text"].as_str().unwrap_or("");
+    Ok(latest_comment.chars().take(20).collect())
 }
