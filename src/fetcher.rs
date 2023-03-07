@@ -48,7 +48,7 @@ pub async fn get_wikipedia_summary(article: Option<&str>) -> Result<String, reqw
 
 pub async fn get_latest_hn_comment() -> Result<String, reqwest::Error> {
     let client = Client::new();
-    let url = "https://hn.algolia.com/api/v1/search?tags=comment";
+    let url = "http://hn.algolia.com/api/v1/search_by_date?tags=comment";
     let response = client.get(url).send().await?.json::<serde_json::Value>().await?;
     let latest_comment = response["hits"][0]["comment_text"].as_str().unwrap_or("");
     Ok(latest_comment.chars().take(20).collect())
