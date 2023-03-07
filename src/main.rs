@@ -342,7 +342,7 @@ async fn hn(ctx: &Context, msg: &Message) -> CommandResult {
     let runner = tokio::task::spawn_blocking(move || {
         println!("Thread Spawned!");
         // This is running on a thread where blocking is fine.
-        let response = format!("{}", generator::wiki(
+        let response = format!("{}", generator::hn(
             &prompt,
             "",
         ));
