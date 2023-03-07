@@ -1,7 +1,7 @@
 use std::error::Error;
 use rss::{Channel, Item};
 use reqwest;
-use rand::Rng;
+use rand::{random, Rng};
 use reqwest::header;
 use reqwest::Client;
 
@@ -50,6 +50,6 @@ pub async fn get_latest_hn_comment() -> Result<String, reqwest::Error> {
     let client = Client::new();
     let url = "http://hn.algolia.com/api/v1/search_by_date?tags=comment";
     let response = client.get(url).send().await?.json::<serde_json::Value>().await?;
-    let latest_comment = response["hits"][0]["comment_text"].as_str().unwrap_or("");
+    let latest_comment = response["hits"][rand::thread_rng().gen_range(0, 100)]["comment_text"].as_str().unwrap_or("");
     Ok(latest_comment.chars().take(30).collect())
 }

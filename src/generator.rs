@@ -115,7 +115,7 @@ pub fn hn(question: &str, context: &str) -> String {
         vocab_resource,
         merges_resource: merges_resource,
         min_length: 20,
-        max_length: 180,
+        max_length: 80,
         early_stopping: true,
         do_sample: false,
         num_beams: 1,
