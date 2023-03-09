@@ -179,13 +179,13 @@ pub fn script(task: &str, context: &str) -> String {
     return output.unwrap()
 }
 
-pub fn analyze(context: String) {
+pub fn analyze(context: &str) {
     //    Set-up classifier
     let sentiment_classifier = SentimentModel::new(Default::default()).unwrap();
 
     //    Define input
     let input = [
-        &context
+        context
     ];
 
     //    Run model
