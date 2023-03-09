@@ -385,7 +385,7 @@ async fn check(ctx: &Context, msg: &Message) -> CommandResult {
 
     msg.reply(
         ctx.clone(),
-        format!("{}", runner.await?[0]
+        format!("{}", runner.await?
         )).await?;
 
     Ok(typing.stop().unwrap())
