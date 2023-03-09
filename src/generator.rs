@@ -2,7 +2,7 @@ use rust_bert::gpt_neo::{
     GptNeoConfigResources, GptNeoMergesResources, GptNeoModelResources, GptNeoVocabResources,
 };
 use rust_bert::pipelines::common::ModelType;
-use rust_bert::pipelines::sentiment::SentimentModel;
+use rust_bert::pipelines::sentiment::{Sentiment, SentimentModel};
 use rust_bert::pipelines::sequence_classification::{SequenceClassificationConfig, SequenceClassificationModel};
 use rust_bert::pipelines::text_generation::{TextGenerationConfig, TextGenerationModel};
 use rust_bert::reformer::{ReformerConfigResources, ReformerModelResources, ReformerVocabResources};
@@ -179,7 +179,7 @@ pub fn script(task: &str, context: &str) -> String {
     return output.unwrap()
 }
 
-pub fn analyze(context: &str) {
+pub fn analyze(context: &str) -> Vec<Sentiment> {
     //    Set-up classifier
     let sentiment_classifier = SentimentModel::new(Default::default()).unwrap();
 
@@ -189,5 +189,5 @@ pub fn analyze(context: &str) {
     ];
 
     //    Run model
-    return output = sentiment_classifier.predict(input);
+    return sentiment_classifier.predict(input);
 }
