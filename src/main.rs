@@ -376,9 +376,8 @@ async fn check(ctx: &Context, msg: &Message) -> CommandResult {
     let runner = tokio::task::spawn_blocking(move || {
         println!("Thread Spawned!");
         // This is running on a thread where blocking is fine.
-        let response = format!("{}", generator::hn(
-            &prompt.unwrap().content,
-            "",
+        let response = format!("{:?}", generator::analyze(
+            &prompt.unwrap().content
         ));
         println!("{}", &response);
         response
