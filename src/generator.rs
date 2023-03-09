@@ -185,7 +185,7 @@ pub fn analyze(context: String) {
 
     //    Define input
     let input = [
-
+        &context
     ];
 
     //    Run model
