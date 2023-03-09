@@ -189,5 +189,5 @@ pub fn analyze(context: &str) {
     ];
 
     //    Run model
-    let output = sentiment_classifier.predict(input);
+    return output = sentiment_classifier.predict(input);
 }
