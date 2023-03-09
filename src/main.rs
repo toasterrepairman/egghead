@@ -47,7 +47,7 @@ impl TypeMapKey for MessageCount {
 }
 
 #[group]
-#[commands(ping, command_usage, ask, help, news, wiki, hn, script, check)]
+#[commands(ping, command_usage, ask, help, news, wiki, hn, script, feel)]
 struct General;
 
 #[hook]
@@ -359,7 +359,7 @@ async fn hn(ctx: &Context, msg: &Message) -> CommandResult {
 }
 
 #[command]
-async fn check(ctx: &Context, msg: &Message) -> CommandResult {
+async fn feel(ctx: &Context, msg: &Message) -> CommandResult {
     let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
         .expect("Typing failed");
 
@@ -402,6 +402,7 @@ async fn help(ctx: &Context, msg: &Message) -> CommandResult {
     (Coming soon) `e.see <PROMPT>` - Generate an image with Stable Diffusion.
     `e.wiki <PROMPT>` - Finishes the listed (or random if <PROMPT> is blank) article with AI.
     `e.hn` - Finishes the latest HN comment with AI.
+    `e.feel` - Sentiment analysis for the last-sent message.
     \n
     Report serious issues to `toaster repairguy#1101`.";
 
