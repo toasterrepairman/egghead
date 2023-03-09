@@ -366,7 +366,7 @@ async fn check(ctx: &Context, msg: &Message) -> CommandResult {
     let prompt = match msg.channel_id.messages(&ctx.http, |retriever| {
         retriever.limit(2)
     }).await {
-        Ok(messages) => messages.first().cloned(),
+        Ok(messages) => messages.last().cloned(),
         Err(why) => {
             println!("Error getting messages: {:?}", why);
             None
