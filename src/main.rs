@@ -364,7 +364,7 @@ async fn check(ctx: &Context, msg: &Message) -> CommandResult {
         .expect("Typing failed");
 
     let prompt = match msg.channel_id.messages(&ctx.http, |retriever| {
-        retriever.limit(1)
+        retriever.limit(2)
     }).await {
         Ok(messages) => messages.first().cloned(),
         Err(why) => {
@@ -372,6 +372,7 @@ async fn check(ctx: &Context, msg: &Message) -> CommandResult {
             None
         }
     };
+    println!("{:?}", prompt);
 
     let runner = tokio::task::spawn_blocking(move || {
         println!("Thread Spawned!");
