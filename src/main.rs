@@ -436,7 +436,8 @@ async fn say(ctx: &Context, msg: &Message) -> CommandResult {
         .await?;
 
     // Extract the job_token from the response body
-    let job_token = initial_response.json::<HashMap<String, String>>().await?.get("job_token").unwrap();
+    let init_response = initial_response.json::<HashMap<String, String>>().await?;
+    let job_token = init_response.get("job_token").unwrap();
 
     // Query the job status until it's complete
     let mut job_status = "pending";
@@ -446,11 +447,12 @@ async fn say(ctx: &Context, msg: &Message) -> CommandResult {
             .await?
             .json::<HashMap<String, String>>()
             .await?;
-        job_status = response.get("status").unwrap().as_str();
+        job_status = &response.get("status").unwrap().as_str();
         status_response = response;
 
         // Wait for 1 second before checking again
-        tokio::time::sleep(Duration::from_secs(1)).await;    }
+        tokio::time::sleep(Duration::from_secs(1)).await;
+    }
 
     // Extract the audio file URL from the response body
     let audio_url = format!("https://storage.googleapis.com/vocodes-public/{}", status_response.get("maybe_public_bucket_wav_audio_path").unwrap());
