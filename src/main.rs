@@ -25,6 +25,7 @@ use std::io::Write;
 use tokio::runtime::Runtime;
 use std::io::Cursor;
 use std::path::{Path, PathBuf};
+use std::time::Duration;
 
 // A container type is created for inserting into the Client's `data`, which
 // allows for data to be accessible across all events and framework commands, or
@@ -449,8 +450,7 @@ async fn say(ctx: &Context, msg: &Message) -> CommandResult {
         status_response = response;
 
         // Wait for 1 second before checking again
-        tokio::time::delay_for(std::time::Duration::from_secs(1)).await;
-    }
+        tokio::time::sleep(Duration::from_secs(1)).await;    }
 
     // Extract the audio file URL from the response body
     let audio_url = format!("https://storage.googleapis.com/vocodes-public/{}", status_response.get("maybe_public_bucket_wav_audio_path").unwrap());
