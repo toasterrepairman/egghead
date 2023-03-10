@@ -47,7 +47,7 @@ impl TypeMapKey for MessageCount {
 }
 
 #[group]
-#[commands(ping, command_usage, ask, help, news, wiki, hn, script, feel)]
+#[commands(ping, command_usage, ask, help, news, wiki, hn, script, feel, say)]
 struct General;
 
 #[hook]
@@ -235,7 +235,7 @@ async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
         response
     });
 
-    msg.reply(
+    msg.reply_mention(
         ctx.clone(),
         format!("{}", runner.await?,
     )).await?;
@@ -262,7 +262,7 @@ async fn script(ctx: &Context, msg: &Message) -> CommandResult {
         response
     });
 
-    msg.reply(
+    msg.reply_mention(
         ctx.clone(),
         format!("{}", runner.await?,
         )).await?;
@@ -324,7 +324,7 @@ async fn wiki(ctx: &Context, msg: &Message) -> CommandResult {
         response
     });
 
-    msg.reply(
+    msg.reply_mention(
         ctx.clone(),
         format!("{}", runner.await?,
         )).await?;
@@ -350,7 +350,7 @@ async fn hn(ctx: &Context, msg: &Message) -> CommandResult {
         response
     });
 
-    msg.reply(
+    msg.reply_mention(
         ctx.clone(),
         format!("{}", runner.await?,
         )).await?;
@@ -384,10 +384,69 @@ async fn feel(ctx: &Context, msg: &Message) -> CommandResult {
         response
     });
 
-    msg.reply(
+    msg.reply_mention(
         ctx.clone(),
         format!("{}", runner.await?
         )).await?;
+
+    Ok(typing.stop().unwrap())
+}
+
+// This next function will be borderline demonic.
+// This (should) enable TTS over API though. This will eventually break :)
+#[command]
+async fn say(ctx: &Context, msg: &Message) -> CommandResult {
+    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
+        .expect("Typing failed");
+
+    let prompt = match msg.channel_id.messages(&ctx.http, |retriever| {
+        retriever.limit(2)
+    }).await {
+        Ok(messages) => messages.last().cloned(),
+        Err(why) => {
+            println!("Error getting messages: {:?}", why);
+            None
+        }
+    };
+    println!("{:?}", prompt);
+
+    let request_data = json!({
+        "tts_model_token": tts_model_token,
+        "inference_text": inference_text,
+    });
+
+    let mut voice_url = "";
+
+    let client = reqwest::Client::new();
+    let response = client
+        .post(TTS_API_URL)
+        .header("Content-Type", "application/json")
+        .body(request_data.to_string())
+        .send()
+        .await
+        .unwrap();
+
+    if response.status().is_success() {
+        let tts_job_response: TTSJobResponse = response.json().await.unwrap();
+        let job_token = tts_job_response.job_token;
+        println!("Received job token: {}", job_token);
+
+        let attachment = AttachmentType::from_url(fetcher::process_tts_job(job_token)).await?;
+        println!("{:?}", &attachment);
+        msg.channel_id
+            .send_files(&ctx.http, |m| {
+                m.content("Here is your attachment:");
+                m.add_file(attachment);
+                m.reference_message(msg);
+                m.allowed_mentions(|am| am.empty_parse());
+                m
+            }, ())
+            .await?;
+    } else {
+        let status = response.status();
+        let error_message = response.text().await.unwrap();
+        panic!("Received error {}: {}", status, error_message);
+    }
 
     Ok(typing.stop().unwrap())
 }

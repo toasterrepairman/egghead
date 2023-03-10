@@ -54,3 +54,40 @@ pub async fn get_latest_hn_comment() -> Result<String, reqwest::Error> {
     let latest_comment = response["hits"][index]["comment_text"].as_str().unwrap_or("");
     Ok(latest_comment.chars().take(30).collect())
 }
+
+pub async fn process_tts_job(job_token: &str) -> String {
+    let mut audio_url = String::new();
+    let mut job_status = String::new();
+
+    let client = reqwest::Client::new();
+    while audio_url.is_empty() {
+        let job_status_response = client
+            .get(&format!("https://api.fakeyou.com/tts/job/{}", job_token))
+            .send()
+            .await
+            .unwrap();
+
+        if job_status_response.status().is_success() {
+            let job_status_json = job_status_response.json::<serde_json::Value>().await.unwrap();
+            job_status = job_status_json["state"].as_str().unwrap().to_string();
+            println!("Current job status: {}", job_status);
+
+            if job_status == "completed" {
+                audio_url = job_status_json["maybe_public_bucket_wav_audio_path"]
+                    .as_str()
+                    .unwrap()
+                    .to_string();
+            }
+        } else {
+            let status = job_status_response.status();
+            let error_message = job_status_response.text().await.unwrap();
+            panic!("Received error {}: {}", status, error_message);
+        }
+
+        tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
+    }
+
+    let full_audio_url = format!("https://storage.googleapis.com/vocodes-public/{}", audio_url);
+    println!("Final audio URL: {}", full_audio_url);
+    full_audio_url
+}
