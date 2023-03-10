@@ -425,7 +425,7 @@ async fn say(ctx: &Context, msg: &Message) -> CommandResult {
     // Create the request body JSON
     let mut request_body = HashMap::new();
     request_body.insert("tts_model_token", "your_tts_model_token_here");
-    request_body.insert("inference_text", user_input.unwrap().content.as_str());
+    request_body.insert("inference_text", user_input.unwrap().content.as_str().clone());
 
     // Send the initial request to the TTS API
     let initial_response = reqwest::Client::new()
@@ -447,7 +447,7 @@ async fn say(ctx: &Context, msg: &Message) -> CommandResult {
             .await?
             .json::<HashMap<String, String>>()
             .await?;
-        job_status = response.get("status").unwrap().as_str().clone();
+        job_status = &response.get("status").unwrap().as_str();
         status_response = response.clone();
 
         // Wait for 1 second before checking again
