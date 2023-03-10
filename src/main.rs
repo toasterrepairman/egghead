@@ -406,61 +406,55 @@ struct TTSJobResponse {
     job_token: String,
 }
 
+
 #[command]
-async fn say(ctx: &Context, msg: &Message) -> CommandResult {
-    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
-        .expect("Typing failed");
+fn say(ctx: &mut serenity::client::Context, msg: &Message) -> CommandResult {
+    let tts_model_token = "your_tts_model_token_here";
+    let inference_text = msg.content.clone();
 
-    let user_input = match msg.channel_id.messages(&ctx.http, |retriever| {
-        retriever.limit(2)
-    }).await {
-        Ok(messages) => messages.last().cloned(),
-        Err(why) => {
-            println!("Error getting messages: {:?}", why);
-            None
-        }
-    };
-    println!("{:?}", user_input.unwrap().content.as_str().clone());
+    let tts_request = json!({
+        "tts_model_token": tts_model_token,
+        "inference_text": inference_text,
+    });
 
-    // Create the request body JSON
-    let mut request_body = HashMap::new();
-    request_body.insert("tts_model_token", "your_tts_model_token_here");
-    request_body.insert("inference_text", user_input.unwrap().content.as_str().clone());
-
-    // Send the initial request to the TTS API
-    let initial_response = reqwest::Client::new()
+    let client = Client::new();
+    let tts_response = client
         .post("https://api.fakeyou.com/tts/inference")
         .header("Content-Type", "application/json")
-        .json(&request_body)
-        .send()
-        .await?;
+        .body(tts_request.to_string())
+        .send()?
+        .json::<serde_json::Value>()?;
 
-    // Extract the job_token from the response body
-    let init_response = initial_response.json::<HashMap<String, String>>().await?;
-    let job_token = init_response.get("job_token").unwrap();
+    let job_token = tts_response["job_token"].as_str().unwrap();
 
-    // Query the job status until it's complete
-    let mut job_status = "pending";
-    let mut status_response: HashMap<String, String> = HashMap::new();
-    while job_status == "pending" {
-        let response = reqwest::get(format!("https://api.fakeyou.com/tts/job/{}", job_token))
-            .await?
-            .json::<HashMap<String, String>>()
-            .await?;
-        job_status = &response.get("status").unwrap().as_str();
-        status_response = response.clone();
+    let mut audio_url: Option<String> = None;
+    loop {
+        let job_response = client
+            .get(&format!("https://api.fakeyou.com/tts/job/{}", job_token))
+            .send()?
+            .json::<serde_json::Value>()?;
 
-        // Wait for 1 second before checking again
-        tokio::time::sleep(Duration::from_secs(1)).await;
+        let status = job_response["state"]["status"].as_str().unwrap();
+        if status == "COMPLETED" {
+            audio_url = Some(format!(
+                "https://storage.googleapis.com/vocodes-public/{}",
+                job_response["state"]["maybe_public_bucket_wav_audio_path"]
+                    .as_str()
+                    .unwrap()
+            ));
+            break;
+        } else if status == "FAILED" {
+            return Err("TTS job failed".into());
+        }
+
+        std::thread::sleep(Duration::from_secs(1));
     }
 
-    // Extract the audio file URL from the response body
-    let audio_url = format!("https://storage.googleapis.com/vocodes-public/{}", status_response.get("maybe_public_bucket_wav_audio_path").unwrap());
+    if let Some(url) = audio_url {
+        msg.channel_id.say(&ctx.http, url)?;
+    }
 
-    // Send the audio file URL to the user
-    msg.channel_id.say(&ctx.http, audio_url).await?;
-
-    Ok(typing.stop().unwrap())
+    Ok(())
 }
 
 #[command]
