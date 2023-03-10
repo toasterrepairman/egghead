@@ -431,7 +431,7 @@ async fn say(ctx: &Context, msg: &Message) -> CommandResult {
         let job_token = tts_job_response.job_token;
         println!("Received job token: {}", job_token);
 
-        let attachment = AttachmentType::from_url(fetcher::process_tts_job(job_token)).await?;
+        let attachment = AttachmentType::Path(fetcher::process_tts_job(job_token)).await?;
         println!("{:?}", &attachment);
         msg.channel_id
             .send_files(&ctx.http, |m| {
@@ -440,7 +440,7 @@ async fn say(ctx: &Context, msg: &Message) -> CommandResult {
                 m.reference_message(msg);
                 m.allowed_mentions(|am| am.empty_parse());
                 m
-            }, ())
+            })
             .await?;
     } else {
         let status = response.status();
