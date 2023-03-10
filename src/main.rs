@@ -23,8 +23,6 @@ use serde_json::json;
 use std::fs::File;
 use std::io::Write;
 use tokio::runtime::Runtime;
-
-
 use std::io::Cursor;
 use std::path::{Path, PathBuf};
 
@@ -421,7 +419,7 @@ async fn say(ctx: &Context, msg: &Message) -> CommandResult {
             None
         }
     };
-    println!("{:?}", prompt);
+    println!("{:?}", &user_input.unwrap().content.as_str());
 
     // Create the request body JSON
     let mut request_body = HashMap::new();
@@ -441,12 +439,14 @@ async fn say(ctx: &Context, msg: &Message) -> CommandResult {
 
     // Query the job status until it's complete
     let mut job_status = "pending";
+    let mut status_response: HashMap<String, String> = HashMap::new();
     while job_status == "pending" {
-        let status_response = reqwest::get(format!("https://api.fakeyou.com/tts/job/{}", job_token))
+        let response = reqwest::get(format!("https://api.fakeyou.com/tts/job/{}", job_token))
             .await?
             .json::<HashMap<String, String>>()
             .await?;
-        job_status = status_response.get("status").unwrap().as_str();
+        job_status = response.get("status").unwrap().as_str();
+        status_response = response;
 
         // Wait for 1 second before checking again
         tokio::time::delay_for(std::time::Duration::from_secs(1)).await;
@@ -458,7 +458,7 @@ async fn say(ctx: &Context, msg: &Message) -> CommandResult {
     // Send the audio file URL to the user
     msg.channel_id.say(&ctx.http, audio_url).await?;
 
-    Ok(())
+    Ok(typing.stop().unwrap())
 }
 
 #[command]
