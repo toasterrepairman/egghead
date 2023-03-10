@@ -394,6 +394,13 @@ async fn feel(ctx: &Context, msg: &Message) -> CommandResult {
 
 // This next function will be borderline demonic.
 // This (should) enable TTS over API though. This will eventually break :)
+const TTS_API_URL: &str = "https://api.fakeyou.com/tts/inference";
+
+#[derive(Debug, Serialize, Deserialize)]
+struct TTSJobResponse {
+    job_token: String,
+}
+
 #[command]
 async fn say(ctx: &Context, msg: &Message) -> CommandResult {
     let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
@@ -440,7 +447,7 @@ async fn say(ctx: &Context, msg: &Message) -> CommandResult {
                 m.reference_message(msg);
                 m.allowed_mentions(|am| am.empty_parse());
                 m
-            }, (m))
+            }, ())
             .await?;
     } else {
         let status = response.status();
