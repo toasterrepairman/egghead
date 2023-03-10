@@ -438,10 +438,10 @@ async fn say(ctx: &Context, msg: &Message) -> CommandResult {
         let job_token = tts_job_response.job_token;
         println!("Received job token: {}", job_token);
 
-        let attachment = AttachmentType::Path(Path::new(&fetcher::process_tts_job(job_token).await));
+        let attachment = AttachmentType::Path(Path::new(&fetcher::process_tts_job(&job_token).await));
         println!("{:?}", &attachment);
         msg.channel_id
-            .send_files(&ctx.http, |m| {
+            .send_files(&ctx.http, &attachment,|m| {
                 m.content("Here is your attachment:");
                 m.add_file(attachment);
                 m.reference_message(msg);
