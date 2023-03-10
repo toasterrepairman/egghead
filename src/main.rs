@@ -447,8 +447,8 @@ async fn say(ctx: &Context, msg: &Message) -> CommandResult {
             .await?
             .json::<HashMap<String, String>>()
             .await?;
-        job_status = &response.get("status").unwrap().as_str();
-        status_response = response;
+        job_status = response.get("status").unwrap().as_str().clone();
+        status_response = response.clone();
 
         // Wait for 1 second before checking again
         tokio::time::sleep(Duration::from_secs(1)).await;
