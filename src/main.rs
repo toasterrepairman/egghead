@@ -408,7 +408,7 @@ struct TTSJobResponse {
 
 
 #[command]
-fn say(ctx: &mut serenity::client::Context, msg: &Message) -> CommandResult {
+async fn say(ctx: &mut serenity::client::Context, msg: &Message) -> CommandResult {
     let tts_model_token = "your_tts_model_token_here";
     let inference_text = msg.content.clone();
 
