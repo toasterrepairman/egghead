@@ -426,7 +426,7 @@ async fn say(ctx: &Context, msg: &Message) -> CommandResult {
     // Create the request body JSON
     let mut request_body = HashMap::new();
     request_body.insert("tts_model_token", "your_tts_model_token_here");
-    request_body.insert("inference_text", user_input.unwrap().as_str());
+    request_body.insert("inference_text", user_input.unwrap().content.as_str());
 
     // Send the initial request to the TTS API
     let initial_response = reqwest::Client::new()
