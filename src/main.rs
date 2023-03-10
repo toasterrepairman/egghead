@@ -20,7 +20,7 @@ use serenity::prelude::*;
 use tokio::sync::RwLock;
 
 use std::io::Cursor;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 // A container type is created for inserting into the Client's `data`, which
 // allows for data to be accessible across all events and framework commands, or
@@ -431,7 +431,7 @@ async fn say(ctx: &Context, msg: &Message) -> CommandResult {
         let job_token = tts_job_response.job_token;
         println!("Received job token: {}", job_token);
 
-        let attachment = AttachmentType::Path(fetcher::process_tts_job(job_token)).await?;
+        let attachment = AttachmentType::Path(Path::new(&fetcher::process_tts_job(job_token).await));
         println!("{:?}", &attachment);
         msg.channel_id
             .send_files(&ctx.http, |m| {
