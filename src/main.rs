@@ -420,7 +420,7 @@ async fn say(ctx: &Context, msg: &Message) -> CommandResult {
             None
         }
     };
-    println!("{:?}", &user_input.unwrap().content.as_str());
+    println!("{:?}", user_input.unwrap().content.as_str().clone());
 
     // Create the request body JSON
     let mut request_body = HashMap::new();
