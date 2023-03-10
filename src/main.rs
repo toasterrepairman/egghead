@@ -449,7 +449,7 @@ async fn say(ctx: &Context, msg: &Message) -> CommandResult {
         msg.channel_id
             .send_files(&ctx.http, &attachment,|m| {
                 m.content("Here is your attachment:");
-                m.add_file(attachment);
+                m.add_file(attachment.0);
                 m.reference_message(msg);
                 m.allowed_mentions(|am| am.empty_parse());
                 m
