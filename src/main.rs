@@ -276,7 +276,7 @@ async fn news(ctx: &Context, msg: &Message) -> CommandResult {
         .expect("Typing failed");
 
     let prompt = fetcher::get_random_headline_from_rss_link(
-        "https://moxie.foxnews.com/google-publisher/opinion.xml"
+        "https://moxie.foxnews.com/google-publisher/latest.xml"
     ).await.expect("couldnt rss right");
     let title = prompt.clone();
     println!("{:?}", &prompt);
