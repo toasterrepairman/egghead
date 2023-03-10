@@ -412,7 +412,7 @@ async fn say(ctx: &Context, msg: &Message) -> CommandResult {
     let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
         .expect("Typing failed");
 
-    let prompt = match msg.channel_id.messages(&ctx.http, |retriever| {
+    let user_input = match msg.channel_id.messages(&ctx.http, |retriever| {
         retriever.limit(2)
     }).await {
         Ok(messages) => messages.last().cloned(),
@@ -423,45 +423,42 @@ async fn say(ctx: &Context, msg: &Message) -> CommandResult {
     };
     println!("{:?}", prompt);
 
-    let request_data = json!({
-        "tts_model_token": tts_model_token,
-        "inference_text": inference_text,
-    });
+    // Create the request body JSON
+    let mut request_body = HashMap::new();
+    request_body.insert("tts_model_token", "your_tts_model_token_here");
+    request_body.insert("inference_text", user_input.as_str());
 
-    let mut voice_url = "";
-
-    let client = reqwest::Client::new();
-    let response = client
-        .post(TTS_API_URL)
+    // Send the initial request to the TTS API
+    let initial_response = reqwest::Client::new()
+        .post("https://api.fakeyou.com/tts/inference")
         .header("Content-Type", "application/json")
-        .body(request_data.to_string())
+        .json(&request_body)
         .send()
-        .await
-        .unwrap();
+        .await?;
 
-    if response.status().is_success() {
-        let tts_job_response: TTSJobResponse = response.json().await.unwrap();
-        let job_token = tts_job_response.job_token;
-        println!("Received job token: {}", job_token);
+    // Extract the job_token from the response body
+    let job_token = initial_response.json::<HashMap<String, String>>().await?.get("job_token").unwrap();
 
-        let attachment = vec![AttachmentType::Path(Path::new(&fetcher::process_tts_job(&job_token).await))];
-        println!("{:?}", &attachment);
-        msg.channel_id
-            .send_files(&ctx.http, &attachment,|m| {
-                m.content("Here is your attachment:");
-                m.add_file(attachment.0);
-                m.reference_message(msg);
-                m.allowed_mentions(|am| am.empty_parse());
-                m
-            })
+    // Query the job status until it's complete
+    let mut job_status = "pending";
+    while job_status == "pending" {
+        let status_response = reqwest::get(format!("https://api.fakeyou.com/tts/job/{}", job_token))
+            .await?
+            .json::<HashMap<String, String>>()
             .await?;
-    } else {
-        let status = response.status();
-        let error_message = response.text().await.unwrap();
-        panic!("Received error {}: {}", status, error_message);
+        job_status = status_response.get("status").unwrap().as_str();
+
+        // Wait for 1 second before checking again
+        tokio::time::delay_for(std::time::Duration::from_secs(1)).await;
     }
 
-    Ok(typing.stop().unwrap())
+    // Extract the audio file URL from the response body
+    let audio_url = format!("https://storage.googleapis.com/vocodes-public/{}", status_response.get("maybe_public_bucket_wav_audio_path").unwrap());
+
+    // Send the audio file URL to the user
+    msg.channel_id.say(&ctx.http, audio_url).await?;
+
+    Ok(())
 }
 
 #[command]
