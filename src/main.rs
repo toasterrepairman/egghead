@@ -447,7 +447,7 @@ async fn say(ctx: &Context, msg: &Message) -> CommandResult {
                 m.reference_message(msg);
                 m.allowed_mentions(|am| am.empty_parse());
                 m
-            }, ())
+            })
             .await?;
     } else {
         let status = response.status();
