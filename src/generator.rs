@@ -1,5 +1,6 @@
+use std::error::Error;
 use std::time::Duration;
-use reqwest::blocking::Client;
+use reqwest::blocking::{Client, Response};
 use rust_bert::gpt_neo::{
     GptNeoConfigResources, GptNeoMergesResources, GptNeoModelResources, GptNeoVocabResources,
 };
@@ -195,38 +196,34 @@ pub fn analyze(context: &str) -> Vec<Sentiment> {
     return sentiment_classifier.predict(input);
 }
 
-#[derive(Serialize)]
-struct RequestBody {
+#[derive(Serialize, Deserialize)]
+struct PredictionRequest {
     text: String,
-    topP: f64,
-    topK: u32,
-    temperature: f64,
-    tokens: u32,
+    topP: f32,
+    topK: i32,
+    temperature: f32,
+    tokens: i32,
 }
 
-#[derive(Deserialize)]
-struct ResponseBody {
+#[derive(Serialize, Deserialize)]
+struct PredictionResponse {
     prediction: String,
 }
 
-pub fn call_local_api(prompt: &str) -> Result<String, reqwest::Error> {
-    let url = "http://localhost:8080/predict";
-    let timeout = Duration::from_secs(90);
-
-    let request_body = RequestBody {
+pub fn predict(prompt: &str) -> Result<String, reqwest::Error> {
+    let request_body = PredictionRequest {
         text: prompt.to_string(),
         topP: 0.8,
         topK: 50,
         temperature: 0.7,
         tokens: 100,
     };
-    let client = Client::builder().timeout(timeout).build()?;
-    let response: ResponseBody = client
-        .post(url)
-        .header("Content-Type", "application/json")
+    let client = Client::builder()
+        .timeout(Duration::from_secs(120))
+        .build()?;
+    let response: Response = client.post("http://localhost:8080/predict")
         .json(&request_body)
-        .send()?
-        .json()?;
-
-    Ok(response.prediction)
+        .send()?;
+    let prediction: PredictionResponse = response.json()?;
+    Ok(prediction.prediction)
 }
