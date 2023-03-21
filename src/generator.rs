@@ -1,4 +1,5 @@
 use std::time::Duration;
+use reqwest::blocking::Client;
 use rust_bert::gpt_neo::{
     GptNeoConfigResources, GptNeoMergesResources, GptNeoModelResources, GptNeoVocabResources,
 };
@@ -210,26 +211,25 @@ struct Response {
     prediction: String,
 }
 
-pub fn call_api(prompt: &str) -> Result<String, Error> {
-    let request = Request {
+
+pub fn call_local_api(prompt: &str) -> Result<String, reqwest::Error> {
+    let url = "http://localhost:8080/predict";
+    let timeout = Duration::from_secs(90);
+
+    let request_body = RequestBody {
         text: prompt.to_string(),
         topP: 0.8,
         topK: 50,
         temperature: 0.7,
         tokens: 100,
     };
-
-    let client = reqwest::Client::builder()
-        .timeout(Duration::from_secs(60))
-        .build().unwrap();
-
-    let res = client
-        .post("http://localhost:8080/predict")
+    let client = Client::builder().timeout(timeout).build()?;
+    let response: ResponseBody = client
+        .post(url)
         .header("Content-Type", "application/json")
-        .json(&request)
+        .json(&request_body)
         .send()?
-        .json::<Response>();
+        .json()?;
 
-    Ok(res.prediction)
-
+    Ok(response.prediction)
 }
