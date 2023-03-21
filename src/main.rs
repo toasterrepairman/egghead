@@ -230,7 +230,7 @@ async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
     let prompt = msg.content.clone().split_off(6);
     println!("{:?}", prompt);
 
-    let runner = tokio::task::spawn_blocking(async move || {
+    let runner = tokio::task::spawn_blocking(move || {
         println!("Thread Spawned!");
         // This is running on a thread where blocking is fine.
         let response = generator::call_api(&prompt).unwrap();
