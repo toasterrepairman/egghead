@@ -209,7 +209,7 @@ struct Response {
     prediction: String,
 }
 
-pub async fn call_api(prompt: &str) -> Result<String, Error> {
+pub fn call_api(prompt: &str) -> Result<String, Error> {
     let request = Request {
         text: prompt.to_string(),
         topP: 0.8,
@@ -218,15 +218,14 @@ pub async fn call_api(prompt: &str) -> Result<String, Error> {
         tokens: 100,
     };
 
-    let client = reqwest::Client::new();
+    let client = reqwest::blocking::Client::new();
     let res = client
         .post("http://localhost:8080/predict")
         .header("Content-Type", "application/json")
         .json(&request)
-        .send()
-        .await?
-        .json::<Response>()
-        .await?;
+        .send()?
+        .json::<Response>()?;
 
     Ok(res.prediction)
+
 }
