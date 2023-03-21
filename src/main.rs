@@ -53,7 +53,7 @@ impl TypeMapKey for MessageCount {
 }
 
 #[group]
-#[commands(ping, command_usage, ask, help, news, wiki, hn, script, feel, say)]
+#[commands(ping, command_usage, ask, help, news, wiki, hn, script, feel)]
 struct General;
 
 #[hook]
