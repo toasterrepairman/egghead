@@ -221,7 +221,7 @@ pub fn call_api(prompt: &str) -> Result<String, Error> {
 
     let client = reqwest::Client::builder()
         .timeout(Duration::from_secs(60))
-        .build()?;
+        .build().unwrap();
 
     let res = client
         .post("http://localhost:8080/predict")
