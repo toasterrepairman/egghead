@@ -195,22 +195,19 @@ pub fn analyze(context: &str) -> Vec<Sentiment> {
     return sentiment_classifier.predict(input);
 }
 
-use reqwest::Error;
-
-#[derive(serde::Serialize)]
-struct Request {
+#[derive(Serialize)]
+struct RequestBody {
     text: String,
-    topP: f32,
-    topK: i32,
-    temperature: f32,
-    tokens: i32,
+    topP: f64,
+    topK: u32,
+    temperature: f64,
+    tokens: u32,
 }
 
-#[derive(serde::Deserialize, Debug)]
-struct Response {
+#[derive(Deserialize)]
+struct ResponseBody {
     prediction: String,
 }
-
 
 pub fn call_local_api(prompt: &str) -> Result<String, reqwest::Error> {
     let url = "http://localhost:8080/predict";
