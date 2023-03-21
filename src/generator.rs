@@ -192,3 +192,41 @@ pub fn analyze(context: &str) -> Vec<Sentiment> {
     //    Run model
     return sentiment_classifier.predict(input);
 }
+
+use reqwest::Error;
+
+#[derive(serde::Serialize)]
+struct Request {
+    text: String,
+    topP: f32,
+    topK: i32,
+    temperature: f32,
+    tokens: i32,
+}
+
+#[derive(serde::Deserialize)]
+struct Response {
+    prediction: String,
+}
+
+pub async fn call_api(prompt: &str) -> Result<String, Error> {
+    let request = Request {
+        text: prompt.to_string(),
+        topP: 0.8,
+        topK: 50,
+        temperature: 0.7,
+        tokens: 100,
+    };
+
+    let client = reqwest::Client::new();
+    let res = client
+        .post("http://localhost:8080/predict")
+        .header("Content-Type", "application/json")
+        .json(&request)
+        .send()
+        .await?
+        .json::<Response>()
+        .await?;
+
+    Ok(res.prediction)
+}

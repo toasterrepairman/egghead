@@ -26,6 +26,7 @@ use tokio::runtime::Runtime;
 use std::io::Cursor;
 use std::path::{Path, PathBuf};
 use std::time::Duration;
+use serenity::futures::TryFutureExt;
 
 // A container type is created for inserting into the Client's `data`, which
 // allows for data to be accessible across all events and framework commands, or
@@ -229,14 +230,10 @@ async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
     let prompt = msg.content.clone().split_off(6);
     println!("{:?}", prompt);
 
-    let runner = tokio::task::spawn_blocking(move || {
+    let runner = tokio::task::spawn_blocking(async move || {
         println!("Thread Spawned!");
         // This is running on a thread where blocking is fine.
-        let response = format!("{}", generator::ask(
-            &prompt,
-            "",
-        ));
-        println!("{}", &response);
+        let response = generator::call_api(&prompt).await.unwrap();
         response
     });
 
