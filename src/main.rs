@@ -239,8 +239,8 @@ async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
 
     msg.reply_mention(
         ctx.clone(),
-        format!("{:#?}", runner.await.unwrap()
-    )).await?;
+        runner.await
+    ).await?;
 
     Ok(typing.stop().unwrap())
 }
