@@ -219,7 +219,7 @@ pub fn call_api(prompt: &str) -> Result<String, Error> {
         tokens: 100,
     };
 
-    let client = reqwestClient::builder()
+    let client = reqwest::Client::builder()
         .timeout(Duration::from_secs(60))
         .build()?;
 
