@@ -239,7 +239,7 @@ async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
 
     msg.reply_mention(
         ctx.clone(),
-        format!("{}", runner.await?,
+        format!("{:?}", runner.await?,
     )).await?;
 
     Ok(typing.stop().unwrap())
@@ -403,56 +403,6 @@ struct TTSJobResponse {
     job_token: String,
 }
 
-
-#[command]
-async fn say(ctx: &mut serenity::client::Context, msg: &Message) -> CommandResult {
-    let tts_model_token = "your_tts_model_token_here";
-    let inference_text = msg.content.clone();
-
-    let tts_request = json!({
-        "tts_model_token": tts_model_token,
-        "inference_text": inference_text,
-    });
-
-    let client = Client::new();
-    let tts_response = client
-        .post("https://api.fakeyou.com/tts/inference")
-        .header("Content-Type", "application/json")
-        .body(tts_request.to_string())
-        .send()?
-        .json::<serde_json::Value>()?;
-
-    let job_token = tts_response["job_token"].as_str().unwrap();
-
-    let mut audio_url: Option<String> = None;
-    loop {
-        let job_response = client
-            .get(&format!("https://api.fakeyou.com/tts/job/{}", job_token))
-            .send()?
-            .json::<serde_json::Value>()?;
-
-        let status = job_response["state"]["status"].as_str().unwrap();
-        if status == "COMPLETED" {
-            audio_url = Some(format!(
-                "https://storage.googleapis.com/vocodes-public/{}",
-                job_response["state"]["maybe_public_bucket_wav_audio_path"]
-                    .as_str()
-                    .unwrap()
-            ));
-            break;
-        } else if status == "FAILED" {
-            return Err("TTS job failed".into());
-        }
-
-        std::thread::sleep(Duration::from_secs(1));
-    }
-
-    if let Some(url) = audio_url {
-        msg.channel_id.say(&ctx.http, url)?;
-    }
-
-    Ok(())
-}
 
 #[command]
 async fn help(ctx: &Context, msg: &Message) -> CommandResult {
