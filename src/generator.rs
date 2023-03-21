@@ -228,7 +228,7 @@ pub fn call_api(prompt: &str) -> Result<String, Error> {
         .header("Content-Type", "application/json")
         .json(&request)
         .send()?
-        .json::<Response>()?;
+        .json::<Response>();
 
     Ok(res.prediction)
 
