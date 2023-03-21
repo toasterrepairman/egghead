@@ -204,7 +204,7 @@ struct Request {
     tokens: i32,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Deserialize, Debug)]
 struct Response {
     prediction: String,
 }
