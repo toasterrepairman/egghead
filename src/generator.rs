@@ -217,8 +217,8 @@ pub fn predict(prompt: &str) -> Result<String, reqwest::Error> {
         text: prompt.to_string(),
         topP: 0.8,
         topK: 50,
-        temperature: 0.7,
-        tokens: 100,
+        temperature: 1.4,
+        tokens: 80,
     };
     let client = Client::builder()
         .timeout(Duration::from_secs(120))
