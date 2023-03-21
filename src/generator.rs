@@ -196,10 +196,7 @@ pub fn analyze(context: &str) -> Vec<Sentiment> {
     return sentiment_classifier.predict(input);
 }
 
-use std::time::Duration;
-use reqwest::blocking::{Client, Response};
 use serde::{Deserialize, Serialize};
-
 
 #[derive(Serialize, Deserialize)]
 struct PredictionRequest {
