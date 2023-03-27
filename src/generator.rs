@@ -32,7 +32,7 @@ pub fn get_chat_response(prompt: &str) -> Result<String, reqwest::Error> {
     std::thread::sleep(Duration::from_secs(80));
 
     let mut response = Client::new().get(format!("{}/{}", base_url, uuid)).send()?;
-    let response_text = response.text()?;
+    let response_text = response.json()?["questions"][0]["answer"].as_str().unwrap_or("");
 
     Ok(response_text)
 }
