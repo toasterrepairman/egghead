@@ -35,8 +35,16 @@ pub fn get_chat_response(prompt: &str) -> Result<String, reqwest::Error> {
     let mut response = Client::new().get(format!("{}/{}", base_url, uuid)).send()?;
     let response_text = response.text()?;
 
-    let json_data: Value = serde_json::from_str(&response_text).unwrap();
-    let answer = json_data.as_str().unwrap_or_default().to_string();
+    let answer = extract_answer(&response_text).unwrap();
 
     Ok(answer)
+}
+
+fn extract_answer(json_string: &str) -> Option<String> {
+    if let Some(start_index) = json_string.find(r#"answer":"#) {
+        let end_index = json_string[start_index..].find(",")? + start_index;
+        Some(json_string[(start_index + r#"answer":"#.len())..end_index].to_owned())
+    } else {
+        None
+    }
 }
