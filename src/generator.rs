@@ -29,7 +29,7 @@ pub fn get_chat_response(prompt: &str) -> Result<String, reqwest::Error> {
     // Block for 60 seconds before returning the response
     std::thread::sleep(Duration::from_secs(40));
 
-    let mut response = Client::new().get(format!("{}/{}", base_url, url)).send()?;
+    let mut response = Client::new().get(format!("{}/{}", base_url, uuid)).send()?;
     let response_text = response.text()?;
 
     Ok(response_text)
