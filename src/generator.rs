@@ -196,36 +196,19 @@ pub fn analyze(context: &str) -> Vec<Sentiment> {
     return sentiment_classifier.predict(input);
 }
 
-use serde::{Deserialize, Serialize};
+pub fn get_chat_response(prompt: &str) -> Result<String, reqwest::Error> {
+    let client = Client::new();
 
-#[derive(Serialize, Deserialize)]
-struct PredictionRequest {
-    text: String,
-    topP: f32,
-    topK: i32,
-    temperature: f32,
-    tokens: i32,
-}
+    // Make initial GET request to get chat UUID
+    let chat_url = "http://localhost:8008/api/chat?model=ggml-alpaca-7B-q4_0.bin&temperature=0.1&top_k=50&top_p=0.95&max_length=1024&context_window=512&repeat_last_n=64&repeat_penalty=1.3&init_prompt=Below%20is%20an%20instruction%20that%20describes%20a%20task.%20Write%20a%20response%20that%20appropriately%20completes%20the%20request.%20The%20response%20must%20be%20accurate%2C%20concise%20and%20evidence-based%20whenever%20possible.%20A%20complete%20answer%20is%20always%20ended%20by%20%5Bend%20of%20text%5D.&n_threads=2";
+    let chat_uuid = client.get(chat_url).send()?.text()?;
 
-#[derive(Serialize, Deserialize)]
-struct PredictionResponse {
-    prediction: String,
-}
+    // Make POST request to the question endpoint with the prompt
+    let question_url = format!("http://localhost:8008/api/{}/question", chat_uuid);
+    let response = client.post(&question_url)
+        .body(prompt.to_owned())
+        .send()?
+        .text()?;
 
-pub fn predict(prompt: &str) -> Result<String, reqwest::Error> {
-    let request_body = PredictionRequest {
-        text: prompt.to_string(),
-        topP: 0.8,
-        topK: 50,
-        temperature: 1.4,
-        tokens: 80,
-    };
-    let client = Client::builder()
-        .timeout(Duration::from_secs(120))
-        .build()?;
-    let response: Response = client.post("http://localhost:8080/predict")
-        .json(&request_body)
-        .send()?;
-    let prediction: PredictionResponse = response.json()?;
-    Ok(prediction.prediction)
+    Ok(response)
 }
