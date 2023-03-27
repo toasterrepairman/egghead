@@ -21,10 +21,12 @@ pub fn get_chat_response(prompt: &str) -> Result<String, reqwest::Error> {
                          model, temperature, top_k, top_p, max_length, context_window, repeat_last_n, repeat_penalty, init_prompt, n_threads);
     let url = format!("{}{}", base_url, params);
     let uuid = Client::new().post(&url).send()?.text()?;
+    println!(&uuid);
 
     // Make a POST request to api/chat/<UUID>/question with the prompt
     let question_url = format!("{}/{}/question?prompt={}", base_url, uuid, encode(prompt));
     Client::new().post(&question_url).send()?;
+    println!(&question_url);
 
     // Block for 60 seconds before returning the response
     std::thread::sleep(Duration::from_secs(40));
