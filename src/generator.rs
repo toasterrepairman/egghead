@@ -2,6 +2,7 @@ use std::error::Error;
 use std::time::Duration;
 use reqwest::blocking::{Client, Response};
 use urlencoding::encode;
+use std::io::{BufRead, BufReader};
 
 pub fn get_chat_response(prompt: &str) -> Result<String, reqwest::Error> {
     let base_url = "http://localhost:8008/api/chat";
@@ -26,5 +27,12 @@ pub fn get_chat_response(prompt: &str) -> Result<String, reqwest::Error> {
     let question_url = format!("{}/{}/question?prompt={}", base_url, uuid, encode(prompt));
     let response = Client::new().post(&question_url).send()?.text()?;
 
-    Ok(response)
+    // Read the streamed response into a String buffer
+    let reader = BufReader::new(response);
+    let mut output = String::new();
+    for line in reader.lines() {
+        output += &line?;
+    }
+
+    Ok(output)
 }
