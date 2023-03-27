@@ -42,7 +42,7 @@ pub fn get_chat_response(prompt: &str) -> Result<String, reqwest::Error> {
 
 fn extract_answer(json_string: &str) -> Option<String> {
     if let Some(start_index) = json_string.find(r#"answer":"#) {
-        let end_index = json_string[start_index..].find(",")? + start_index;
+        let end_index = json_string[start_index..].find("\",\"")? + start_index;
         Some(json_string[(start_index + r#"answer":"#.len())..end_index].to_owned())
     } else {
         None
