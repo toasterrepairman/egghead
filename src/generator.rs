@@ -1,6 +1,6 @@
 use std::error::Error;
 use std::time::Duration;
-use reqwest::{Client, Response};
+use reqwest::blocking::{Client, Response};
 
 pub fn get_chat_response(prompt: &str) -> Result<String, reqwest::Error> {
     let base_url = "http://localhost:8008/api/chat";

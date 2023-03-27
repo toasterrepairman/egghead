@@ -9,7 +9,7 @@ edition = "2021"
 serenity = "0.11.5"
 anyhow = "1"
 tokio = { version = "1.25.0", features = ["macros", "rt-multi-thread"] }
-reqwest = "0.11.14"
+reqwest = { version = "0.11.15", features = ["blocking"] }
 rss = "2.0.2"
 rand = "0.8.5"
 serde = "1.0.152"
