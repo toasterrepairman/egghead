@@ -14,7 +14,7 @@ pub fn get_chat_response(prompt: &str) -> Result<String, reqwest::Error> {
     let context_window = "128";
     let repeat_last_n = "64";
     let repeat_penalty = "1.3";
-    let init_prompt = encode("I am egghead, the world's smartest computer.");
+    let init_prompt = encode("I am egghead, the world's smartest computer. I will write a response that appropriately completes the request. The response must be accurate, concise and evidence-based whenever possible. A complete answer is always ended by [end of text].");
     let n_threads = "3";
 
     // Get a chat UUID
