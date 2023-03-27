@@ -1,6 +1,7 @@
 use std::error::Error;
 use std::time::Duration;
 use reqwest::blocking::{Client, Response};
+use urlencoding::encode;
 
 pub fn get_chat_response(prompt: &str) -> Result<String, reqwest::Error> {
     let base_url = "http://localhost:8008/api/chat";
@@ -12,7 +13,7 @@ pub fn get_chat_response(prompt: &str) -> Result<String, reqwest::Error> {
     let context_window = "512";
     let repeat_last_n = "64";
     let repeat_penalty = "1.3";
-    let init_prompt = "I am egghead, the world's smartest computer.";
+    let init_prompt = encode("I am egghead, the world's smartest computer.");
     let n_threads = "2";
 
     // Get a chat UUID
