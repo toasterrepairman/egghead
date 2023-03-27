@@ -1,8 +1,7 @@
 use std::error::Error;
-use std::time::Duration;
 use reqwest::blocking::{Client, Response};
 use urlencoding::encode;
-
+use std::time::Duration;
 
 pub fn get_chat_response(prompt: &str) -> Result<String, reqwest::Error> {
     let base_url = "http://localhost:8008/api/chat";
@@ -27,12 +26,10 @@ pub fn get_chat_response(prompt: &str) -> Result<String, reqwest::Error> {
     let question_url = format!("{}/{}/question?prompt={}", base_url, uuid, encode(prompt));
     let mut response = Client::new().post(&question_url).send()?;
 
-    // Collect the output by reading the response in chunks
-    let mut output = String::new();
-    while let Some(chunk) = response.chunked_transfer().unwrap().next() {
-        let chunk = chunk?;
-        output += &String::from_utf8_lossy(&chunk);
-    }
+    // Block for 60 seconds before returning the response
+    std::thread::sleep(Duration::from_secs(60));
 
-    Ok(output)
+    let response_text = response.text()?;
+
+    Ok(response_text)
 }
