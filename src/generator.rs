@@ -20,6 +20,7 @@ pub fn get_chat_response(prompt: &str) -> Result<String, reqwest::Error> {
                          model, temperature, top_k, top_p, max_length, context_window, repeat_last_n, repeat_penalty, init_prompt, n_threads);
     let url = format!("{}{}", base_url, params);
     let uuid = Client::new().get(&url).send()?.text()?;
+    println!(url, uuid);
 
     // Make a POST request to api/chat/<UUID>/question with the prompt
     let question_url = format!("{}/{}/question?prompt={}", base_url, uuid, prompt);
