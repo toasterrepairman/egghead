@@ -2,7 +2,7 @@ use std::error::Error;
 use reqwest::blocking::{Client, Response};
 use urlencoding::encode;
 use std::time::Duration;
-use serde_json::Value;
+use serde_json::{json, Value};
 
 pub fn get_chat_response(prompt: &str) -> Result<String, reqwest::Error> {
     let base_url = "http://localhost:8008/api/chat";
@@ -34,7 +34,7 @@ pub fn get_chat_response(prompt: &str) -> Result<String, reqwest::Error> {
 
     let mut response = Client::new().get(format!("{}/{}", base_url, uuid)).send()?;
     let response_text = response.json()?;
-    let answer = serde_json::from_str(response_text);
+    let answer = json!(response_text)["questions"][0]["answer"].as_str().unwrap_or("");
 
-    Ok(answer["questions"][0]["answer"])
+    Ok(answer.to_string())
 }
