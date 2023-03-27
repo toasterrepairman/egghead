@@ -11,7 +11,7 @@ pub fn get_chat_response(prompt: &str) -> Result<String, reqwest::Error> {
     let top_k = "50";
     let top_p = "0.95";
     let max_length = "512";
-    let context_window = "512";
+    let context_window = "1024";
     let repeat_last_n = "64";
     let repeat_penalty = "1.3";
     let init_prompt = encode("I am egghead, the world's smartest computer. I will write a response that appropriately completes the request. The response must be accurate, concise and evidence-based whenever possible. A complete answer is always ended by [end of text].");
@@ -27,10 +27,10 @@ pub fn get_chat_response(prompt: &str) -> Result<String, reqwest::Error> {
     // Make a POST request to api/chat/<UUID>/question with the prompt
     let question_url = format!("{}/{}/question?prompt={}", base_url, uuid, encode(prompt));
     println!("{}", &question_url);
-    Client::new().post(&question_url).timeout(std::time::Duration::from_secs(60)).send()?;
+    Client::new().post(&question_url).timeout(std::time::Duration::from_secs(90)).send()?;
 
     // Block for 60 seconds before returning the response
-    std::thread::sleep(Duration::from_secs(50));
+    std::thread::sleep(Duration::from_secs(1));
 
     let mut response = Client::new().get(format!("{}/{}", base_url, uuid)).send()?;
     let response_text = response.text()?;
