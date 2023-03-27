@@ -36,7 +36,7 @@ pub fn get_chat_response(prompt: &str) -> Result<String, reqwest::Error> {
     let response_text = response.text()?;
 
     let json_data: Value = serde_json::from_str(&response_text).unwrap();
-    let answer = json_data[key].as_str().unwrap_or_default().to_string();
+    let answer = json_data["questions"].as_str().unwrap_or_default().to_string();
 
     Ok(answer)
 }
