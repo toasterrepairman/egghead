@@ -34,7 +34,9 @@ pub fn get_chat_response(prompt: &str) -> Result<String, reqwest::Error> {
 
     let mut response = Client::new().get(format!("{}/{}", base_url, uuid)).send()?;
     let response_text = response.text()?;
-    let answer = json!(response_text).as_str().unwrap_or("").to_string();
+
+    let json_data: Value = serde_json::from_str(&response_text)?;
+    let answer = json_data[key].as_str().unwrap_or_default().to_string();
 
     Ok(answer)
 }
