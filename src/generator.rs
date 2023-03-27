@@ -26,13 +26,13 @@ pub fn get_chat_response(prompt: &str) -> Result<String, reqwest::Error> {
     // Make a POST request to api/chat/<UUID>/question with the prompt
     let question_url = format!("{}/{}/question?prompt={}", base_url, uuid, encode(prompt));
     let response = Client::new().post(&question_url).send()?.text()?;
-
-    // Read the streamed response into a String buffer
     let reader = BufReader::new(response);
-    let mut output = String::new();
+
+    // Buffer the output
+    let mut buffer = String::new();
     for line in reader.lines() {
-        output += &line?;
+        buffer.push_str(&line?);
     }
 
-    Ok(output)
+    Ok(buffer)
 }
