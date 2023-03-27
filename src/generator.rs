@@ -204,7 +204,7 @@ pub fn get_chat_response(prompt: &str) -> Result<String, reqwest::Error> {
     let chat_uuid = client.get(chat_url).send()?.text()?;
 
     // Make POST request to the question endpoint with the prompt
-    let question_url = format!("http://localhost:8008/api/chat/{}/question", chat_uuid);
+    let question_url = format!("http://localhost:8008/api/chat/{0}/question?prompt={1}", chat_uuid, prompt);
     let response = client.post(&question_url)
         .body(prompt.to_owned())
         .send()?
