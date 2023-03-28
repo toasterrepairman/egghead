@@ -53,7 +53,7 @@ impl TypeMapKey for MessageCount {
 }
 
 #[group]
-#[commands(ping, command_usage, ask, help)]
+#[commands(ping, command_usage, ask, right, left, help)]
 struct General;
 
 #[hook]
@@ -233,7 +233,9 @@ async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
     let runner = tokio::task::spawn_blocking(move || {
         println!("Thread Spawned!");
         // This is running on a thread where blocking is fine.
-        let response = generator::get_chat_response(&prompt).unwrap();
+        let response = generator::get_chat_response(
+            "I am egghead, the world's smartest computer. I will write a response that appropriately completes the request. The response must be accurate, concise and evidence-based whenever possible. A complete answer is always ended by [end of text].",
+            &prompt).unwrap();
         response
     });
 
@@ -241,6 +243,62 @@ async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
         ctx.clone(),
         format!("{}", runner.await.unwrap()
     )).await?;
+
+    Ok(typing.stop().unwrap())
+}
+
+#[command]
+async fn left(ctx: &Context, msg: &Message) -> CommandResult {
+    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
+        .expect("Typing failed");
+
+    let prompt = fetcher::get_random_headline_from_rss_link(
+        "http://rss.cnn.com/rss/cnn_topstories.rss"
+    ).await.expect("couldnt rss right");
+    let title = prompt.clone();
+    println!("{:?}", &prompt);
+
+    let runner = tokio::task::spawn_blocking(move || {
+        println!("Thread Spawned!");
+        // This is running on a thread where blocking is fine.
+        let response = generator::get_chat_response(
+            "Write an outrageous parody reaction to the following article using the title as a basis for wild assumptions. A complete answer is always ended by [end of text].",
+            &prompt).unwrap();
+        response
+    });
+
+    msg.reply(
+        ctx.clone(),
+        format!("Title: {:0} \n{:1}", title, runner.await?,
+        )).await?;
+
+    Ok(typing.stop().unwrap())
+}
+
+#[command]
+async fn right(ctx: &Context, msg: &Message) -> CommandResult {
+    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
+        .expect("Typing failed");
+
+    let prompt = fetcher::get_random_headline_from_rss_link(
+        "https://moxie.foxnews.com/google-publisher/latest.xml"
+    ).await.expect("couldnt rss right");
+    let title = prompt.clone();
+    println!("{:?}", &prompt);
+
+    let runner = tokio::task::spawn_blocking(move || {
+        println!("Thread Spawned!");
+        // This is running on a thread where blocking is fine.
+        let response = generator::get_chat_response(
+            "Write an outrageous parody reaction to the following article using the title as a basis for wild assumptions. A complete answer is always ended by [end of text].",
+            &prompt).unwrap();
+        response
+    });
+
+    msg.reply(
+        ctx.clone(),
+        format!("Title: {:0} \n{:1}", title, runner.await?,
+        )).await?;
 
     Ok(typing.stop().unwrap())
 }

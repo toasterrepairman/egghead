@@ -4,7 +4,7 @@ use urlencoding::encode;
 use std::time::Duration;
 use serde_json::{json, Value};
 
-pub fn get_chat_response(prompt: &str) -> Result<String, reqwest::Error> {
+pub fn get_chat_response(init: &str, prompt: &str) -> Result<String, reqwest::Error> {
     let base_url = "http://localhost:8008/api/chat";
     let model = "ggml-alpaca-7B-q4_0.bin";
     let temperature = "0.7";
@@ -14,7 +14,7 @@ pub fn get_chat_response(prompt: &str) -> Result<String, reqwest::Error> {
     let context_window = "1024";
     let repeat_last_n = "64";
     let repeat_penalty = "1.3";
-    let init_prompt = encode("I am egghead, the world's smartest computer. I will write a response that appropriately completes the request. The response must be accurate, concise and evidence-based whenever possible. A complete answer is always ended by [end of text].");
+    let init_prompt = encode("");
     let n_threads = "2";
 
     // Get a chat UUID
