@@ -14,7 +14,7 @@ pub fn get_chat_response(init: &str, prompt: &str) -> Result<String, reqwest::Er
     let context_window = "1024";
     let repeat_last_n = "64";
     let repeat_penalty = "1.3";
-    let init_prompt = encode("");
+    let init_prompt = encode(prompt);
     let n_threads = "2";
 
     // Get a chat UUID
