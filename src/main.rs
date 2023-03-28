@@ -298,34 +298,6 @@ async fn right(ctx: &Context, msg: &Message) -> CommandResult {
 }
 
 #[command]
-async fn wiki(ctx: &Context, msg: &Message) -> CommandResult {
-    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
-        .expect("Typing failed");
-
-    let input = match &msg.content.len() {
-        6 => None,
-        _ => Some(msg.content.as_str().split_at(7).1)
-    };
-
-    let prompt = fetcher::get_wikipedia_summary(input).await.unwrap();
-    println!("{:?}", &input);
-
-    let runner = tokio::task::spawn_blocking(move || {
-        println!("Thread Spawned!");
-        // This is running on a thread where blocking is fine.
-        let response = generator::get_chat_response("Write the Wikipedia article for the given title. A complete article is always ended by [end of text].", &prompt).unwrap();
-        response
-    });
-
-    msg.reply_mention(
-        ctx.clone(),
-        format!("{}", runner.await?,
-        )).await?;
-
-    Ok(typing.stop().unwrap())
-}
-
-#[command]
 async fn help(ctx: &Context, msg: &Message) -> CommandResult {
     let message = "I'm egghead, the workd's smartest computer. My vast processing resources facilitate understanding beyond human capacity.\n
     \n
