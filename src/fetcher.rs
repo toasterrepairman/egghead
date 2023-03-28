@@ -41,9 +41,8 @@ pub async fn get_wikipedia_summary(article: Option<&str>) -> Result<String, reqw
         .await?;
 
     let title = response["title"].as_str().unwrap_or("Unknown").to_owned();
-    let summary = response["extract"].as_str().unwrap_or("").chars().take(40).collect::<String>();
 
-    Ok(format!("{}\n{}", title, summary))
+    Ok(format!("{}", title))
 }
 
 pub async fn get_latest_hn_comment() -> Result<String, reqwest::Error> {
