@@ -32,7 +32,7 @@ pub fn get_chat_response(temp: &str, init: &str, prompt: &str) -> Result<String,
     let mut response = Client::new().get(format!("{}/{}", base_url, uuid)).send()?;
     let response_text = response.text()?;
 
-    let answer = extract_answer(&response_text).unwrap().split_off(1);
+    let answer = extract_answer(&response_text).unwrap().split_off(1).replace("\\n", "\n");
 
     Ok(answer)
 }
