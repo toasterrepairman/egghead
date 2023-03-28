@@ -4,10 +4,10 @@ use urlencoding::encode;
 use std::time::Duration;
 use serde_json::{json, Value};
 
-pub fn get_chat_response(init: &str, prompt: &str) -> Result<String, reqwest::Error> {
+pub fn get_chat_response(temp: &str, init: &str, prompt: &str) -> Result<String, reqwest::Error> {
     let base_url = "http://localhost:8008/api/chat";
     let model = "ggml-alpaca-7B-q4_0.bin";
-    let temperature = "0.7";
+    let temperature = temp;
     let top_k = "50";
     let top_p = "0.95";
     let max_length = "512";
