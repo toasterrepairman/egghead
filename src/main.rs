@@ -237,7 +237,7 @@ async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
         response
     });
 
-    msg.reply_mention(
+    msg.reply(
         ctx.clone(),
         format!("{}", runner.await.unwrap()
     )).await?;
@@ -320,7 +320,7 @@ async fn react(ctx: &Context, msg: &Message) -> CommandResult {
         response
     });
 
-    msg.reply_mention(
+    msg.reply(
         ctx.clone(),
         format!("{}", runner.await?
         )).await?;
