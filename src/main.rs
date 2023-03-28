@@ -313,7 +313,7 @@ async fn wiki(ctx: &Context, msg: &Message) -> CommandResult {
     let runner = tokio::task::spawn_blocking(move || {
         println!("Thread Spawned!");
         // This is running on a thread where blocking is fine.
-        let response = generator::get_chat_response("Write an outrageous parody reaction to the following article using the title as a basis for wild assumptions. A complete answer is always ended by [end of text].", &prompt).unwrap();
+        let response = generator::get_chat_response("A complete summary is always ended by [end of text].", &prompt).unwrap();
         response
     });
 
