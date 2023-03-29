@@ -251,7 +251,7 @@ async fn left(ctx: &Context, msg: &Message) -> CommandResult {
         .expect("Typing failed");
 
     let prompt = fetcher::get_random_headline_from_rss_link(
-        "http://rss.cnn.com/rss/cnn_allpolitics.rss"
+        "https://feeds.npr.org/1001/rss.xml"
     ).await.expect("couldnt rss right");
     let title = prompt.clone();
     println!("{:?}", &prompt);
