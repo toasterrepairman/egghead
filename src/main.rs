@@ -53,7 +53,7 @@ impl TypeMapKey for MessageCount {
 }
 
 #[group]
-#[commands(ping, command_usage, ask, right, left, react, code, help)]
+#[commands(ping, command_usage, ask, right, left, react, read, code, help)]
 struct General;
 
 #[hook]
@@ -341,6 +341,37 @@ async fn react(ctx: &Context, msg: &Message) -> CommandResult {
         println!("Thread Spawned!");
         // This is running on a thread where blocking is fine.
         let response = generator::get_chat_response("1.0", "A complete article is always ended by [end of text]. Respond to the following Discord message as egghead, the world's smartest computer: ", &prompt.unwrap().content).unwrap();
+        response
+    });
+
+    msg.reply(
+        ctx.clone(),
+        format!("{}", runner.await?
+        )).await?;
+
+    Ok(typing.stop().unwrap())
+}
+
+#[command]
+async fn read(ctx: &Context, msg: &Message) -> CommandResult {
+    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
+        .expect("Typing failed");
+
+    let prompt = match msg.channel_id.messages(&ctx.http, |retriever| {
+        retriever.limit(6)
+    }).await {
+        Ok(messages) => messages,
+        Err(why) => {
+            println!("Error getting messages: {:?}", why);
+            None
+        }
+    };
+    println!("{:?}", prompt);
+
+    let runner = tokio::task::spawn_blocking(move || {
+        println!("Thread Spawned!");
+        // This is running on a thread where blocking is fine.
+        let response = generator::get_chat_response("1.0", "A complete article is always ended by [end of text]. Respond to the following Discord conversation as egghead, the world's smartest computer: ", &prompt.unwrap().content).unwrap();
         response
     });
 
