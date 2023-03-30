@@ -360,7 +360,7 @@ async fn read(ctx: &Context, msg: &Message) -> CommandResult {
     let prompt = match msg.channel_id.messages(&ctx.http, |retriever| {
         retriever.limit(6)
     }).await {
-        Ok(messages) => messages,
+        Ok(messages) => messages.into_iter().rev().map(|m: Message| m.content).collect::<Vec<_>>().join("\n"),
         Err(why) => {
             println!("Error getting messages: {:?}", why);
             None
