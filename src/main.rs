@@ -53,7 +53,7 @@ impl TypeMapKey for MessageCount {
 }
 
 #[group]
-#[commands(ping, command_usage, ask, right, left, react, read, code, help)]
+#[commands(ping, command_usage, ask, right, left, react, read, tldr, code, help)]
 struct General;
 
 #[hook]
@@ -378,6 +378,37 @@ async fn read(ctx: &Context, msg: &Message) -> CommandResult {
     msg.reply(
         ctx.clone(),
         format!("{}", runner.await?.unwrap()
+        )).await?;
+
+    Ok(typing.stop().unwrap())
+}
+
+#[command]
+async fn tldr(ctx: &Context, msg: &Message) -> CommandResult {
+    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
+        .expect("Typing failed");
+
+    let prompt = match msg.channel_id.messages(&ctx.http, |retriever| {
+        retriever.limit(2)
+    }).await {
+        Ok(messages) => messages.last().cloned(),
+        Err(why) => {
+            println!("Error getting messages: {:?}", why);
+            None
+        }
+    };
+    println!("{:?}", prompt);
+
+    let runner = tokio::task::spawn_blocking(move || {
+        println!("Thread Spawned!");
+        // This is running on a thread where blocking is fine.
+        let response = generator::get_chat_response("0.7", "A complete article is always ended by [end of text]. Summarize the following text in a single sentence: ", &prompt.unwrap().content).unwrap();
+        response
+    });
+
+    msg.reply(
+        ctx.clone(),
+        format!("{}", runner.await?
         )).await?;
 
     Ok(typing.stop().unwrap())
