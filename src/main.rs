@@ -402,7 +402,7 @@ async fn tldr(ctx: &Context, msg: &Message) -> CommandResult {
     let runner = tokio::task::spawn_blocking(move || {
         println!("Thread Spawned!");
         // This is running on a thread where blocking is fine.
-        let response = generator::get_chat_response("0.7", "Below is a passage of text. Briefly summarize it. A complete summary is always ended by [end of text].\n", &prompt.unwrap().content).unwrap();
+        let response = generator::get_chat_response("0.7", "Below is a passage of text. Summarize it in a single sentence, then end it by [end of text].\n", &prompt.unwrap().content).unwrap();
         response
     });
 
