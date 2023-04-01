@@ -10,8 +10,8 @@ pub fn get_chat_response(temp: &str, init: &str, prompt: &str) -> Result<String,
     let temperature = temp;
     let top_k = "50";
     let top_p = "0.95";
-    let max_length = "768";
-    let context_window = "1024";
+    let max_length = "512";
+    let context_window = "512";
     let repeat_last_n = "64";
     let repeat_penalty = "1.3";
     let init_prompt = encode(prompt);
