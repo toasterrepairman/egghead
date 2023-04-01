@@ -358,7 +358,7 @@ async fn read(ctx: &Context, msg: &Message) -> CommandResult {
         .expect("Typing failed");
 
     let prompt = match msg.channel_id.messages(&ctx.http, |retriever| {
-        retriever.limit(6)
+        retriever.limit(4)
     }).await {
         Ok(messages) => messages.into_iter().rev().map(|m: Message| m.content).collect::<Vec<_>>().join("\n"),
         Err(why) => {
