@@ -43,8 +43,8 @@ pub fn get_zork_response(temp: &str, init: &str, prompt: &str) -> Result<String,
     let temperature = temp;
     let top_k = "50";
     let top_p = "0.95";
-    let max_length = "256";
-    let context_window = "256";
+    let max_length = "512";
+    let context_window = "512";
     let repeat_last_n = "64";
     let repeat_penalty = "0.7";
     let init_prompt = encode(init);
