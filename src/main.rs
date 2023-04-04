@@ -425,7 +425,7 @@ async fn zork(ctx: &Context, msg: &Message) -> CommandResult {
     let runner = tokio::task::spawn_blocking(move || {
         println!("Thread Spawned!");
         // This is running on a thread where blocking is fine.
-        let response = generator::get_zork_response("0.6", "Write a fantasy adventure story based on the prompt below. Respond with scenario with two numbered choices below it. A completed response is always ended by [end of text].\n", &prompt).unwrap();
+        let response = generator::get_zork_response("0.6", "Write a brief fantasy roleplay adventure scenario based on the prompt below. A completed response is always ended by [end of text].\n", &prompt).unwrap();
         response
     });
 
