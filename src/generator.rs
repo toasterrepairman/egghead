@@ -6,7 +6,7 @@ use serde_json::{json, Value};
 
 pub fn get_chat_response(temp: &str, init: &str, prompt: &str) -> Result<String, reqwest::Error> {
     let base_url = "http://localhost:8008/api/chat";
-    let model = "7B";
+    let model = "7B-native";
     let temperature = temp;
     let top_k = "50";
     let top_p = "0.95";
@@ -39,12 +39,12 @@ pub fn get_chat_response(temp: &str, init: &str, prompt: &str) -> Result<String,
 
 pub fn get_zork_response(temp: &str, init: &str, prompt: &str) -> Result<String, reqwest::Error> {
     let base_url = "http://localhost:8008/api/chat";
-    let model = "7B";
+    let model = "7B-native";
     let temperature = temp;
     let top_k = "50";
     let top_p = "0.95";
-    let max_length = "512";
-    let context_window = "512";
+    let max_length = "1024";
+    let context_window = "1024";
     let repeat_last_n = "64";
     let repeat_penalty = "0.7";
     let init_prompt = encode(init);
