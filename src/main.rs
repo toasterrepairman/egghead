@@ -357,12 +357,7 @@ async fn read(ctx: &Context, msg: &Message) -> CommandResult {
     let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
         .expect("Typing failed");
 
-    let history: u64 == if msg.content.clone().split_off(6) = "".to_string() {
-        3: u64;
-    } else {
-        msg.content.clone().split_off(6).parse::<u64>().unwrap();
-    };
-
+    let mut history: u64 = 3;
 
     let prompt = match msg.channel_id.messages(&ctx.http, |retriever| {
         retriever.limit(history)
