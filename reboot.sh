@@ -1,5 +1,7 @@
 killall egghead
 
+killall llama
+
 git pull
 
 cargo build --release
