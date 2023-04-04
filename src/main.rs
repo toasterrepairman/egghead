@@ -402,7 +402,7 @@ async fn tldr(ctx: &Context, msg: &Message) -> CommandResult {
     let runner = tokio::task::spawn_blocking(move || {
         println!("Thread Spawned!");
         // This is running on a thread where blocking is fine.
-        let response = generator::get_chat_response("1.0", "Respond with a summary of the passage below, then end with [end of text].\n", &prompt.unwrap().content).unwrap();
+        let response = generator::get_chat_response("0.5", "Respond with a summary of the passage below, then end with [end of text].\n", &prompt.unwrap().content).unwrap();
         response
     });
 
@@ -425,7 +425,7 @@ async fn zork(ctx: &Context, msg: &Message) -> CommandResult {
     let runner = tokio::task::spawn_blocking(move || {
         println!("Thread Spawned!");
         // This is running on a thread where blocking is fine.
-        let response = generator::get_zork_response("0.6", "Write a fantasy adventure story based on the prompt below. Start with a short scenario, and then offer 2 numbered player options. A completed prompt is always ended by [end of text].\n", &prompt).unwrap();
+        let response = generator::get_zork_response("0.6", "Write a fantasy adventure story based on the prompt below. Respond with scenario with two numbered choices below it. A completed response is always ended by [end of text].\n", &prompt).unwrap();
         response
     });
 
@@ -445,10 +445,7 @@ async fn help(ctx: &Context, msg: &Message) -> CommandResult {
     *USAGE*
     `e.help` - Displays this help message.
     `e.ask <PROMPT>` - Asks the model a user-submitted question. May fail with elaborate prompts.
-    (Coming soon) `e.see <PROMPT>` - Generate an image with Stable Diffusion.
-    `e.wiki <PROMPT>` - Finishes the listed (or random if <PROMPT> is blank) article with AI.
-    `e.hn` - Finishes the latest HN comment with AI.
-    `e.feel` - Sentiment analysis for the last-sent message.
+    `e.left/right` - Opinionated misinformation trash.
     \n
     Report serious issues to `toaster repairguy#1101`.";
 
