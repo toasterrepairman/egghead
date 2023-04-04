@@ -53,7 +53,7 @@ impl TypeMapKey for MessageCount {
 }
 
 #[group]
-#[commands(ping, command_usage, ask, right, left, react, read, tldr, code, help)]
+#[commands(ping, command_usage, ask, right, left, react, read, tldr, code, zork, help)]
 struct General;
 
 #[hook]
@@ -413,6 +413,30 @@ async fn tldr(ctx: &Context, msg: &Message) -> CommandResult {
 
     Ok(typing.stop().unwrap())
 }
+
+#[command]
+async fn zork(ctx: &Context, msg: &Message) -> CommandResult {
+    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
+        .expect("Typing failed");
+
+    let prompt = msg.content.clone().split_off(6);
+    println!("{:?}", prompt);
+
+    let runner = tokio::task::spawn_blocking(move || {
+        println!("Thread Spawned!");
+        // This is running on a thread where blocking is fine.
+        let response = generator::get_zork_response("0.6", "Write a fantasy adventure story based on the prompt below. Start with a short scenario, and then offer 2 numbered player options. A completed prompt is always ended by [end of text].\n", &prompt).unwrap();
+        response
+    });
+
+    msg.reply(
+        ctx.clone(),
+        format!("{}", runner.await.unwrap()
+        )).await?;
+
+    Ok(typing.stop().unwrap())
+}
+
 
 #[command]
 async fn help(ctx: &Context, msg: &Message) -> CommandResult {
