@@ -359,8 +359,10 @@ async fn read(ctx: &Context, msg: &Message) -> CommandResult {
 
     let mut history: u64 = 3;
 
+    let history = &msg.content.parse::<u64>().unwrap();
+
     let prompt = match msg.channel_id.messages(&ctx.http, |retriever| {
-        retriever.limit(history)
+        retriever.limit(*history)
     }).await {
         Ok(messages) => messages.into_iter().rev().map(|m: Message| m.content).collect::<Vec<_>>().join("\n"),
         Err(why) => {
