@@ -39,7 +39,7 @@ pub fn get_chat_response(temp: &str, init: &str, prompt: &str) -> Result<String,
 
 pub fn get_zork_response(temp: &str, init: &str, prompt: &str) -> Result<String, reqwest::Error> {
     let base_url = "http://localhost:8008/api/chat";
-    let model = "7B-native";
+    let model = "ggml-vicuna-7b-4bit-rev1";
     let temperature = temp;
     let top_k = "50";
     let top_p = "0.95";
