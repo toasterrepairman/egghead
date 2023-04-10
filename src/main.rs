@@ -362,7 +362,7 @@ async fn read(ctx: &Context, msg: &Message) -> CommandResult {
     let mut history: u64 = 3;
     println!("{}", &history);
 
-    history = *&msg.content.trim().parse().unwrap();
+    history: u64 = *&msg.content.clone().split_off(6).trim().parse().unwrap();
     println!("{}", &history);
 
     let prompt = match msg.channel_id.messages(&ctx.http, |retriever| {
