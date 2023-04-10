@@ -360,10 +360,10 @@ async fn read(ctx: &Context, msg: &Message) -> CommandResult {
     // Madman debugging
     // Be wary of Einstein's warning
 
-    let history: u64 = *&msg.content.clone().split_off(6).trim().parse().unwrap() + 1;
+    let history: u64 = *&msg.content.clone().split_off(6).trim().parse().unwrap();
 
     let prompt = match msg.channel_id.messages(&ctx.http, |retriever| {
-        retriever.limit(history)
+        retriever.limit(history + 1)
     }).await {
         Ok(messages) => messages.into_iter().rev().map(|m: Message| m.content).collect::<Vec<_>>().split_off(1).join("\n"),
         Err(why) => {
