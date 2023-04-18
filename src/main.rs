@@ -53,7 +53,7 @@ impl TypeMapKey for MessageCount {
 }
 
 #[group]
-#[commands(ping, command_usage, ask, right, left, react, read, tldr, code, zork, help)]
+#[commands(ping, command_usage, ask, right, left, react, read, tldr, code, zork, short, help)]
 struct General;
 
 #[hook]
@@ -241,6 +241,29 @@ async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
         ctx.clone(),
         format!("{}", runner.await.unwrap()
     )).await?;
+
+    Ok(typing.stop().unwrap())
+}
+
+#[command]
+async fn short(ctx: &Context, msg: &Message) -> CommandResult {
+    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
+        .expect("Typing failed");
+
+    let prompt = msg.content.clone().split_off(6);
+    println!("{:?}", prompt);
+
+    let runner = tokio::task::spawn_blocking(move || {
+        println!("Thread Spawned!");
+        // This is running on a thread where blocking is fine.
+        let response = generator::get_short_response("0.6", "I am egghead, the world's smartest computer. I will write a complete answer that is always ended by [end of text].", &prompt).unwrap();
+        response
+    });
+
+    msg.reply(
+        ctx.clone(),
+        format!("{}", runner.await.unwrap()
+        )).await?;
 
     Ok(typing.stop().unwrap())
 }
