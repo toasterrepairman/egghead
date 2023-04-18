@@ -326,7 +326,7 @@ async fn react(ctx: &Context, msg: &Message) -> CommandResult {
     let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
         .expect("Typing failed");
 
-    let heat = *&msg.content.clone().split_off(7).trim();
+    let heat = &*msg.content.clone().split_off(7).trim();
     println!("{:?}", &heat);
 
     let prompt = match msg.channel_id.messages(&ctx.http, |retriever| {
@@ -343,7 +343,7 @@ async fn react(ctx: &Context, msg: &Message) -> CommandResult {
     let runner = tokio::task::spawn_blocking(move || {
         println!("Thread Spawned!");
         // This is running on a thread where blocking is fine.
-        let response = generator::get_chat_response(&heat, "A complete article is always ended by [end of text]. Respond to the following Discord message as egghead, the world's smartest computer: ", &prompt.unwrap().content).unwrap();
+        let response = generator::get_chat_response(&heat, "A complete response is always ended by [end of text]. Respond to the following Discord message as egghead, the world's smartest computer: ", &prompt.unwrap().content).unwrap();
         response
     });
 
