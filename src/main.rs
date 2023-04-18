@@ -327,7 +327,7 @@ async fn react(ctx: &Context, msg: &Message) -> CommandResult {
         .expect("Typing failed");
 
     let mut heat = msg.content.clone().split_off(7).trim();
-    println!("{:?}", prompt);
+    println!("{:?}", heat);
 
     let prompt = match msg.channel_id.messages(&ctx.http, |retriever| {
         retriever.limit(2)
@@ -464,4 +464,3 @@ async fn help(ctx: &Context, msg: &Message) -> CommandResult {
 
     Ok(())
 }
-
