@@ -326,10 +326,10 @@ async fn react(ctx: &Context, msg: &Message) -> CommandResult {
     let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
         .expect("Typing failed");
 
-    let heat = if msg.content.clone().split_off(7).trim().to_string() == "" {
+    let heat = if &msg.content.clone().split_off(7).trim().to_string() == "" {
         "1.0"
     } else {
-        msg.content.clone().split_off(7).trim()
+        &msg.content.clone().split_off(7).trim()
     }.to_string();
 
     println!("{:?}", &heat);
