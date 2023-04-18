@@ -326,7 +326,7 @@ async fn react(ctx: &Context, msg: &Message) -> CommandResult {
     let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
         .expect("Typing failed");
 
-    let heat = &*msg.content.clone().split_off(7).trim();
+    let heat = msg.content.clone().split_off(7).trim().to_string();
     println!("{:?}", &heat);
 
     let prompt = match msg.channel_id.messages(&ctx.http, |retriever| {
