@@ -330,7 +330,7 @@ async fn react(ctx: &Context, msg: &Message) -> CommandResult {
     let heat = if msg.content.clone().split_off(7).trim().to_string() == None {
         "1.0"
     } else {
-        msg.content.clone().split_off(7).trim().to_string()
+        msg.content.clone().split_off(7).trim()
     }.to_string();
 
     println!("{:?}", &heat);
