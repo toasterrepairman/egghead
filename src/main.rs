@@ -505,8 +505,22 @@ async fn help(ctx: &Context, msg: &Message) -> CommandResult {
     \n
     *USAGE*
     `e.help` - Displays this help message.
-    `e.ask <PROMPT>` - Asks the model a user-submitted question. May fail with elaborate prompts.
-    `e.left/right` - Opinionated misinformation trash.
+    `ping` - Pongs back
+    `ask <prompt>` - Responds to prompt
+    `right` - FOX articles, autocompleted
+    `green`
+    `left` - PBS articles, autocompleted
+    `react <temp>` - Reacts to the last-sent message with set temp
+    `read <lines>` - Reads the number of lines and responds
+    --- HELL FEATURE LINE ---
+    --EXPERIMENTAL FEATURES--
+    ----------BELOW----------
+    ---- HERE BE DRAGONS ----
+    `tldr` - Summarizes stuff
+    `code` - Codes
+    `zork` - Adventure?
+    `short` - ???
+    `help`
     \n
     Report serious issues to `toaster repairguy#1101`.";
 
