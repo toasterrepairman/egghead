@@ -256,7 +256,7 @@ async fn green(ctx: &Context, msg: &Message) -> CommandResult {
     let runner = tokio::task::spawn_blocking(move || {
         println!("Thread Spawned!");
         // This is running on a thread where blocking is fine.
-        let response = generator::get_chat_response("0.6", ">be me \n>", &prompt).unwrap();
+        let response = generator::get_chat_response("0.6", "Write a classic 4chan greentext based on the following prompt: \n>be me \n>", &prompt).unwrap();
         response
     });
 
