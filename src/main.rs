@@ -246,6 +246,29 @@ async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
 }
 
 #[command]
+async fn green(ctx: &Context, msg: &Message) -> CommandResult {
+    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
+        .expect("Typing failed");
+
+    let prompt = msg.content.clone().split_off(8);
+    println!("{:?}", prompt);
+
+    let runner = tokio::task::spawn_blocking(move || {
+        println!("Thread Spawned!");
+        // This is running on a thread where blocking is fine.
+        let response = generator::get_chat_response("0.6", ">be me \n>", &prompt).unwrap();
+        response
+    });
+
+    msg.reply(
+        ctx.clone(),
+        format!("{}", runner.await.unwrap()
+        )).await?;
+
+    Ok(typing.stop().unwrap())
+}
+
+#[command]
 async fn short(ctx: &Context, msg: &Message) -> CommandResult {
     let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
         .expect("Typing failed");
