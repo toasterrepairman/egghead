@@ -6,7 +6,7 @@ use serde_json::{json, Value};
 
 pub fn get_chat_response(temp: &str, init: &str, prompt: &str) -> Result<String, reqwest::Error> {
     let base_url = "http://localhost:8008/api/chat";
-    let model = "ggml-vicuna-13b-1.1-q4_2";
+    let model = "Vicuna-7B";
     let temperature = temp;
     let top_k = "50";
     let top_p = "0.95";
@@ -39,7 +39,7 @@ pub fn get_chat_response(temp: &str, init: &str, prompt: &str) -> Result<String,
 
 pub fn get_short_response(temp: &str, init: &str, prompt: &str) -> Result<String, reqwest::Error> {
     let base_url = "http://localhost:8008/api/chat";
-    let model = "ggml-vicuna-13b-1.1-q4_2";
+    let model = "Vicuna-7B";
     let temperature = temp;
     let top_k = "50";
     let top_p = "0.95";
@@ -72,7 +72,7 @@ pub fn get_short_response(temp: &str, init: &str, prompt: &str) -> Result<String
 
 pub fn get_zork_response(temp: &str, init: &str, prompt: &str) -> Result<String, reqwest::Error> {
     let base_url = "http://localhost:8008/api/chat";
-    let model = "ggml-vicuna-13b-1.1-q4_2";
+    let model = "Vicuna-7B";
     let temperature = temp;
     let top_k = "50";
     let top_p = "0.95";
