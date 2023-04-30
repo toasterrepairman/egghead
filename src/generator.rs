@@ -6,7 +6,7 @@ use serde_json::{json, Value};
 
 pub fn get_chat_response(temp: &str, init: &str, prompt: &str) -> Result<String, reqwest::Error> {
     let base_url = "http://localhost:8008/api/chat";
-    let model = "Alpaca-7B";
+    let model = "GPT4All";
     let temperature = temp;
     let top_k = "50";
     let top_p = "0.95";
