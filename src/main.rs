@@ -2,7 +2,7 @@
 //! And how to use locks correctly to avoid deadlocking the bot.
 
 // swap between `generator` and `alt-gen` depending on serge status
-mod alt-gen;
+mod altgen;
 mod fetcher;
 
 use std::collections::HashMap;
