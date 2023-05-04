@@ -1,7 +1,8 @@
 //! In this example, you will be shown various ways of sharing data between events and commands.
 //! And how to use locks correctly to avoid deadlocking the bot.
 
-mod generator;
+// swap between `generator` and `alt-gen` depending on serge status
+mod alt-gen;
 mod fetcher;
 
 use std::collections::HashMap;
@@ -53,7 +54,7 @@ impl TypeMapKey for MessageCount {
 }
 
 #[group]
-#[commands(ping, command_usage, ask, right, green, left, react, read, tldr, code, zork, short, help)]
+#[commands(ping, command_usage, ask, issue, right, green, left, react, read, tldr, code, help)]
 struct General;
 
 #[hook]
@@ -269,29 +270,6 @@ async fn green(ctx: &Context, msg: &Message) -> CommandResult {
 }
 
 #[command]
-async fn short(ctx: &Context, msg: &Message) -> CommandResult {
-    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
-        .expect("Typing failed");
-
-    let prompt = msg.content.clone().split_off(8);
-    println!("{:?}", prompt);
-
-    let runner = tokio::task::spawn_blocking(move || {
-        println!("Thread Spawned!");
-        // This is running on a thread where blocking is fine.
-        let response = generator::get_short_response("1.8", "I am egghead, the world's smartest computer. I will write a complete answer that is always ended by [end of text].", &prompt).unwrap();
-        response
-    });
-
-    msg.reply(
-        ctx.clone(),
-        format!("{}", runner.await.unwrap()
-        )).await?;
-
-    Ok(typing.stop().unwrap())
-}
-
-#[command]
 async fn code(ctx: &Context, msg: &Message) -> CommandResult {
     let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
         .expect("Typing failed");
@@ -358,6 +336,19 @@ async fn right(ctx: &Context, msg: &Message) -> CommandResult {
         let response = generator::get_chat_response("1.3", "Write a short parody article based on the following headline. A complete article is always ended by [end of text].", &prompt).unwrap();
         response
     });
+
+    msg.reply(
+        ctx.clone(),
+        format!("Title: {:0} \n{:1}", title, runner.await?,
+        )).await?;
+
+    Ok(typing.stop().unwrap())
+}
+
+#[command]
+async fn issue(ctx: &Context, msg: &Message) -> CommandResult {
+    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
+        .expect("Typing failed");
 
     msg.reply(
         ctx.clone(),
@@ -476,30 +467,6 @@ async fn tldr(ctx: &Context, msg: &Message) -> CommandResult {
 }
 
 #[command]
-async fn zork(ctx: &Context, msg: &Message) -> CommandResult {
-    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
-        .expect("Typing failed");
-
-    let prompt = msg.content.clone().split_off(6);
-    println!("{:?}", prompt);
-
-    let runner = tokio::task::spawn_blocking(move || {
-        println!("Thread Spawned!");
-        // This is running on a thread where blocking is fine.
-        let response = generator::get_zork_response("0.6", "A completed response is always ended by [end of text].\n", &prompt).unwrap();
-        response
-    });
-
-    msg.reply(
-        ctx.clone(),
-        format!("{}", runner.await.unwrap()
-        )).await?;
-
-    Ok(typing.stop().unwrap())
-}
-
-
-#[command]
 async fn help(ctx: &Context, msg: &Message) -> CommandResult {
     let message = "I'm egghead, the workd's smartest computer. My vast processing resources facilitate understanding beyond human capacity.\n
     \n
@@ -518,8 +485,6 @@ async fn help(ctx: &Context, msg: &Message) -> CommandResult {
     ---- HERE BE DRAGONS ----
     `tldr` - Summarizes stuff
     `code` - Codes
-    `zork` - Adventure?
-    `short` - ???
     `help`
     \n
     Report serious issues to `toaster repairguy#1101`.";
