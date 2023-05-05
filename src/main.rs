@@ -265,11 +265,11 @@ async fn say(ctx: &Context, msg: &Message) -> CommandResult {
     };
     println!("{:?}", prompt);
 
-    let audio_url = get_audio_url(&voice_name, prompt.unwrap.content).await?;
+    let audio_url = get_audio_url(&voice_name, prompt.unwrap.content).unwrap();
 
     msg.reply(
         ctx.clone(),
-        format!("{}", audio_url.await
+        format!("{}", audio_url
         )).await?;
 
     Ok(typing.stop().unwrap())
