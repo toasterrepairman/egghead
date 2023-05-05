@@ -375,19 +375,6 @@ async fn right(ctx: &Context, msg: &Message) -> CommandResult {
 }
 
 #[command]
-async fn issue(ctx: &Context, msg: &Message) -> CommandResult {
-    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
-        .expect("Typing failed");
-
-    msg.reply(
-        ctx.clone(),
-        format!("Title: {:0} \n{:1}", title, runner.await?,
-        )).await?;
-
-    Ok(typing.stop().unwrap())
-}
-
-#[command]
 async fn react(ctx: &Context, msg: &Message) -> CommandResult {
     let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
         .expect("Typing failed");
