@@ -4,6 +4,7 @@
 // swap between `generator` and `alt-gen` depending on serge status
 mod fetcher;
 mod fakeyou;
+mod generator;
 
 use std::collections::HashMap;
 use std::env;
