@@ -56,7 +56,7 @@ impl TypeMapKey for MessageCount {
 }
 
 #[group]
-#[commands(ping, command_usage, ask, issue, say, right, green, left, react, read, tldr, code, help)]
+#[commands(ping, command_usage, ask, say, right, green, left, react, read, tldr, code, help)]
 struct General;
 
 #[hook]
@@ -265,7 +265,7 @@ async fn say(ctx: &Context, msg: &Message) -> CommandResult {
     };
     println!("{:?}", prompt);
 
-    let audio_url = get_audio_url(voice_name, prompt).await?;
+    let audio_url = get_audio_url(&voice_name, prompt.unwrap.content).await?;
 
     msg.reply(
         ctx.clone(),
