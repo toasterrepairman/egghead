@@ -2,7 +2,6 @@
 //! And how to use locks correctly to avoid deadlocking the bot.
 
 // swap between `generator` and `alt-gen` depending on serge status
-mod altgen;
 mod fetcher;
 mod fakeyou;
 
