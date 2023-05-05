@@ -4,6 +4,7 @@
 // swap between `generator` and `alt-gen` depending on serge status
 mod altgen;
 mod fetcher;
+mod fakeyou;
 
 use std::collections::HashMap;
 use std::env;
@@ -28,6 +29,7 @@ use std::io::Cursor;
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 use serenity::futures::TryFutureExt;
+use crate::fakeyou::get_audio_url;
 
 // A container type is created for inserting into the Client's `data`, which
 // allows for data to be accessible across all events and framework commands, or
@@ -54,7 +56,7 @@ impl TypeMapKey for MessageCount {
 }
 
 #[group]
-#[commands(ping, command_usage, ask, issue, right, green, left, react, read, tldr, code, help)]
+#[commands(ping, command_usage, ask, issue, say, right, green, left, react, read, tldr, code, help)]
 struct General;
 
 #[hook]
@@ -242,6 +244,24 @@ async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
         ctx.clone(),
         format!("{}", runner.await.unwrap()
     )).await?;
+
+    Ok(typing.stop().unwrap())
+}
+
+#[command]
+async fn say(ctx: &Context, msg: &Message) -> CommandResult {
+    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
+        .expect("Typing failed");
+
+    let prompt = msg.content.clone().split_off(6);
+    println!("{:?}", prompt);
+
+    let audio_url = get_audio_url(voice_name, message).await?;
+
+    msg.reply(
+        ctx.clone(),
+        format!("{}", audio_url.await
+        )).await?;
 
     Ok(typing.stop().unwrap())
 }
