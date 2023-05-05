@@ -5,7 +5,6 @@ use rand::{random, Rng};
 use reqwest::header;
 use reqwest::Client;
 
-
 pub async fn get_random_headline_from_rss_link(rss_link: &str) -> Result<String, Box<dyn Error>> {
     // Send an HTTP GET request to the RSS link using reqwest
     let body = reqwest::get(rss_link).await?.text().await?;
@@ -45,20 +44,6 @@ pub async fn get_wikipedia_summary(article: Option<&str>) -> Result<String, reqw
 
     Ok(format!("{}", title))
 }
-
-
-fn is_github_issue_closed(owner: &str, repo: &str, issue_number: u32) -> Result<bool, reqwest::Error> {
-    let client = Client::new();
-    let url = format!("https://api.github.com/repos/{}/{}/issues/{}", owner, repo, issue_number);
-    let response = client.get(&url).header(reqwest::header::USER_AGENT, "Rust reqwest").send()?;
-    let json = response.json::<serde_json::Value>()?;
-    if let Some(state) = json.get("state") {
-        Ok(state.as_str().unwrap_or_default() == "closed")
-    } else {
-        Err(reqwest::Error::new(reqwest::Error::Kind::Other, "JSON response does not contain 'state' field."))
-    }
-}
-
 
 pub async fn get_latest_hn_comment() -> Result<String, reqwest::Error> {
     let client = Client::new();
