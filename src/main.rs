@@ -265,7 +265,7 @@ async fn say(ctx: &Context, msg: &Message) -> CommandResult {
     };
     println!("{:?}", prompt);
 
-    let audio_url = get_audio_url(&voice_name, prompt.unwrap().content).await.unwrap();
+    let audio_url = get_audio_url(&voice_name, &prompt.unwrap().content).await.unwrap();
 
     msg.reply(
         ctx.clone(),
