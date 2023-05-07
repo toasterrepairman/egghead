@@ -79,7 +79,7 @@ pub async fn get_audio_url(voice_name: &str, message: &str) -> Result<String, Bo
             .header(ACCEPT, "application/json")
             .send().await?
             .json().await?;
-        if status_response.state.unwrap().status == "complete_success" {
+        if status_response.state.as_ref().unwrap().status == "complete_success" {
             audio_url = status_response.state.unwrap().maybe_public_bucket_wav_audio_path;
         }
     }
