@@ -49,7 +49,6 @@ pub async fn get_audio_url(voice_name: &str, message: &str) -> Result<String, Bo
 
     // Find the voice with the requested name
     let voice = response
-        .results
         .into_iter()
         .find(|v| v.title.to_lowercase() == voice_name.to_lowercase())
         .ok_or("Voice not found")?;
