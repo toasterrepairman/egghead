@@ -3,7 +3,8 @@ use serde_json::Value;
 use std::error::Error;
 use uuid::Uuid;
 use serde_json::json;
-use serde::Deserialize;
+use serde::{Deserialize};
+use serde_json::{self, Result};
 /*
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -22,9 +23,10 @@ struct Voice {
     title: String,
 }
 
-#[derive(Deserialize)]
-struct VoicesResponse {
-    results: Vec<Voice>,
+#[derive(Deserialize, Debug)]
+#[serde(transparent)]
+pub struct VoicesResponse {
+    pub results: Vec<Voice>,
 }
 
 #[derive(Deserialize)]
@@ -40,13 +42,20 @@ struct JobState {
     maybe_public_bucket_wav_audio_path: Option<String>,
 }
 
+impl VoicesResponse {
+    pub fn new(data: &str) -> Result<VoicesResponse> {
+        let response = serde_json::from_str(data);
+        response
+    }
+}
+
 pub async fn get_audio_url(voice_name: &str, message: &str) -> Result<String, Box<dyn Error + Send + Sync>> {
     let client = Client::new();
 
     // Get the list of voices
     let voices_url = "https://api.fakeyou.com/tts/list";
     let response: VoicesResponse = {
-        results: client.get(voices_url).send().await?.json().await?
+        results: client.get(voices_url).send().await?.json().await.unwrap()
     };
 
     // Find the voice with the requested name
