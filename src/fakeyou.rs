@@ -38,17 +38,17 @@ struct InferenceJobState {
     maybe_public_bucket_wav_audio_path: Option<String>,
 }
 
-use fuzzy_matcher::skim::{fuzzy_indices, FuzzyMatcher};
-
 pub async fn fuzzy_search_voices(query: String) -> String {
+    let client = Client::new();
+
     let voice_list_url = "https://api.fakeyou.com/tts/list";
-    let voices: VoiceListResponse = client.get(voice_list_url).send().await?.json().await?;
+    let voices: VoiceListResponse = client.get(voice_list_url).send().await.json().await.unwrap();
 
     let matcher = FuzzyMatcher::default();
     let mut matches = Vec::new();
 
-    for voice in voices {
-        if let Some((score, _)) = fuzzy_indices(&matcher, &query, &voice.name) {
+    for voice in voices.models {
+        if let Some((score, _)) = fuzzy_indices(&matcher, &voice.title) {
             matches.push((score, voice));
         }
     }
