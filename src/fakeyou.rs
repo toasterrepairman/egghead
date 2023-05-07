@@ -49,16 +49,23 @@ pub async fn get_audio_url(voice_name: &str, message: &str) -> Result<String, Bo
     let response: VoiceListResponse = client.get(voice_list_url).send().await?.json().await?;
 
     // Find the model_token for the specified voice_name
-    let voice_names: Vec<String> = response.models.iter().map(|model| sanitize_voice_name(&model.title.clone())).collect();
-    let cm = ClosestMatch::new(voice_names, vec![5]); // 2 is the desired bag-size
 
-    let closest_voice_name = cm.get_closest(voice_name.to_string()).unwrap_or_else(|| panic!("Voice not found"));
+// Create a list of available voice titles
+    let voice_titles: Vec<String> = response.models.iter().map(|model| model.title.clone()).collect();
 
+// Build the closestmatch object
+    let cm = ClosestMatch::new(voice_titles, 3);
+
+// Find the closest-matching voice title for the specified voice_name
+    let closest_voice_title = cm.get_closest(voice_name).ok_or("Voice not found")?;
+
+// Find the model_token for the closest-matching voice title
     let model_token = response.models.iter()
-        .find(|model| model.title == closest_voice_name)
+        .find(|model| model.title == closest_voice_title)
         .ok_or("Voice not found")?
         .model_token
         .clone();
+
     println!("Got past the voice search! {}", &model_token);
 
     // Create the inference job
