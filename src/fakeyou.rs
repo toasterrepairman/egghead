@@ -46,23 +46,14 @@ pub async fn fuzzy_search_voices(query: String) -> String {
     let voice_list_url = "https://api.fakeyou.com/tts/list";
     let voices: VoiceListResponse = client.get(voice_list_url).send().await.unwrap().json().await.unwrap();
 
-    let matcher = SkimMatcherV2::default();
-    let mut matches = Vec::new();
-
-    for voice in voices.models {
-        println!(":)");
-        if let Some((score, _)) = matcher.fuzzy_indices(&query, &voice.title) {
-            matches.push((score, voice));
-        }
-    }
-
-    // Sort the matches by their score
-    matches.sort_by(|a, b| a.0.cmp(&b.0));
+    let n: usize = 3; // Number of best matches to return
+    let voice_names: Vec<&str> = voices.iter().map(|voice| voice.name.as_str()).collect();
+    let matches = fuzzy_search_best_n(&query, &voice_names, n);
 
     // Create a newline-separated string of the voice names
     let result = matches
         .into_iter()
-        .map(|(_, voice)| voice.title)
+        .map(|(voice, _)| voice.to_string())
         .collect::<Vec<String>>()
         .join("\n");
 
