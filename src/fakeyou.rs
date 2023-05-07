@@ -8,7 +8,7 @@ use serde_with::skip_serializing_none;
 use closestmatch::ClosestMatch;
 use unicase::UniCase;
 use unidecode::unidecode;
-use fuzzy_matcher::skim::{fuzzy_indices, FuzzyMatcher};
+use fuzzy_matcher::skim::{fuzzy_indices};
 
 #[derive(Deserialize)]
 struct VoiceListResponse {
@@ -42,7 +42,7 @@ pub async fn fuzzy_search_voices(query: String) -> String {
     let client = Client::new();
 
     let voice_list_url = "https://api.fakeyou.com/tts/list";
-    let voices: VoiceListResponse = client.get(voice_list_url).send().await.json().await.unwrap();
+    let voices: VoiceListResponse = client.get(voice_list_url).send().await.unwrap().json().await.unwrap();
 
     let matcher = FuzzyMatcher::default();
     let mut matches = Vec::new();
