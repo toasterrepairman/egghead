@@ -1,89 +1,62 @@
 use reqwest::Client;
 use serde_json::Value;
-use std::error::Error;
-use uuid::Uuid;
-use serde_json::json;
-use serde::Deserialize;
-/*
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn Error>> {
-    let voice_name = "Agent Pleakley (Lilo & Stitch, Kevin McDonald)";
-    let message = "Hello, I am Agent Pleakley!";
 
-    let audio_url = get_audio_url(voice_name, message).await?;
-    println!("Audio URL: {}", audio_url);
-    Ok(())
-}
-*/
-
-#[derive(Debug, Deserialize)]
-struct Voice {
-    model_token: String,
-    title: String,
-}
-
-#[serde(transparent)]
-#[derive(Deserialize)]
-struct VoicesResponse {
-    results: Vec<Voice>,
-}
-
-#[derive(Deserialize)]
-struct JobResponse {
-    success: bool,
-    state: Option<JobState>,
-}
-
-#[derive(Deserialize)]
-struct JobState {
-    job_token: String,
-    status: String,
-    maybe_public_bucket_wav_audio_path: Option<String>,
-}
-
-pub async fn get_audio_url(voice_name: &str, message: &str) -> Result<String, Box<dyn Error + Send + Sync>> {
+pub async fn get_audio_url(voice_name: &str, message: &str) -> Result<String, reqwest::Error> {
     let client = Client::new();
 
-    // Get the list of voices
-    let voices_url = "https://api.fakeyou.com/tts/list";
-    let json_data: Vec<Voice> = client.get(voices_url).send().await?.json().await?;
-    let voices_response = VoicesResponse { results: (json_data) };
-
-    // Find the voice with the requested name
-    let voice = voices_response.results
-        .into_iter()
-        .find(|v| v.title.to_lowercase() == voice_name.to_lowercase())
-        .ok_or("Voice not found")?;
-
-    println!("{}", &voice);
-
-    // Create the inference request
-    let inference_url = "https://api.fakeyou.com/tts/inference";
-    let uuid_idempotency_token = Uuid::new_v4();
-    let json_data = serde_json::json!({
-        "uuid_idempotency_token": uuid_idempotency_token.to_string(),
-        "tts_model_token": voice.model_token,
-        "inference_text": message
-    });
-    let job_response: JobResponse = client
-        .post(inference_url)
-        .json(&json_data)
+    // Search for the specified voice
+    let list_response = client
+        .get("https://api.fakeyou.com/tts/list")
         .send()
         .await?
-        .json()
+        .json::<Value>()
         .await?;
 
-    // Poll for the inference job completion
-    let job_token = job_response.state.ok_or("Job state not found")?.job_token;
-    let job_status_url = format!("https://api.fakeyou.com/tts/job/{}", job_token);
-    loop {
-        let job_response: JobResponse = client.get(&job_status_url).send().await?.json().await?;
-        let state = job_response.state.ok_or("Job state not found")?;
-        if state.status == "complete_success" {
-            let audio_path = state.maybe_public_bucket_wav_audio_path.ok_or("Audio path not found")?;
-            let audio_url = format!("https://api.fakeyou.com{}", audio_path);
-            return Ok(audio_url);
+    let models = list_response["models"].as_array().unwrap();
+    let model_token = models
+        .iter()
+        .find(|model| model["title"].as_str().unwrap().contains(voice_name))
+        .map(|model| model["model_token"].as_str().unwrap())
+        .ok_or_else(|| reqwest::Error::new(reqwest::StatusCode::NOT_FOUND, "Voice not found"))?;
+
+    // Make the inference request
+    let uuid_idempotency_token = uuid::Uuid::new_v4().to_string();
+    let inference_request_body = json!({
+        "uuid_idempotency_token": uuid_idempotency_token,
+        "tts_model_token": model_token,
+        "inference_text": message
+    });
+
+    let inference_response = client
+        .post("https://api.fakeyou.com/tts/inference")
+        .json(&inference_request_body)
+        .send()
+        .await?
+        .json::<Value>()
+        .await?;
+
+    let inference_job_token = inference_response["job_token"].as_str().unwrap();
+
+    // Poll the API until the job is complete
+    let mut audio_url = None;
+    while audio_url.is_none() {
+        let job_response = client
+            .get(&format!(
+                "https://api.fakeyou.com/tts/job/{}",
+                inference_job_token
+            ))
+            .send()
+            .await?
+            .json::<Value>()
+            .await?;
+
+        if job_response["state"]["status"].as_str().unwrap() == "complete_success" {
+            let public_bucket_wav_audio_path = job_response["state"]["maybe_public_bucket_wav_audio_path"].as_str().unwrap();
+            audio_url = Some(format!("https://api.fakeyou.com{}", public_bucket_wav_audio_path));
+        } else {
+            tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
         }
-        tokio::time::sleep(std::time::Duration::from_secs(3)).await; // Wait before polling again
     }
+
+    Ok(audio_url.unwrap())
 }
