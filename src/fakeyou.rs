@@ -48,9 +48,9 @@ pub async fn get_audio_url(voice_name: &str, message: &str) -> Result<String, Bo
     let inference_url = "https://api.fakeyou.com/tts/inference";
     let idempotency_token = uuid::Uuid::new_v4().to_string();
     let job_payload = json!({
-        "uuid_idempotency_token": idempotency_token,
+        "inference_text": message,
         "tts_model_token": model_token,
-        "inference_text": message
+        "uuid_idempotency_token": idempotency_token,
     });
     println!("Debug payload: {}", job_payload);
     let job_response: InferenceJobResponse = client.post(inference_url)
