@@ -52,6 +52,7 @@ pub async fn get_audio_url(voice_name: &str, message: &str) -> Result<String, Bo
         "tts_model_token": model_token,
         "inference_text": message
     });
+    println!("Debug payload: {}", job_payload);
     let job_response: InferenceJobResponse = client.post(inference_url)
         .json(&job_payload)
         .send()
