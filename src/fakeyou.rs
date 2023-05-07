@@ -24,7 +24,7 @@ struct InferenceJobResponse {
     inference_job_token: String,
     inference_job_token_type: String,
     #[serde(default)]
-    state: Option(InferenceJobState)
+    state: Option<InferenceJobState>,
 }
 
 #[derive(Deserialize)]
