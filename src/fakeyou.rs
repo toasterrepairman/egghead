@@ -55,6 +55,8 @@ pub async fn get_audio_url(voice_name: &str, message: &str) -> Result<String, Bo
         .find(|v| v.title.to_lowercase() == voice_name.to_lowercase())
         .ok_or("Voice not found")?;
 
+    println!("{}", &voice);
+
     // Create the inference request
     let inference_url = "https://api.fakeyou.com/tts/inference";
     let uuid_idempotency_token = Uuid::new_v4();
