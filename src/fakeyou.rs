@@ -50,7 +50,7 @@ pub async fn fuzzy_search_voices(query: String) -> String {
     let mut matches = Vec::new();
 
     for voice in voices.models {
-        if let Some((score, _)) = fuzzy_indices(&matcher, &voice.title) {
+        if let Some((score, _)) = fuzzy_indices(&voice.title, &matcher) {
             matches.push((score, voice));
         }
     }
