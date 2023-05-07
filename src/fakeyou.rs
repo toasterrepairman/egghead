@@ -1,5 +1,5 @@
 use reqwest::Client;
-use serde_json::Value;
+use serde_json::{json, Value};
 
 pub async fn get_audio_url(voice_name: &str, message: &str) -> Result<String, reqwest::Error> {
     let client = Client::new();
@@ -17,7 +17,7 @@ pub async fn get_audio_url(voice_name: &str, message: &str) -> Result<String, re
         .iter()
         .find(|model| model["title"].as_str().unwrap().contains(voice_name))
         .map(|model| model["model_token"].as_str().unwrap())
-        .ok_or_else(|| reqwest::Error::new(reqwest::StatusCode::NOT_FOUND, "Voice not found"))?;
+        .unwrap();
 
     // Make the inference request
     let uuid_idempotency_token = uuid::Uuid::new_v4().to_string();
