@@ -72,7 +72,8 @@ pub async fn get_audio_url(voice_name: &str, message: &str) -> Result<String, Bo
     let mut audio_url = None;
     while audio_url.is_none() {
         sleep(Duration::from_secs(1)).await; // Wait before polling
-        let job_status_url = format!("https://api.fakeyou.com/tts/job/{}", job_token.as_ref());
+        let job_status_url = format!("https://api.fakeyou.com/tts/job/{:?}", job_token.as_ref());
+        println!("{}", &job_status_url);
         let status_response: InferenceJobResponse = client
             .get(&job_status_url)
             .header(CONTENT_TYPE, "application/json")
