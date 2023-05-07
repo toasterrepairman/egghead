@@ -45,7 +45,9 @@ pub async fn get_audio_url(voice_name: &str, message: &str) -> Result<String, Bo
 
     // Get the list of voices
     let voices_url = "https://api.fakeyou.com/tts/list";
-    let response: Vec<Voice> = client.get(voices_url).send().await?.json().await?;
+    let response: VoicesResponse = {
+        results: client.get(voices_url).send().await?.json().await?
+    };
 
     // Find the voice with the requested name
     let voice = response
