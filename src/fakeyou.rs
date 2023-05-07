@@ -16,7 +16,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 }
 */
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 struct Voice {
     model_token: String,
     title: String,
@@ -45,7 +45,7 @@ pub async fn get_audio_url(voice_name: &str, message: &str) -> Result<String, Bo
 
     // Get the list of voices
     let voices_url = "https://api.fakeyou.com/tts/list";
-    let response: VoicesResponse = client.get(voices_url).send().await?.json().await?;
+    let response: Vec<Voice> = client.get(voices_url).send().await?.json().await?;
 
     // Find the voice with the requested name
     let voice = response
@@ -81,6 +81,6 @@ pub async fn get_audio_url(voice_name: &str, message: &str) -> Result<String, Bo
             let audio_url = format!("https://api.fakeyou.com{}", audio_path);
             return Ok(audio_url);
         }
-        tokio::time::sleep(std::time::Duration::from_secs(1)).await; // Wait before polling again
+        tokio::time::sleep(std::time::Duration::from_secs(3)).await; // Wait before polling again
     }
 }
