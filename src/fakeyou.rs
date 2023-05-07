@@ -20,7 +20,8 @@ struct VoiceModel {
 #[derive(Deserialize)]
 struct InferenceJobResponse {
     success: bool,
-    state: InferenceJobState,
+    inference_job_token: String,
+    inference_job_token_type: String,
 }
 
 #[derive(Deserialize)]
@@ -64,7 +65,8 @@ pub async fn get_audio_url(voice_name: &str, message: &str) -> Result<String, Bo
         .await?;
     println!("Got past the job creation");
 
-    let job_token = job_response.state.job_token;
+
+    let job_token = job_response.inference_job_token;
 
     // Poll the API for the audio file URL
     let mut audio_url = None;
