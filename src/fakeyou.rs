@@ -4,6 +4,7 @@ use reqwest::header::{ACCEPT, CONTENT_TYPE};
 use serde_json::json;
 use std::time::Duration;
 use tokio::time::sleep;
+use serde_with::skip_serializing_none;
 
 #[derive(Deserialize)]
 struct VoiceListResponse {
@@ -17,7 +18,6 @@ struct VoiceModel {
     title: String,
 }
 
-#[skip_serializing_none]
 #[derive(Deserialize)]
 struct InferenceJobResponse {
     success: bool,
