@@ -1,5 +1,6 @@
 use serde::Deserialize;
 use reqwest::Client;
+use reqwest::header::{ACCEPT, CONTENT_TYPE};
 use serde_json::json;
 use std::time::Duration;
 use tokio::time::sleep;
@@ -55,6 +56,8 @@ pub async fn get_audio_url(voice_name: &str, message: &str) -> Result<String, Bo
     println!("Debug payload: {}", job_payload);
     let job_response: InferenceJobResponse = client.post(inference_url)
         .json(&job_payload)
+        .header(CONTENT_TYPE, "application/json")
+        .header(ACCEPT, "application/json")
         .send()
         .await?
         .json()
