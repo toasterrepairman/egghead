@@ -49,15 +49,15 @@ pub async fn get_audio_url(voice_name: &str, message: &str) -> Result<String, Bo
     let response: VoiceListResponse = client.get(voice_list_url).send().await?.json().await?;
 
     // Find the model_token for the specified voice_name
-
-    // Filter out non-UTF8 voices
-        let filtered_models = response.models.iter()
-            .filter(|model| !String::from_utf8_lossy(&model.title.as_bytes()).contains("�"))
-            .collect::<Vec<_>>();
-
-    // Create a list of available voice titles
-        let voice_titles: Vec<String> = filtered_models.iter().map(|model| model.title.clone()).collect();
-
+    // Create a list of available voice titles that are valid UTF-8
+    let voice_titles: Vec<String> = response.models.iter()
+        .filter(|model| {
+            let original_title = &model.title;
+            let lossy_title = String::from_utf8_lossy(original_title.as_bytes());
+            original_title == &lossy_title
+        })
+        .map(|model| model.title.clone())
+        .collect();
 
     // Build the closestmatch object
         let cm = ClosestMatch::new(voice_titles, vec![3]);
