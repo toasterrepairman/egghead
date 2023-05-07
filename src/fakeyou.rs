@@ -21,8 +21,8 @@ struct VoiceModel {
 #[derive(Deserialize)]
 struct InferenceJobResponse {
     success: bool,
-    inference_job_token: String,
-    inference_job_token_type: String,
+    inference_job_token: Option<String>,
+    inference_job_token_type: Option<String>,
     #[serde(default)]
     state: Option<InferenceJobState>,
 }
