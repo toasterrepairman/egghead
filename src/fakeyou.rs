@@ -16,7 +16,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
 }
 */
 
-#[serde(transparent)]
 #[derive(Debug, Deserialize)]
 struct Voice {
     model_token: String,
@@ -51,7 +50,7 @@ pub async fn get_audio_url(voice_name: &str, message: &str) -> Result<String, Bo
     let voices_response: VoicesResponse = json_data;
 
     // Find the voice with the requested name
-    let voice = response
+    let voice = voices_response
         .into_iter()
         .find(|v| v.title.to_lowercase() == voice_name.to_lowercase())
         .ok_or("Voice not found")?;
