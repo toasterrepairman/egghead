@@ -90,6 +90,7 @@ pub async fn get_audio_url(voice_name: &str, message: &str) -> Result<String, Bo
 
         }
     }
+    println!("It's over now!");
 
-    Ok(format!("https://api.fakeyou.com{}", audio_url.unwrap()))
+    Ok(format!("https://storage.googleapis.com/vocodes-public{}", audio_url.unwrap()))
 }
