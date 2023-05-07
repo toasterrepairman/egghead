@@ -44,9 +44,9 @@ pub async fn get_audio_url(voice_name: &str, message: &str) -> Result<String, Bo
 
     // Find the model_token for the specified voice_name
     let voice_names: Vec<String> = response.models.iter().map(|model| model.title.clone()).collect();
-    let cm = ClosestMatch::new(voice_names, 2); // 2 is the desired bag-size
+    let cm = ClosestMatch::new(voice_names, vec![2]); // 2 is the desired bag-size
 
-    let closest_voice_name = cm.get_closest(voice_name).unwrap_or_else(|| panic!("Voice not found"));
+    let closest_voice_name = cm.get_closest(voice_name.to_string()).unwrap_or_else(|| panic!("Voice not found"));
 
     let model_token = response.models.iter()
         .find(|model| model.title == closest_voice_name)
