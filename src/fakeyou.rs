@@ -91,5 +91,5 @@ pub async fn get_audio_url(voice_name: &str, message: &str) -> Result<String, Bo
         }
     }
 
-    Ok(format!("https://api.fakeyou.com{}", audio_url.unwrap()))
+    Ok(format!("https://api.fakeyou.com{}", audio_url.unwrap().unwrap()))
 }
