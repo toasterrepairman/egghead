@@ -24,7 +24,8 @@ struct InferenceJobResponse {
     success: bool,
     inference_job_token: String,
     inference_job_token_type: String,
-    state: InferenceJobState
+    #[serde(default)]
+    state: Option(InferenceJobState)
 }
 
 #[skip_serializing_none]
