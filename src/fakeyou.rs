@@ -59,7 +59,7 @@ pub async fn fuzzy_search_voices(query: String) -> String {
     // Create a newline-separated string of the voice names
     let result = matches
         .into_iter()
-        .map(|(_, voice)| voice.name)
+        .map(|(_, voice)| voice.title)
         .collect::<Vec<String>>()
         .join("\n");
 
