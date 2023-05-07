@@ -44,7 +44,7 @@ pub async fn fuzzy_search_voices(query: String) -> String {
     let voice_list_url = "https://api.fakeyou.com/tts/list";
     let voices: VoiceListResponse = client.get(voice_list_url).send().await.unwrap().json().await.unwrap();
 
-    let n: usize = 3; // Number of best matches to return
+    let n: usize = 10; // Number of best matches to return
     let voice_names: Vec<&str> = voices.models.iter().map(|voice| voice.title.as_str()).collect();
     let matches = fuzzy_search_best_n(&query, &voice_names, n);
 

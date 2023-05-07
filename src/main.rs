@@ -292,7 +292,7 @@ async fn voices(ctx: &Context, msg: &Message) -> CommandResult {
 
     msg.reply(
         ctx.clone(),
-        format!("{:?}", runner.await.unwrap().await
+        format!("{}", runner.await.unwrap().await
         )).await?;
 
     Ok(typing.stop().unwrap())
