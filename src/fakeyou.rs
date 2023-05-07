@@ -18,15 +18,16 @@ struct VoiceModel {
     title: String,
 }
 
+#[skip_serializing_none]
 #[derive(Deserialize)]
 struct InferenceJobResponse {
     success: bool,
     inference_job_token: String,
     inference_job_token_type: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
     state: InferenceJobState
 }
 
+#[skip_serializing_none]
 #[derive(Deserialize)]
 struct InferenceJobState {
     job_token: String,
