@@ -22,6 +22,7 @@ struct InferenceJobResponse {
     success: bool,
     inference_job_token: String,
     inference_job_token_type: String,
+    state: InferenceJobState
 }
 
 #[derive(Deserialize)]
