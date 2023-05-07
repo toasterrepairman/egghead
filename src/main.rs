@@ -56,7 +56,7 @@ impl TypeMapKey for MessageCount {
 }
 
 #[group]
-#[commands(ping, command_usage, ask, say, right, green, left, react, read, tldr, code, help)]
+#[commands(ping, command_usage, voices, ask, say, right, green, left, react, read, tldr, code, help)]
 struct General;
 
 #[hook]
@@ -250,6 +250,33 @@ async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
 
 #[command]
 async fn say(ctx: &Context, msg: &Message) -> CommandResult {
+    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
+        .expect("Typing failed");
+
+    let voice_name = msg.content.clone().split_off(6);
+    let prompt = match msg.channel_id.messages(&ctx.http, |retriever| {
+        retriever.limit(2)
+    }).await {
+        Ok(messages) => messages.last().cloned(),
+        Err(why) => {
+            println!("Error getting messages: {:?}", why);
+            None
+        }
+    };
+    println!("{:?}", prompt);
+
+    let audio_url = get_audio_url(&voice_name, &prompt.unwrap().content).await.unwrap();
+
+    msg.reply(
+        ctx.clone(),
+        format!("{}", audio_url
+        )).await?;
+
+    Ok(typing.stop().unwrap())
+}
+
+#[command]
+async fn voices(ctx: &Context, msg: &Message) -> CommandResult {
     let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
         .expect("Typing failed");
 

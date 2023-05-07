@@ -8,6 +8,7 @@ use serde_with::skip_serializing_none;
 use closestmatch::ClosestMatch;
 use unicase::UniCase;
 use unidecode::unidecode;
+use fuzzy_matcher::skim::{fuzzy_indices, FuzzyMatcher};
 
 #[derive(Deserialize)]
 struct VoiceListResponse {
@@ -35,6 +36,34 @@ struct InferenceJobState {
     job_token: String,
     status: String,
     maybe_public_bucket_wav_audio_path: Option<String>,
+}
+
+use fuzzy_matcher::skim::{fuzzy_indices, FuzzyMatcher};
+
+pub async fn fuzzy_search_voices(query: String) -> String {
+    let voice_list_url = "https://api.fakeyou.com/tts/list";
+    let voices: VoiceListResponse = client.get(voice_list_url).send().await?.json().await?;
+
+    let matcher = FuzzyMatcher::default();
+    let mut matches = Vec::new();
+
+    for voice in voices {
+        if let Some((score, _)) = fuzzy_indices(&matcher, &query, &voice.name) {
+            matches.push((score, voice));
+        }
+    }
+
+    // Sort the matches by their score
+    matches.sort_by(|a, b| a.0.cmp(&b.0));
+
+    // Create a newline-separated string of the voice names
+    let result = matches
+        .into_iter()
+        .map(|(_, voice)| voice.name)
+        .collect::<Vec<String>>()
+        .join("\n");
+
+    result
 }
 
 pub async fn get_audio_url(voice_name: &str, message: &str) -> Result<String, Box<dyn std::error::Error>> {
