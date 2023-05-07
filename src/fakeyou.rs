@@ -47,7 +47,7 @@ pub async fn fuzzy_search_voices(query: String) -> String {
     let voices: VoiceListResponse = client.get(voice_list_url).send().await.unwrap().json().await.unwrap();
 
     let n: usize = 3; // Number of best matches to return
-    let voice_names: Vec<&str> = voices.iter().map(|voice| voice.name.as_str()).collect();
+    let voice_names: Vec<&str> = voices.models.iter().map(|voice| voice.title.as_str()).collect();
     let matches = fuzzy_search_best_n(&query, &voice_names, n);
 
     // Create a newline-separated string of the voice names
