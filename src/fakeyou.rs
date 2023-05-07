@@ -42,6 +42,7 @@ pub async fn get_audio_url(voice_name: &str, message: &str) -> Result<String, Bo
         .ok_or("Voice not found")?
         .model_token
         .clone();
+    println!("Got past the voice search!");
 
     // Create the inference job
     let inference_url = "https://api.fakeyou.com/tts/inference";
@@ -57,6 +58,7 @@ pub async fn get_audio_url(voice_name: &str, message: &str) -> Result<String, Bo
         .await?
         .json()
         .await?;
+    println!("Got past the job creation");
 
     let job_token = job_response.state.job_token;
 
