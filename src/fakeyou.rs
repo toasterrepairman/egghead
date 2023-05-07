@@ -3,7 +3,7 @@ use serde_json::Value;
 use std::error::Error;
 use uuid::Uuid;
 use serde_json::json;
-
+use serde::Deserialize;
 /*
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -14,8 +14,32 @@ async fn main() -> Result<(), Box<dyn Error>> {
     println!("Audio URL: {}", audio_url);
     Ok(())
 }
-
 */
+
+#[derive(Deserialize)]
+struct Voice {
+    model_token: String,
+    title: String,
+}
+
+#[derive(Deserialize)]
+struct VoicesResponse {
+    results: Vec<Voice>,
+}
+
+#[derive(Deserialize)]
+struct JobResponse {
+    success: bool,
+    state: Option<JobState>,
+}
+
+#[derive(Deserialize)]
+struct JobState {
+    job_token: String,
+    status: String,
+    maybe_public_bucket_wav_audio_path: Option<String>,
+}
+
 pub async fn get_audio_url(voice_name: &str, message: &str) -> Result<String, Box<dyn Error + Send + Sync>> {
     let client = Client::new();
 
