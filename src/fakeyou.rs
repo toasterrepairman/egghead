@@ -5,6 +5,7 @@ use serde_json::json;
 use std::time::Duration;
 use tokio::time::sleep;
 use serde_with::skip_serializing_none;
+use closestmatch::ClosestMatch;
 
 #[derive(Deserialize)]
 struct VoiceListResponse {
@@ -42,8 +43,13 @@ pub async fn get_audio_url(voice_name: &str, message: &str) -> Result<String, Bo
     let response: VoiceListResponse = client.get(voice_list_url).send().await?.json().await?;
 
     // Find the model_token for the specified voice_name
+    let voice_names: Vec<String> = response.models.iter().map(|model| model.title.clone()).collect();
+    let cm = ClosestMatch::new(voice_names, 2); // 2 is the desired bag-size
+
+    let closest_voice_name = cm.get_closest(voice_name).unwrap_or_else(|| panic!("Voice not found"));
+
     let model_token = response.models.iter()
-        .find(|model| model.title == voice_name)
+        .find(|model| model.title == closest_voice_name)
         .ok_or("Voice not found")?
         .model_token
         .clone();
