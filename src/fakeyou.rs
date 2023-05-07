@@ -8,9 +8,7 @@ use serde_with::skip_serializing_none;
 use closestmatch::ClosestMatch;
 use unicase::UniCase;
 use unidecode::unidecode;
-use fuzzy_matcher::FuzzyMatcher;
-use fuzzy_matcher::skim::{fuzzy_indices};
-use fuzzy_matcher::skim::SkimMatcherV2;
+use rust_fuzzy_search::fuzzy_search_best_n;
 
 #[derive(Deserialize)]
 struct VoiceListResponse {
