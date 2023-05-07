@@ -50,7 +50,7 @@ pub async fn fuzzy_search_voices(query: String) -> String {
     let matcher = SkimMatcherV2::default();
     let mut matches = Vec::new();
 
-    for voice in voices {
+    for voice in voices.models {
         if let Some((score, _)) = matcher.fuzzy_indices(&query, &voice.name) {
             matches.push((score, voice));
         }
