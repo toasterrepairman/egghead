@@ -84,10 +84,10 @@ pub async fn get_audio_url(voice_name: &str, message: &str) -> Result<String, Bo
             if status_response.state.as_ref().unwrap().status == "complete_success" {
                 audio_url = status_response.state.unwrap().maybe_public_bucket_wav_audio_path;
             } else {
-                break
+                
             }
         } else {
-            break
+
         }
     }
 
