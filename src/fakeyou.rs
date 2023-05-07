@@ -57,7 +57,7 @@ pub async fn get_audio_url(voice_name: &str, message: &str) -> Result<String, Bo
     let cm = ClosestMatch::new(voice_titles, vec![3]);
 
 // Find the closest-matching voice title for the specified voice_name
-    let closest_voice_title = cm.get_closest(&voice_name).ok_or("Voice not found")?;
+    let closest_voice_title = cm.get_closest(voice_name.to_string()).ok_or("Voice not found")?;
 
 // Find the model_token for the closest-matching voice title
     let model_token = response.models.iter()
