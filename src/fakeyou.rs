@@ -10,6 +10,7 @@ use unicase::UniCase;
 use unidecode::unidecode;
 use fuzzy_matcher::FuzzyMatcher;
 use fuzzy_matcher::skim::{fuzzy_indices};
+use fuzzy_matcher::skim::SkimMatcherV2;
 
 #[derive(Deserialize)]
 struct VoiceListResponse {
@@ -45,7 +46,7 @@ pub async fn fuzzy_search_voices(query: String) -> String {
     let voice_list_url = "https://api.fakeyou.com/tts/list";
     let voices: VoiceListResponse = client.get(voice_list_url).send().await.unwrap().json().await.unwrap();
 
-    let matcher = <dyn FuzzyMatcher>::default();
+    let matcher = SkimMatcherV2::default();
     let mut matches = Vec::new();
 
     for voice in voices.models {
