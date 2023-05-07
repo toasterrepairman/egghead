@@ -280,23 +280,19 @@ async fn voices(ctx: &Context, msg: &Message) -> CommandResult {
     let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
         .expect("Typing failed");
 
-    let voice_name = msg.content.clone().split_off(6);
-    let prompt = match msg.channel_id.messages(&ctx.http, |retriever| {
-        retriever.limit(2)
-    }).await {
-        Ok(messages) => messages.last().cloned(),
-        Err(why) => {
-            println!("Error getting messages: {:?}", why);
-            None
-        }
-    };
+    let prompt = msg.content.clone().split_off(6);
     println!("{:?}", prompt);
 
-    let audio_url = get_audio_url(&voice_name, &prompt.unwrap().content).await.unwrap();
+    let runner = tokio::task::spawn_blocking(move || {
+        println!("Thread Spawned!");
+        // This is running on a thread where blocking is fine.
+        let response = fakeyou::fuzzy_search_voices(prompt);
+        response
+    });
 
     msg.reply(
         ctx.clone(),
-        format!("{}", audio_url
+        format!("{}", runner.await.unwrap()
         )).await?;
 
     Ok(typing.stop().unwrap())
