@@ -50,21 +50,27 @@ pub async fn get_audio_url(voice_name: &str, message: &str) -> Result<String, Bo
 
     // Find the model_token for the specified voice_name
 
-// Create a list of available voice titles
-    let voice_titles: Vec<String> = response.models.iter().map(|model| model.title.clone()).collect();
+    // Filter out non-UTF8 voices
+        let filtered_models = response.models.iter()
+            .filter(|model| !String::from_utf8_lossy(&model.title.as_bytes()).contains("�"))
+            .collect::<Vec<_>>();
 
-// Build the closestmatch object
-    let cm = ClosestMatch::new(voice_titles, vec![3]);
+    // Create a list of available voice titles
+        let voice_titles: Vec<String> = filtered_models.iter().map(|model| model.title.clone()).collect();
 
-// Find the closest-matching voice title for the specified voice_name
-    let closest_voice_title = cm.get_closest(voice_name.to_string()).ok_or("Voice not found")?;
 
-// Find the model_token for the closest-matching voice title
-    let model_token = response.models.iter()
-        .find(|model| model.title == closest_voice_title)
-        .ok_or("Voice not found")?
-        .model_token
-        .clone();
+    // Build the closestmatch object
+        let cm = ClosestMatch::new(voice_titles, vec![3]);
+
+    // Find the closest-matching voice title for the specified voice_name
+        let closest_voice_title = cm.get_closest(voice_name.to_string()).ok_or("Voice not found")?;
+
+    // Find the model_token for the closest-matching voice title
+        let model_token = response.models.iter()
+            .find(|model| model.title == closest_voice_title)
+            .ok_or("Voice not found")?
+            .model_token
+            .clone();
 
     println!("Got past the voice search! {}", &model_token);
 
