@@ -8,6 +8,7 @@ use serde_with::skip_serializing_none;
 use closestmatch::ClosestMatch;
 use unicase::UniCase;
 use unidecode::unidecode;
+use fuzzy_matcher::FuzzyMatcher;
 use fuzzy_matcher::skim::{fuzzy_indices};
 
 #[derive(Deserialize)]
