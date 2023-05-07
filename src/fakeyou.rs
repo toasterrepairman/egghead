@@ -3,8 +3,7 @@ use serde_json::Value;
 use std::error::Error;
 use uuid::Uuid;
 use serde_json::json;
-use serde::{Deserialize};
-use serde_json::{self, Result};
+use serde::Deserialize;
 /*
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -17,16 +16,17 @@ async fn main() -> Result<(), Box<dyn Error>> {
 }
 */
 
+#[serde(transparent)]
 #[derive(Debug, Deserialize)]
 struct Voice {
     model_token: String,
     title: String,
 }
 
-#[derive(Deserialize, Debug)]
 #[serde(transparent)]
-pub struct VoicesResponse {
-    pub results: Vec<Voice>,
+#[derive(Deserialize)]
+struct VoicesResponse {
+    results: Vec<Voice>,
 }
 
 #[derive(Deserialize)]
@@ -42,21 +42,13 @@ struct JobState {
     maybe_public_bucket_wav_audio_path: Option<String>,
 }
 
-impl VoicesResponse {
-    pub fn new(data: &str) -> Result<VoicesResponse> {
-        let response = serde_json::from_str(data);
-        response
-    }
-}
-
 pub async fn get_audio_url(voice_name: &str, message: &str) -> Result<String, Box<dyn Error + Send + Sync>> {
     let client = Client::new();
 
     // Get the list of voices
     let voices_url = "https://api.fakeyou.com/tts/list";
-    let response: VoicesResponse = {
-        results: client.get(voices_url).send().await?.json().await.unwrap()
-    };
+    let json_data: Vec<Voice> = client.get(voices_url).send().await?.json().await?;
+    let voices_response: VoicesResponse = json_data;
 
     // Find the voice with the requested name
     let voice = response
