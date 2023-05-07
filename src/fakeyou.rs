@@ -1,62 +1,75 @@
+use serde::Deserialize;
 use reqwest::Client;
-use serde_json::{json, Value};
+use serde_json::json;
+use std::time::Duration;
+use tokio::time::sleep;
 
-pub async fn get_audio_url(voice_name: &str, message: &str) -> Result<String, reqwest::Error> {
+#[derive(Deserialize)]
+struct VoiceListResponse {
+    success: bool,
+    models: Vec<VoiceModel>,
+}
+
+#[derive(Deserialize)]
+struct VoiceModel {
+    model_token: String,
+    title: String,
+}
+
+#[derive(Deserialize)]
+struct InferenceJobResponse {
+    success: bool,
+    state: InferenceJobState,
+}
+
+#[derive(Deserialize)]
+struct InferenceJobState {
+    job_token: String,
+    status: String,
+    maybe_public_bucket_wav_audio_path: Option<String>,
+}
+
+pub async fn get_audio_url(voice_name: &str, message: &str) -> Result<String, Box<dyn std::error::Error>> {
     let client = Client::new();
 
-    // Search for the specified voice
-    let list_response = client
-        .get("https://api.fakeyou.com/tts/list")
-        .send()
-        .await?
-        .json::<Value>()
-        .await?;
+    // Get the voice list
+    let voice_list_url = "https://api.fakeyou.com/tts/list";
+    let response: VoiceListResponse = client.get(voice_list_url).send().await?.json().await?;
 
-    let models = list_response["models"].as_array().unwrap();
-    let model_token = models
-        .iter()
-        .find(|model| model["title"].as_str().unwrap().contains(voice_name))
-        .map(|model| model["model_token"].as_str().unwrap())
-        .unwrap();
+    // Find the model_token for the specified voice_name
+    let model_token = response.models.iter()
+        .find(|model| model.title == voice_name)
+        .ok_or("Voice not found")?
+        .model_token
+        .clone();
 
-    // Make the inference request
-    let uuid_idempotency_token = uuid::Uuid::new_v4().to_string();
-    let inference_request_body = json!({
-        "uuid_idempotency_token": uuid_idempotency_token,
+    // Create the inference job
+    let inference_url = "https://api.fakeyou.com/tts/inference";
+    let idempotency_token = uuid::Uuid::new_v4().to_string();
+    let job_payload = json!({
+        "uuid_idempotency_token": idempotency_token,
         "tts_model_token": model_token,
         "inference_text": message
     });
-
-    let inference_response = client
-        .post("https://api.fakeyou.com/tts/inference")
-        .json(&inference_request_body)
+    let job_response: InferenceJobResponse = client.post(inference_url)
+        .json(&job_payload)
         .send()
         .await?
-        .json::<Value>()
+        .json()
         .await?;
 
-    let inference_job_token = inference_response["job_token"].as_str().unwrap();
+    let job_token = job_response.state.job_token;
 
-    // Poll the API until the job is complete
+    // Poll the API for the audio file URL
     let mut audio_url = None;
     while audio_url.is_none() {
-        let job_response = client
-            .get(&format!(
-                "https://api.fakeyou.com/tts/job/{}",
-                inference_job_token
-            ))
-            .send()
-            .await?
-            .json::<Value>()
-            .await?;
-
-        if job_response["state"]["status"].as_str().unwrap() == "complete_success" {
-            let public_bucket_wav_audio_path = job_response["state"]["maybe_public_bucket_wav_audio_path"].as_str().unwrap();
-            audio_url = Some(format!("https://api.fakeyou.com{}", public_bucket_wav_audio_path));
-        } else {
-            tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
+        sleep(Duration::from_secs(1)).await; // Wait before polling
+        let job_status_url = format!("https://api.fakeyou.com/tts/job/{}", job_token);
+        let status_response: InferenceJobResponse = client.get(&job_status_url).send().await?.json().await?;
+        if status_response.state.status == "complete_success" {
+            audio_url = status_response.state.maybe_public_bucket_wav_audio_path;
         }
     }
 
-    Ok(audio_url.unwrap())
+    Ok(format!("https://api.fakeyou.com{}", audio_url.unwrap()))
 }
