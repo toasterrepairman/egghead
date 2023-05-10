@@ -5,7 +5,6 @@ use std::error::Error as StdError;
 pub async fn get_chat_response(temp: &str, init: &str, prompt: &str) -> Result<String, Error> {
     let response = reqwest::Client::new()
         .post("http://localhost:8080/v1/completions")
-        .bearer_auth(None)
         .json(&serde_json::json!({
             "model": "ggml-gpt4all-j.bin",
             "prompt": prompt,
