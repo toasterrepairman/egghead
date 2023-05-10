@@ -21,5 +21,5 @@ pub async fn get_chat_response(temp: &str, init: &str, prompt: &str) -> Result<S
     let text_completion = response_json["choices"].as_array().unwrap().first().unwrap();
     let response_text = text_completion["text"].as_str().unwrap().to_owned();
 
-    Ok(response_text)
+    Ok(response_text.await)
 }
