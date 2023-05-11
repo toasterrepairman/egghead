@@ -7,10 +7,10 @@ pub fn get_chat_response(temp: &str, init: &str, prompt: &str) -> Result<String,
         .timeout(Duration::from_secs(300))
         .build()?;
 
-    let prompt_input = format!("{}\n{}", init, prompt);
+    // let prompt_input = format!("{}\n{}", init, prompt);
     let request_data = json!({
         "model": "ggml-vic7b-q4_0.bin",
-        "prompt": prompt_input,
+        "messages": [{"role": init, "content": prompt}]
         "temperature": temp.parse::<f64>().unwrap()
     });
 
@@ -22,7 +22,7 @@ pub fn get_chat_response(temp: &str, init: &str, prompt: &str) -> Result<String,
 
     let response_json: serde_json::Value = response.json()?;
     println!("{}", &response_json);
-    let completion_text = response_json["choices"][0]["text"].as_str().unwrap_or("");
+    let completion_text = response_json["choices"][0]["text"].as_str().unwrap_or("Prompt machine broke");
     println!("{}", &completion_text);
 
     Ok(completion_text.to_string())
