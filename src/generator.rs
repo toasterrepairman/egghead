@@ -11,7 +11,9 @@ pub fn get_chat_response(temp: &str, init: &str, prompt: &str) -> Result<String,
     let request_data = json!({
         "model": "ggml-vic7b-q4_0.bin",
         "prompt": prompt_input,
-        "temperature": temp.parse::<f64>().unwrap()
+        "temperature": temp.parse::<f64>().unwrap(),
+        "stream": false,
+        "max_tokens": 64,
     });
 
     let response = client
