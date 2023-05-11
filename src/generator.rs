@@ -41,5 +41,6 @@ pub fn get_chat_response(temp: &str, init: &str, prompt: &str) -> Result<String,
         .json(&body)
         .send()?
         .json::<ResponseBody>()?;
+    println!("{:?}", response);
     Ok(response.choices[0].text.clone())
 }
