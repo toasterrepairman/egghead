@@ -21,6 +21,7 @@ pub fn get_chat_response(temp: &str, init: &str, prompt: &str) -> Result<String,
         .send()?;
 
     let response_json: serde_json::Value = response.json()?;
+    println!("{}", &response_json);
     let completion_text = response_json["choices"][0]["text"].as_str().unwrap_or("");
     println!("{}", &completion_text);
 
