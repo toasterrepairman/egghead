@@ -1,19 +1,23 @@
-use reqwest::blocking::Client;
+use reqwest::Error;
 
-pub fn get_chat_response(temp: &str, init: &str, prompt: &str) -> Result<String, reqwest::Error> {
-    let client = Client::new();
+pub async fn get_chat_response(temp: &str, init: &str, prompt: &str) -> Result<String, Error> {
+    let client = reqwest::Client::new();
+    let url = "http://localhost:8080/v1/completions";
+    let input = format!("{}{}\n{}", init, prompt, temp);
 
-    let payload = format!(
-        r#"{{"model": "ggml-gpt4all-j.bin", "prompt": "{}\n{}\n", "temperature": {}}}"#,
-        init, prompt, temp
-    );
-
-    let response = client
-        .post("http://localhost:8080/v1/completions")
+    let res = client
+        .post(url)
         .header("Content-Type", "application/json")
-        .body(payload)
-        .send()?
-        .text()?;
+        .body(format!(
+            r#"{{ "model": "ggml-gpt4all-j.bin", "prompt": "{}", "temperature": {} }}"#,
+            input, temp
+        ))
+        .send()
+        .await?;
 
-    Ok(response)
+    let body = res.text().await?;
+    let json: serde_json::Value = serde_json::from_str(&body)?;
+
+    let text = json["choices"][0]["text"].as_str().unwrap_or("");
+    Ok(String::from(text))
 }
