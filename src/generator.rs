@@ -9,7 +9,7 @@ pub fn get_chat_response(temp: &str, init: &str, prompt: &str) -> Result<String,
 
     let prompt_input = format!("{}\n{}", init, prompt);
     let request_data = json!({
-        "model": "ggml-gpt4all-j.bin",
+        "model": "ggml-vic7b-q4_0.bin",
         "prompt": prompt_input,
         "temperature": temp.parse::<f64>().unwrap()
     });
