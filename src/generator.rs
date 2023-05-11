@@ -7,10 +7,10 @@ pub fn get_chat_response(temp: &str, init: &str, prompt: &str) -> Result<String,
         .timeout(Duration::from_secs(300))
         .build()?;
 
-    // let prompt_input = format!("{}\n{}", init, prompt);
+    let prompt_input = format!("{}\n{}", init, prompt);
     let request_data = json!({
         "model": "ggml-vic7b-q4_0.bin",
-        "prompt": [{"role": init, "content": prompt}],
+        "prompt": prompt_input,
         "temperature": temp.parse::<f64>().unwrap()
     });
 
