@@ -1,23 +1,22 @@
 use reqwest::Error;
 
 pub async fn get_chat_response(temp: &str, init: &str, prompt: &str) -> Result<String, Error> {
-    let client = reqwest::Client::new();
-    let url = "http://localhost:8080/v1/completions";
-    let input = format!("{}{}\n{}", init, prompt, temp);
+    let body = format!(
+        r#"{{"model": "ggml-gpt4all-j.bin", "prompt": "{}\n{}", "temperature": {}}}"#,
+        init, prompt, temp
+    );
 
+    let client = reqwest::Client::new();
     let res = client
-        .post(url)
+        .post("http://localhost:8080/v1/completions")
         .header("Content-Type", "application/json")
-        .body(format!(
-            r#"{{ "model": "ggml-gpt4all-j.bin", "prompt": "{}", "temperature": {} }}"#,
-            input, temp
-        ))
+        .body(body)
         .send()
         .await?;
 
-    let body = res.text().await?;
-    let json: serde_json::Value = serde_json::from_str(&body)?;
+    let text = res.text().await?;
+    let json: serde_json::Value = serde_json::from_str(&text)?;
 
-    let text = json["choices"][0]["text"].as_str().unwrap_or("");
-    Ok(String::from(text))
+    let completion = json["choices"][0]["text"].as_str().unwrap();
+    Ok(completion.to_owned())
 }
