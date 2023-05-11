@@ -236,7 +236,7 @@ async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
     let runner = tokio::task::spawn_blocking(move || {
         println!("Thread Spawned!");
         // This is running on a thread where blocking is fine.
-        let response = generator::get_chat_response("0.6", "I am egghead, the world's smartest computer. I will write a complete answer that is always ended by [end of text].", &prompt).unwrap();
+        let response = generator::get_chat_response("0.6", "I am egghead, the world's smartest computer. I will write a complete answer that is always ended by [end of text].", &prompt).await.unwrap();
         response
     });
 
@@ -309,7 +309,7 @@ async fn green(ctx: &Context, msg: &Message) -> CommandResult {
     let runner = tokio::task::spawn_blocking(move || {
         println!("Thread Spawned!");
         // This is running on a thread where blocking is fine.
-        let response = generator::get_chat_response("0.6", "Write a classic 4chan greentext based on the following prompt: \n>be me \n>", &prompt).unwrap();
+        let response = generator::get_chat_response("0.6", "Write a classic 4chan greentext based on the following prompt: \n>be me \n>", &prompt).await.unwrap();
         response
     });
 
