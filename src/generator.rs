@@ -15,7 +15,7 @@ pub async fn get_chat_response(temp: &str, init: &str, prompt: &str) -> Result<S
         .await?;
 
     let text = res.text().await?;
-    let json: serde_json::Value = serde_json::from_str(&text)?;
+    let json: serde_json::Value = serde_json::from_str(&text).unwrap();
 
     let completion = json["choices"][0]["text"].as_str().unwrap();
     Ok(completion.to_owned())
