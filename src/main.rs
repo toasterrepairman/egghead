@@ -253,7 +253,7 @@ async fn pray(ctx: &Context, msg: &Message) -> CommandResult {
     let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
         .expect("Typing failed");
 
-    let prompt = msg.content.clone().split_off(6);
+    let prompt = msg.content.clone().split_off(7);
     println!("{:?}", prompt);
 
     let runner = tokio::task::spawn_blocking(move || {
