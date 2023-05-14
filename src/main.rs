@@ -259,7 +259,7 @@ async fn pray(ctx: &Context, msg: &Message) -> CommandResult {
     let runner = tokio::task::spawn_blocking(move || {
         println!("Thread Spawned!");
         // This is running on a thread where blocking is fine.
-        let response = generator::get_chat_response("0.6", "I am egghead, the mechanical god to a colony of humans on a foreign rimworld. They have sent you a humble prayer, querying your mechanical wisdom for a response:", &prompt).unwrap();
+        let response = generator::get_chat_response("0.6", "I am egghead, the mechanical god to a colony of humans on a foreign rimworld. They have sent me a humble prayer, querying my mechanical wisdom for a response:", &prompt).unwrap();
         response
     });
 
