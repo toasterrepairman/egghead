@@ -355,13 +355,13 @@ async fn code(ctx: &Context, msg: &Message) -> CommandResult {
     let runner = tokio::task::spawn_blocking(move || {
         println!("Thread Spawned!");
         // This is running on a thread where blocking is fine.
-        let response = generator::get_chat_response("0.6", "Respond to the request with the name of the language in all lowercase, then write the program on a new line under it. A complete answer is always ended by [end of text].", &prompt).unwrap();
+        let response = generator::get_chat_response("0.6", "Respond to the request with a helpful technical breakdown, then write any neccesary code in '```'-style markdown brackets with language annotation.", &prompt).unwrap();
         response
     });
 
     msg.reply(
         ctx.clone(),
-        format!("```{}\n```", runner.await.unwrap()
+        format!("", runner.await.unwrap()
         )).await?;
 
     Ok(typing.stop().unwrap())
