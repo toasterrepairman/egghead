@@ -361,7 +361,7 @@ async fn code(ctx: &Context, msg: &Message) -> CommandResult {
 
     msg.reply(
         ctx.clone(),
-        format!("", runner.await.unwrap()
+        format!("{}", runner.await.unwrap()
         )).await?;
 
     Ok(typing.stop().unwrap())
