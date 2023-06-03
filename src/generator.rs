@@ -37,7 +37,7 @@ pub fn get_code_response(temp: &str, init: &str, prompt: &str) -> Result<String,
 
     let prompt_input = format!("{}{}\n", init, prompt);
     let request_data = json!({
-        "model": "starcoder-ggml-q4_1.bin",
+        "model": "ggml-model-f16.bin",
         "prompt": prompt_input,
         "temperature": temp.parse::<f64>().unwrap(),
         // "stream": false,
