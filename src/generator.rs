@@ -37,7 +37,7 @@ pub fn get_code_response(temp: &str, init: &str, prompt: &str) -> Result<String,
 
     let prompt_input = format!("{}{}\n", init, prompt);
     let request_data = json!({
-        "model": "RedPajama-INCITE-Chat-3B-v1-q4_0.bin",
+        "model": "Wizard-Vicuna-7B-Uncensored.ggmlv3.q4_1.bin",
         "prompt": prompt_input,
         "temperature": temp.parse::<f64>().unwrap(),
         // "stream": false,

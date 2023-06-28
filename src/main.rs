@@ -480,12 +480,17 @@ async fn read(ctx: &Context, msg: &Message) -> CommandResult {
             "None".to_string()
         }
     };
-    println!("{:?}", prompt);
+    let cleanprompt = prompt.split_whitespace()
+        .filter(|word| !word.starts_with('e') && !word.starts_with('E'))
+        .collect::<Vec<_>>()
+        .join(" ");
+
+    println!("{:?}", cleanprompt);
 
     let runner = tokio::task::spawn_blocking(move || {
         println!("Thread Spawned!");
         // This is running on a thread where blocking is fine.
-        let response = generator::get_chat_response("1.0", "A complete article is always ended by [end of text]. Respond to the following Discord conversation as egghead, the world's smartest computer: ", &prompt);
+        let response = generator::get_chat_response("1.0", "A complete article is always ended by [end of text]. Respond to the following Discord conversation as egghead, the world's smartest computer: ", &cleanprompt);
         response
     });
 
