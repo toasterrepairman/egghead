@@ -65,7 +65,7 @@ pub fn get_code_response(temp: &str, init: &str, prompt: &str) -> Result<String,
 
     let prompt_input = format!("{}{}\n", init, prompt);
     let request_data = json!({
-        "model": "Wizard-Vicuna-7B-Uncensored.ggmlv3.q4_1.bin",
+        "model": "codellama-7b.ggmlv3.Q4_1.bin",
         "prompt": prompt_input,
         "temperature": temp.parse::<f64>().unwrap(),
         // "stream": false,
