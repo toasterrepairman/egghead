@@ -7,7 +7,7 @@ pub fn get_chat_response(temp: &str, init: &str, prompt: &str) -> Result<String,
         .timeout(Duration::from_secs(300))
         .build()?;
 
-    let prompt_input = format!("{}{}\n", init, prompt);
+    let prompt_input = format!("{}{}\n\n", init, prompt);
     let request_data = json!({
         "model": "llama2_7b_chat_uncensored.ggmlv3.q4_1.bin",
         "prompt": prompt_input,
