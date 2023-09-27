@@ -37,7 +37,7 @@ pub fn get_smart_response(temp: &str, init: &str, prompt: &str) -> Result<String
 
     let prompt_input = format!("{}{}\n", init, prompt);
     let request_data = json!({
-        "model": "wizardlm-13b-v1.2.ggmlv3.q4_0.bin",
+        "model": "speechless-llama2-hermes-orca-platypus-wizardlm-13b.Q3_K_L.gguf",
         "prompt": prompt_input,
         "temperature": temp.parse::<f64>().unwrap(),
         "stream": false,
