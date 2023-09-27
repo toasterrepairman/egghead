@@ -40,8 +40,8 @@ pub fn get_smart_response(temp: &str, init: &str, prompt: &str) -> Result<String
         "model": "wizardlm-13b-v1.2.ggmlv3.q4_0.bin",
         "prompt": prompt_input,
         "temperature": temp.parse::<f64>().unwrap(),
-        // "stream": false,
-        // "max_tokens": 64,
+        "stream": false,
+        "max_tokens": 100,
     });
 
     let response = client
