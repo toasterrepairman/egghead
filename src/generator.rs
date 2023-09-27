@@ -12,8 +12,8 @@ pub fn get_chat_response(temp: &str, init: &str, prompt: &str) -> Result<String,
         "model": "mistral-7b-v0.1.Q4_K_M.gguf",
         "prompt": prompt_input,
         "temperature": temp.parse::<f64>().unwrap(),
-        // "stream": false,
-        // "max_tokens": 64,
+        "stream": false,
+        "max_tokens": 256,
     });
 
     let response = client
