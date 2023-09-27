@@ -32,7 +32,7 @@ pub fn get_chat_response(temp: &str, init: &str, prompt: &str) -> Result<String,
 
 pub fn get_smart_response(temp: &str, init: &str, prompt: &str) -> Result<String, reqwest::Error> {
     let client = Client::builder()
-        .timeout(Duration::from_secs(300))
+        .timeout(Duration::from_secs(500))
         .build()?;
 
     let prompt_input = format!("{}{}\n", init, prompt);
@@ -41,7 +41,6 @@ pub fn get_smart_response(temp: &str, init: &str, prompt: &str) -> Result<String
         "prompt": prompt_input,
         "temperature": temp.parse::<f64>().unwrap(),
         "stream": false,
-        "max_tokens": 100,
     });
 
     let response = client
