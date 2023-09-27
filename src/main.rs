@@ -56,7 +56,7 @@ impl TypeMapKey for MessageCount {
 }
 
 #[group]
-#[commands(ping, command_usage, voices, pray, ask, say, right, green, left, react, read, tldr, code, help)]
+#[commands(ping, command_usage, voices, pray, ask, say, right, green, left, react, read, tldr, smart, help)]
 struct General;
 
 #[hook]
@@ -345,17 +345,17 @@ async fn green(ctx: &Context, msg: &Message) -> CommandResult {
 }
 
 #[command]
-async fn code(ctx: &Context, msg: &Message) -> CommandResult {
+async fn smart(ctx: &Context, msg: &Message) -> CommandResult {
     let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
         .expect("Typing failed");
 
-    let prompt = msg.content.clone().split_off(6);
+    let prompt = msg.content.clone().split_off(7);
     println!("{:?}", prompt);
 
     let runner = tokio::task::spawn_blocking(move || {
         println!("Thread Spawned!");
         // This is running on a thread where blocking is fine.
-        let response = generator::get_code_response("0.9", "I am egghead, the world's smartest computer. Here is my response to your question:\n", &prompt).unwrap();
+        let response = generator::get_smart_response("0.9", "I am egghead, the world's smartest computer. Here is my response to your question:\n", &prompt).unwrap();
         response
     });
 
