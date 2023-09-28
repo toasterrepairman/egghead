@@ -56,7 +56,7 @@ impl TypeMapKey for MessageCount {
 }
 
 #[group]
-#[commands(ping, command_usage, voices, pray, ask, say, right, green, left, react, read, tldr, smart, help)]
+#[commands(ping, command_usage, voices, pray, ask, say, right, green, left, react, read, tldr, code, help)]
 struct General;
 
 #[hook]
@@ -345,7 +345,7 @@ async fn green(ctx: &Context, msg: &Message) -> CommandResult {
 }
 
 #[command]
-async fn smart(ctx: &Context, msg: &Message) -> CommandResult {
+async fn code(ctx: &Context, msg: &Message) -> CommandResult {
     let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
         .expect("Typing failed");
 
