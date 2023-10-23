@@ -13,7 +13,7 @@ pub fn get_chat_response(temp: &str, init: &str, prompt: &str) -> Result<String,
         "prompt": prompt_input,
         "temperature": temp.parse::<f64>().unwrap(),
         "stream": false,
-        "max_tokens": 256,
+        "max_tokens": 384,
     });
 
     let response = client
