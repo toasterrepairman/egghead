@@ -255,36 +255,28 @@ async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
 async fn see(ctx: &Context, msg: &Message) -> CommandResult {
     let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
         .expect("Typing failed");
-    let channel_id = msg.channel_id;
 
-    // Get the second-most-recent message in the channel
-    let messages = channel_id.messages(&ctx.http, |retriever| retriever.before(msg.id).limit(2)).await?;
+    let channel_id = msg.channel_id;
+    let messages = channel_id.messages(ctx, |retriever| retriever.before(msg.id)).await?;
 
     if let Some(prev_msg) = messages.get(1) {
-        if let Some(attachment) = prev_msg.attachments.get(0) {
-            // Check if the previous message has an image attachment
+        if let Some(attachment) = &prev_msg.attachments.get(0) {
             if attachment.width.is_some() && attachment.height.is_some() {
-                // Download the image to /home/ubuntu/.tmp/
+                // Download the image
                 let response = reqwest::get(&attachment.url).await?;
-                let image_bytes = response.bytes().await?;
+                let mut file = File::create("/home/ubuntu/.tmp/downloaded_image.jpg")?;
+                let mut content = response.bytes().await?;
+                file.write_all(&content)?;
 
-                let tmp_dir = "/home/ubuntu/.tmp/";
-                if !Path::new(tmp_dir).exists() {
-                    fs::create_dir_all(tmp_dir)?;
-                }
-
-                let image_filename = format!("image_{}", attachment.filename);
-                let image_path = format!("{}{}", tmp_dir, image_filename);
-
-                fs::write(&image_path, &image_bytes)?;
-
-                // Print the path to the image
-                println!("Image downloaded: {}", image_path);
+                println!("Image downloaded: /home/ubuntu/.tmp/downloaded_image.jpg");
             } else {
-                // If the previous message does not have an image attachment, print "break" to the console
                 println!("break");
             }
+        } else {
+            println!("break");
         }
+    } else {
+        println!("No previous message found.");
     }
 
     Ok(typing.stop().unwrap())
