@@ -437,7 +437,7 @@ async fn react(ctx: &Context, msg: &Message) -> CommandResult {
                 if let Some(attachment) = prev_msg.attachments.get(0) {
                     if attachment.width.is_some() {
                         // Assuming Linux temp directory is "/tmp/".
-                        let temp_dir = "/tmp/";
+                        let temp_dir = "/home/ubuntu/.tmp/";
                         let file_name = attachment.filename.as_str();
                         let image_url = attachment.url.as_str();
                         let file_path = format!("{}{}", temp_dir, file_name);
