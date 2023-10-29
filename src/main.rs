@@ -250,7 +250,7 @@ async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
     Ok(typing.stop().unwrap())
 }
 
-fn see(ctx: &Context, msg: &Message) {
+async fn see(ctx: &Context, msg: &Message) {
     let last_message = msg.channel_id.messages(&ctx.http, |retriever| {
         retriever.limit(2).before(msg.id)
     });
