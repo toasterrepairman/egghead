@@ -255,7 +255,7 @@ fn see(ctx: &Context, msg: &Message) {
         retriever.limit(2).before(msg.id)
     });
 
-    match last_message {
+    match last_message.await {
         Ok(messages) => {
             if let Some(prev_msg) = messages.get(1) {
                 if let Some(attachment) = prev_msg.attachments.get(0) {
@@ -273,13 +273,24 @@ fn see(ctx: &Context, msg: &Message) {
                             }
                         }
 
-                        println!("Image downloaded successfully. Path: {}", file_path);
+                        let response = img_react(&file_path);
+
+                        msg.reply(
+                            ctx.clone(),
+                            format!("{}", response?
+                        )).await?;
+
+                        println!("Doen!")
                     } else {
-                        println!("The last message had an attachment, but it was not an image.");
-                    }
+                        println!("Doen!")
+                    };
+
                 } else {
-                    println!("The last message did not have an image attachment.");
-                }
+                    msg.reply(
+                        ctx.clone(),
+                        format!("oops"
+                        )).await?;
+                };
             } else {
                 println!("No previous message found.");
             }
@@ -287,7 +298,6 @@ fn see(ctx: &Context, msg: &Message) {
         Err(_) => {
             println!("Error occurred while retrieving messages.");
         }
-    }
 }
 
 #[command]
