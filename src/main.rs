@@ -264,18 +264,16 @@ async fn see(ctx: &Context, msg: &Message) -> CommandResult {
         if let Some(attachment) = &prev_msg.attachments.get(0) {
             if attachment.width.is_some() && attachment.height.is_some() {
                 fs::remove_file("/home/ubuntu/.tmp/downloaded_image.jpg").expect("Failed to delete file");
+                // Download the image
                 let response = reqwest::get(&attachment.url).await?;
                 let image_bytes = response.bytes().await?;
                 let image = image::load_from_memory(&image_bytes)?;
 
                 // Convert the image to JPEG format
-                let mut jpeg_buffer = Vec::new();
-                image.write_to(&mut jpeg_buffer, image::ImageOutputFormat::Jpeg(85))?;
-
-                // Save the converted image as a JPEG file
                 let mut file = File::create("/home/ubuntu/.tmp/downloaded_image.jpg")?;
-                file.write_all(&jpeg_buffer)?;
+                image.write_to(&mut file, image::ImageOutputFormat::Jpeg(85))?;
 
+                let reaction = img_react("/home/ubuntu/.tmp/downloaded_image.jpg").unwrap();
                 msg.reply(
                     ctx.clone(),
                     format!("{}", reaction
