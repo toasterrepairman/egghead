@@ -267,6 +267,7 @@ async fn see(ctx: &Context, msg: &Message) -> CommandResult {
                 let mut file = File::create("/home/ubuntu/.tmp/downloaded_image.jpg")?;
                 let mut content = response.bytes().await?;
                 file.write_all(&content)?;
+                img_react("/home/ubuntu/.tmp/downloaded_image.jpg");
 
                 println!("Image downloaded: /home/ubuntu/.tmp/downloaded_image.jpg");
             } else {
