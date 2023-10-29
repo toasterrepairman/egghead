@@ -259,7 +259,7 @@ async fn see(ctx: &Context, msg: &Message) -> CommandResult {
     let channel_id = msg.channel_id;
     let messages = channel_id.messages(ctx, |retriever| retriever.before(msg.id)).await?;
 
-    if let Some(prev_msg) = messages.get(1) {
+    if let Some(prev_msg) = messages.get(2) {
         if let Some(attachment) = &prev_msg.attachments.get(0) {
             if attachment.width.is_some() && attachment.height.is_some() {
                 // Download the image
