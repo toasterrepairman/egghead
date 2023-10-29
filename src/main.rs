@@ -267,8 +267,13 @@ async fn see(ctx: &Context, msg: &Message) -> CommandResult {
                 let mut file = File::create("/home/ubuntu/.tmp/downloaded_image.jpg")?;
                 let mut content = response.bytes().await?;
                 file.write_all(&content)?;
-                img_react("/home/ubuntu/.tmp/downloaded_image.jpg");
+                let reaction = img_react("/home/ubuntu/.tmp/downloaded_image.jpg").unwrap();
 
+
+                msg.reply(
+                    ctx.clone(),
+                    format!("{}", reaction
+                )).await?;
                 println!("Image downloaded: /home/ubuntu/.tmp/downloaded_image.jpg");
             } else {
                 println!("break");
@@ -305,7 +310,7 @@ async fn say(ctx: &Context, msg: &Message) -> CommandResult {
     msg.reply(
         ctx.clone(),
         format!("{}", audio_url
-        )).await?;
+    )).await?;
 
     Ok(typing.stop().unwrap())
 }
