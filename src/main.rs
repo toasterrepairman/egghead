@@ -446,116 +446,38 @@ async fn react(ctx: &Context, msg: &Message) -> CommandResult {
     let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
         .expect("Typing failed");
 
-    let last_message = msg.channel_id.messages(&ctx.http, |retriever| {
-        retriever.limit(2).before(msg.id)
-    });
+    let channel_id = msg.channel_id;
+    let messages = channel_id.messages(ctx, |retriever| retriever.before(msg.id)).await?;
 
-    match last_message.await {
-        Ok(messages) => {
-            if let Some(prev_msg) = messages.get(1) {
-                if let Some(attachment) = prev_msg.attachments.get(0) {
-                    if attachment.width.is_some() {
-                        // Assuming Linux temp directory is "/tmp/".
-                        let temp_dir = "/home/ubuntu/.tmp/";
-                        let file_name = attachment.filename.as_str();
-                        let image_url = attachment.url.as_str();
-                        let file_path = format!("{}{}", temp_dir, file_name);
+    if let Some(prev_msg) = messages.get(0) {
+        if let Some(attachment) = &prev_msg.attachments.get(0) {
+            if attachment.width.is_some() && attachment.height.is_some() {
+                fs::remove_file("/home/ubuntu/.tmp/downloaded_image.jpg").expect("Failed to delete file");
+                // Download the image
+                let response = reqwest::get(&attachment.url).await?;
+                let image_bytes = response.bytes().await?;
+                let image = image::load_from_memory(&image_bytes)?;
 
-                        // Download the image to the temp directory.
-                        if let Ok(image_data) = reqwest::blocking::get(image_url) {
-                            if let Ok(mut file) = std::fs::File::create(&file_path) {
-                                std::io::copy(&mut image_data.bytes().unwrap().as_ref(), &mut file).unwrap();
-                            }
-                        }
+                // Convert the image to JPEG format
+                let mut file = File::create("/home/ubuntu/.tmp/downloaded_image.jpg")?;
+                image.write_to(&mut file, image::ImageOutputFormat::Jpeg(85))?;
 
-                        let response = img_react(&file_path);
-                        
-                        msg.reply(
-                            ctx.clone(),
-                            format!("{}", response?
-                        )).await?;
-    
-                        println!("Doen!")
-                    } else {
-                        println!("Doen!")
-                    };
-
-                } else {                            
-                    let input = msg.content.clone().split_off(7).clone().trim().to_string();
-
-                    let heat = if input.to_string() == "" {
-                        "1.0"
-                    } else {
-                        &input
-                    }.to_string();
-
-                    println!("{:?}", &heat);
-
-                    let prompt = match msg.channel_id.messages(&ctx.http, |retriever| {
-                        retriever.limit(2)
-                    }).await {
-                        Ok(messages) => messages.last().cloned(),
-                        Err(why) => {
-                            println!("Error getting messages: {:?}", why);
-                            None
-                        }
-                    };
-                    println!("{:?}", prompt);
-
-                    let runner = tokio::task::spawn_blocking(move || {
-                        println!("Thread Spawned!");
-                        // This is running on a thread where blocking is fine.
-                        let response = generator::get_chat_response(&heat, "A complete response is always ended by [end of text]. Respond to the following Discord message as egghead, the world's smartest computer: ", &prompt.unwrap().content).unwrap();
-                        response
-                    });
-
-                    msg.reply(
-                        ctx.clone(),
-                        format!("{}", runner.await?
-                        )).await?;
-                };
+                let reaction = img_react("/home/ubuntu/.tmp/downloaded_image.jpg").unwrap();
+                msg.reply(
+                    ctx.clone(),
+                    format!("{}", reaction
+                )).await?;
+                println!("Image downloaded: /home/ubuntu/.tmp/downloaded_image.jpg");
             } else {
-                println!("No previous message found.");
+                println!("break");
             }
+        } else {
+            println!("no deal");
         }
-        Err(_) => {
-            println!("Error occurred while retrieving messages.");
-        }
+    } else {
+        println!("No previous message found.");
     }
 
-
-    let input = msg.content.clone().split_off(7).clone().trim().to_string();
-
-    let heat = if input.to_string() == "" {
-        "1.0"
-    } else {
-        &input
-    }.to_string();
-
-    println!("{:?}", &heat);
-
-    let prompt = match msg.channel_id.messages(&ctx.http, |retriever| {
-        retriever.limit(2)
-    }).await {
-        Ok(messages) => messages.last().cloned(),
-        Err(why) => {
-            println!("Error getting messages: {:?}", why);
-            None
-        }
-    };
-    println!("{:?}", prompt);
-
-    let runner = tokio::task::spawn_blocking(move || {
-        println!("Thread Spawned!");
-        // This is running on a thread where blocking is fine.
-        let response = generator::get_chat_response(&heat, "A complete response is always ended by [end of text]. Respond to the following Discord message as egghead, the world's smartest computer: ", &prompt.unwrap().content).unwrap();
-        response
-    });
-
-    msg.reply(
-        ctx.clone(),
-        format!("{}", runner.await?
-        )).await?;
 
     Ok(typing.stop().unwrap())
 }
