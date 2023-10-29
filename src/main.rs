@@ -446,6 +446,24 @@ async fn react(ctx: &Context, msg: &Message) -> CommandResult {
     let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
         .expect("Typing failed");
 
+    let input = msg.content.clone().split_off(7).clone().trim().to_string();
+
+    let heat = if input.to_string() == "" {
+        "1.0"
+    } else {
+        &input
+    }.to_string();
+
+    let prompt = match msg.channel_id.messages(&ctx.http, |retriever| {
+        retriever.limit(2)
+    }).await {
+        Ok(messages) => messages.last().cloned(),
+        Err(why) => {
+            println!("Error getting messages: {:?}", why);
+            None
+        }
+    };
+
     let channel_id = msg.channel_id;
     let messages = channel_id.messages(ctx, |retriever| retriever.before(msg.id)).await?;
 
@@ -463,16 +481,34 @@ async fn react(ctx: &Context, msg: &Message) -> CommandResult {
                 image.write_to(&mut file, image::ImageOutputFormat::Jpeg(85))?;
 
                 let reaction = img_react("/home/ubuntu/.tmp/downloaded_image.jpg").unwrap();
+
+                let runner = tokio::task::spawn_blocking(move || {
+                    println!("Thread Spawned!");
+                    // This is running on a thread where blocking is fine.
+                    let response = generator::get_chat_response(&heat, "A complete response is always ended by [end of text]. Respond to the following Discord message as egghead, the world's smartest computer: ", &prompt.unwrap().content).unwrap();
+                    response
+                });
+
                 msg.reply(
                     ctx.clone(),
-                    format!("{}", reaction
+                    format!("{}", runner.await?
                 )).await?;
                 println!("Image downloaded: /home/ubuntu/.tmp/downloaded_image.jpg");
             } else {
                 println!("break");
             }
         } else {
-            println!("no deal");
+            let runner = tokio::task::spawn_blocking(move || {
+                println!("Thread Spawned!");
+                // This is running on a thread where blocking is fine.
+                let response = generator::get_chat_response(&heat, "A complete response is always ended by [end of text]. Respond to the following Discord message as egghead, the world's smartest computer: ", &prompt.unwrap().content).unwrap();
+                response
+            });
+
+            msg.reply(
+                ctx.clone(),
+                format!("{}", runner.await?
+                )).await?;
         }
     } else {
         println!("No previous message found.");
