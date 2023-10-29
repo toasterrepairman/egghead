@@ -431,7 +431,7 @@ async fn react(ctx: &Context, msg: &Message) -> CommandResult {
         retriever.limit(2).before(msg.id)
     });
 
-    match last_message {
+    match last_message.await {
         Ok(messages) => {
             if let Some(prev_msg) = messages.get(1) {
                 if let Some(attachment) = prev_msg.attachments.get(0) {
@@ -449,17 +449,18 @@ async fn react(ctx: &Context, msg: &Message) -> CommandResult {
                             }
                         }
 
-                        let response = img_react(file_path);
+                        let response = img_react(&file_path);
                         
                         msg.reply(
                             ctx.clone(),
-                            format!("{}", runner.await?
-                            )).await?;
+                            format!("{}", response?
+                        )).await?;
     
-                        Ok(typing.stop().unwrap())
+                        println!("Doen!")
                     } else {
-                        println!("The last message had an attachment, but it was not an image.");
-                    }
+                        println!("Doen!")
+                    };
+
                 } else {                            
                     let input = msg.content.clone().split_off(7).clone().trim().to_string();
 
@@ -493,9 +494,7 @@ async fn react(ctx: &Context, msg: &Message) -> CommandResult {
                         ctx.clone(),
                         format!("{}", runner.await?
                         )).await?;
-
-                    Ok(typing.stop().unwrap())
-                }
+                };
             } else {
                 println!("No previous message found.");
             }

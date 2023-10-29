@@ -8,7 +8,7 @@
     utils.lib.eachDefaultSystem
       (system:
         let
-          name = "aeye";
+          name = "egghead";
           pkgs = nixpkgs.legacyPackages.${system};
         in
         rec {
@@ -31,11 +31,11 @@
             default = pkgs.mkShell {
               nativeBuildInputs =
                 with pkgs; [
-                  libtorch-bin
-                  pkgconfig
-                  openssl.dev
-                  rustup
-                  killall
+                  rustc
+                  cargo
+                  openssl
+                  pkg-config
+                  git
                 ];
             };
           };
