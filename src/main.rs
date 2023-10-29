@@ -298,7 +298,6 @@ fn see(ctx: &Context, msg: &Message) {
         Err(_) => {
             println!("Error occurred while retrieving messages.");
         }
-}
 
 #[command]
 async fn say(ctx: &Context, msg: &Message) -> CommandResult {
