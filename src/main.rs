@@ -11,6 +11,7 @@ use std::collections::HashMap;
 use std::env;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
+use std::fs;
 
 use serenity::async_trait;
 use serenity::framework::standard::macros::{command, group, hook};
@@ -250,42 +251,37 @@ async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
     Ok(typing.stop().unwrap())
 }
 
-async fn see(ctx: &Context, msg: &Message) {
-        // Get the last message in the channel
-    let last_message = msg.channel(ctx).messages(ctx, |m| m.before(msg.id)).await?;
+#[command]
+async fn see(ctx: &Context, msg: &Message) -> CommandResult {
+    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
+        .expect("Typing failed");
+    // Check if the message has an attachment and it is an image
+    if let Some(attachment) = msg.attachments.get(0) {
+        if attachment.width.is_some() && attachment.height.is_some() {
+            // Download the image to the specified directory
+            let url = &attachment.url;
+            let response = reqwest::get(url).await?;
 
-    if let Some(last_msg) = last_message.get(1) {
-        // Check if the last message has attachments
-        if !last_msg.attachments.is_empty() {
-            // Check if the first attachment is an image
-            if let Some(attachment) = &last_msg.attachments[0] {
-                if attachment.width.is_some() {
-                    // Download the image to a temporary directory
-                    let tmp_dir = "/home/ubuntu/.tmp/";
-                    let image_path = format!("{}{}", tmp_dir, attachment.filename);
-                    let image_bytes = attachment.download().await?;
+            // Define the file path to save the image
+            let file_name = format!("/home/ubuntu/.tmp/{}", attachment.filename);
+            let mut file = std::fs::File::create(&file_name)?;
 
-                    fs::create_dir_all(tmp_dir)?;
+            // Save the image to the file path
+            let image_data = response.bytes().await?;
+            file.write_all(&image_data)?;
 
-                    let path = Path::new(&image_path);
-                    let mut file = fs::File::create(&path)?;
-                    file.write_all(&image_bytes)?;
-
-                    println!("Image downloaded to: {}", image_path);
-                } else {
-                    println!("The last message had an attachment, but it's not an image.");
-                }
-            } else {
-                println!("The last message had an attachment, but it's not an image.");
-            }
+            // Print the path to the image
+            println!("Image downloaded: {}", file_name);
         } else {
-            println!("The last message had no attachments.");
+            // If attachment is not an image, print "break" to the console
+            println!("break");
         }
     } else {
-        println!("No previous message found in this channel.");
+        // If there is no attachment, print "break" to the console
+        println!("break");
     }
 
-    Ok(())
+    Ok(typing.stop().unwrap())
 }
 
 #[command]
