@@ -485,7 +485,7 @@ async fn react(ctx: &Context, msg: &Message) -> CommandResult {
                 let runner = tokio::task::spawn_blocking(move || {
                     println!("Thread Spawned!");
                     // This is running on a thread where blocking is fine.
-                    let response = generator::get_chat_response(&heat, "A complete response is always ended by [end of text]. Respond to the following Discord message as egghead, the world's smartest computer: ", &prompt.unwrap().content).unwrap();
+                    let response = generator::get_chat_response(&heat, "A complete response is always ended by [end of text]. Respond to all interactions as egghead, the world's smartest computer. Now, respond to a photo with the following features: ", &prompt.unwrap().content).unwrap();
                     response
                 });
 
