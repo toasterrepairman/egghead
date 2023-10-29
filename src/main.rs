@@ -262,6 +262,7 @@ async fn see(ctx: &Context, msg: &Message) -> CommandResult {
     if let Some(prev_msg) = messages.get(2) {
         if let Some(attachment) = &prev_msg.attachments.get(0) {
             if attachment.width.is_some() && attachment.height.is_some() {
+                fs::remove_file("/home/ubuntu/.tmp/downloaded_image.jpg").expect("Failed to delete file");
                 // Download the image
                 let response = reqwest::get(&attachment.url).await?;
                 let mut file = File::create("/home/ubuntu/.tmp/downloaded_image.jpg")?;
