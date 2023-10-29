@@ -5,6 +5,7 @@
 mod fetcher;
 mod fakeyou;
 mod generator;
+mod imgread;
 
 use std::collections::HashMap;
 use std::env;
@@ -30,6 +31,7 @@ use std::path::{Path, PathBuf};
 use std::time::Duration;
 use serenity::futures::TryFutureExt;
 use crate::fakeyou::get_audio_url;
+use crate::imgread::img_react;
 
 // A container type is created for inserting into the Client's `data`, which
 // allows for data to be accessible across all events and framework commands, or
@@ -56,7 +58,7 @@ impl TypeMapKey for MessageCount {
 }
 
 #[group]
-#[commands(ping, command_usage, voices, pray, ask, say, right, green, left, react, read, tldr, code, help)]
+#[commands(ping, command_usage, voices, see, ask, say, right, green, left, react, read, tldr, code, help)]
 struct General;
 
 #[hook]
@@ -249,7 +251,7 @@ async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
 }
 
 #[command]
-async fn pray(ctx: &Context, msg: &Message) -> CommandResult {
+async fn see(ctx: &Context, msg: &Message) -> CommandResult {
     let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
         .expect("Typing failed");
 
@@ -424,6 +426,85 @@ async fn right(ctx: &Context, msg: &Message) -> CommandResult {
 async fn react(ctx: &Context, msg: &Message) -> CommandResult {
     let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
         .expect("Typing failed");
+
+    let last_message = msg.channel_id.messages(&ctx.http, |retriever| {
+        retriever.limit(2).before(msg.id)
+    });
+
+    match last_message {
+        Ok(messages) => {
+            if let Some(prev_msg) = messages.get(1) {
+                if let Some(attachment) = prev_msg.attachments.get(0) {
+                    if attachment.width.is_some() {
+                        // Assuming Linux temp directory is "/tmp/".
+                        let temp_dir = "/tmp/";
+                        let file_name = attachment.filename.as_str();
+                        let image_url = attachment.url.as_str();
+                        let file_path = format!("{}{}", temp_dir, file_name);
+
+                        // Download the image to the temp directory.
+                        if let Ok(image_data) = reqwest::blocking::get(image_url) {
+                            if let Ok(mut file) = std::fs::File::create(&file_path) {
+                                std::io::copy(&mut image_data.bytes().unwrap().as_ref(), &mut file).unwrap();
+                            }
+                        }
+
+                        let response = img_react(file_path);
+                        
+                        msg.reply(
+                            ctx.clone(),
+                            format!("{}", runner.await?
+                            )).await?;
+    
+                        Ok(typing.stop().unwrap())
+                    } else {
+                        println!("The last message had an attachment, but it was not an image.");
+                    }
+                } else {                            
+                    let input = msg.content.clone().split_off(7).clone().trim().to_string();
+
+                    let heat = if input.to_string() == "" {
+                        "1.0"
+                    } else {
+                        &input
+                    }.to_string();
+
+                    println!("{:?}", &heat);
+
+                    let prompt = match msg.channel_id.messages(&ctx.http, |retriever| {
+                        retriever.limit(2)
+                    }).await {
+                        Ok(messages) => messages.last().cloned(),
+                        Err(why) => {
+                            println!("Error getting messages: {:?}", why);
+                            None
+                        }
+                    };
+                    println!("{:?}", prompt);
+
+                    let runner = tokio::task::spawn_blocking(move || {
+                        println!("Thread Spawned!");
+                        // This is running on a thread where blocking is fine.
+                        let response = generator::get_chat_response(&heat, "A complete response is always ended by [end of text]. Respond to the following Discord message as egghead, the world's smartest computer: ", &prompt.unwrap().content).unwrap();
+                        response
+                    });
+
+                    msg.reply(
+                        ctx.clone(),
+                        format!("{}", runner.await?
+                        )).await?;
+
+                    Ok(typing.stop().unwrap())
+                }
+            } else {
+                println!("No previous message found.");
+            }
+        }
+        Err(_) => {
+            println!("Error occurred while retrieving messages.");
+        }
+    }
+
 
     let input = msg.content.clone().split_off(7).clone().trim().to_string();
 
