@@ -251,54 +251,41 @@ async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
 }
 
 async fn see(ctx: &Context, msg: &Message) {
-    let last_message = msg.channel_id.messages(&ctx.http, |retriever| {
-        retriever.limit(2).before(msg.id)
-    });
+        // Get the last message in the channel
+    let last_message = msg.channel(ctx).messages(ctx, |m| m.before(msg.id)).await?;
 
-    match last_message.await {
-        Ok(messages) => {
-            if let Some(prev_msg) = messages.get(1) {
-                if let Some(attachment) = prev_msg.attachments.get(0) {
-                    if attachment.width.is_some() {
-                        // Assuming Linux temp directory is "/tmp/".
-                        let temp_dir = "/home/ubuntu/.tmp/";
-                        let file_name = attachment.filename.as_str();
-                        let image_url = attachment.url.as_str();
-                        let file_path = format!("{}{}", temp_dir, file_name);
+    if let Some(last_msg) = last_message.get(1) {
+        // Check if the last message has attachments
+        if !last_msg.attachments.is_empty() {
+            // Check if the first attachment is an image
+            if let Some(attachment) = &last_msg.attachments[0] {
+                if attachment.width.is_some() {
+                    // Download the image to a temporary directory
+                    let tmp_dir = "/home/ubuntu/.tmp/";
+                    let image_path = format!("{}{}", tmp_dir, attachment.filename);
+                    let image_bytes = attachment.download().await?;
 
-                        // Download the image to the temp directory.
-                        if let Ok(image_data) = reqwest::blocking::get(image_url) {
-                            if let Ok(mut file) = std::fs::File::create(&file_path) {
-                                std::io::copy(&mut image_data.bytes().unwrap().as_ref(), &mut file).unwrap();
-                            }
-                        }
+                    fs::create_dir_all(tmp_dir)?;
 
-                        let response = img_react(&file_path);
+                    let path = Path::new(&image_path);
+                    let mut file = fs::File::create(&path)?;
+                    file.write_all(&image_bytes)?;
 
-                        msg.reply(
-                            ctx.clone(),
-                            format!("{}", response?
-                        )).await?;
-
-                        println!("Doen!")
-                    } else {
-                        println!("Doen!")
-                    };
-
+                    println!("Image downloaded to: {}", image_path);
                 } else {
-                    msg.reply(
-                        ctx.clone(),
-                        format!("oops"
-                        )).await?;
-                };
+                    println!("The last message had an attachment, but it's not an image.");
+                }
             } else {
-                println!("No previous message found.");
+                println!("The last message had an attachment, but it's not an image.");
             }
-        Err(_) => {
-            println!("Error occurred while retrieving messages.");
+        } else {
+            println!("The last message had no attachments.");
         }
-        }
+    } else {
+        println!("No previous message found in this channel.");
     }
+
+    Ok(())
 }
 
 #[command]
