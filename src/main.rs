@@ -250,27 +250,44 @@ async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
     Ok(typing.stop().unwrap())
 }
 
-#[command]
-async fn see(ctx: &Context, msg: &Message) -> CommandResult {
-    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
-        .expect("Typing failed");
-
-    let prompt = msg.content.clone().split_off(7);
-    println!("{:?}", prompt);
-
-    let runner = tokio::task::spawn_blocking(move || {
-        println!("Thread Spawned!");
-        // This is running on a thread where blocking is fine.
-        let response = generator::get_chat_response("0.6", "I am egghead, the mechanical god to a colony of humans on a foreign rimworld. They have sent me a humble prayer, querying my mechanical wisdom for a response: ", &prompt).unwrap();
-        response
+fn see(ctx: &Context, msg: &Message) {
+    let last_message = msg.channel_id.messages(&ctx.http, |retriever| {
+        retriever.limit(2).before(msg.id)
     });
 
-    msg.reply(
-        ctx.clone(),
-        format!("{}", runner.await.unwrap()
-        )).await?;
+    match last_message {
+        Ok(messages) => {
+            if let Some(prev_msg) = messages.get(1) {
+                if let Some(attachment) = prev_msg.attachments.get(0) {
+                    if attachment.width.is_some() {
+                        // Assuming Linux temp directory is "/tmp/".
+                        let temp_dir = "/home/ubuntu/.tmp/";
+                        let file_name = attachment.filename.as_str();
+                        let image_url = attachment.url.as_str();
+                        let file_path = format!("{}{}", temp_dir, file_name);
 
-    Ok(typing.stop().unwrap())
+                        // Download the image to the temp directory.
+                        if let Ok(image_data) = reqwest::blocking::get(image_url) {
+                            if let Ok(mut file) = std::fs::File::create(&file_path) {
+                                std::io::copy(&mut image_data.bytes().unwrap().as_ref(), &mut file).unwrap();
+                            }
+                        }
+
+                        println!("Image downloaded successfully. Path: {}", file_path);
+                    } else {
+                        println!("The last message had an attachment, but it was not an image.");
+                    }
+                } else {
+                    println!("The last message did not have an image attachment.");
+                }
+            } else {
+                println!("No previous message found.");
+            }
+        }
+        Err(_) => {
+            println!("Error occurred while retrieving messages.");
+        }
+    }
 }
 
 #[command]
