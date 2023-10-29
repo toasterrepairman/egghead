@@ -12,6 +12,7 @@ use std::env;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
 use std::fs;
+use image::GenericImageView;
 
 use serenity::async_trait;
 use serenity::framework::standard::macros::{command, group, hook};
@@ -263,13 +264,17 @@ async fn see(ctx: &Context, msg: &Message) -> CommandResult {
         if let Some(attachment) = &prev_msg.attachments.get(0) {
             if attachment.width.is_some() && attachment.height.is_some() {
                 fs::remove_file("/home/ubuntu/.tmp/downloaded_image.jpg").expect("Failed to delete file");
-                // Download the image
                 let response = reqwest::get(&attachment.url).await?;
-                let mut file = File::create("/home/ubuntu/.tmp/downloaded_image.jpg")?;
-                let mut content = response.bytes().await?;
-                file.write_all(&content)?;
-                let reaction = img_react("/home/ubuntu/.tmp/downloaded_image.jpg").unwrap();
+                let image_bytes = response.bytes().await?;
+                let image = image::load_from_memory(&image_bytes)?;
 
+                // Convert the image to JPEG format
+                let mut jpeg_buffer = Vec::new();
+                image.write_to(&mut jpeg_buffer, image::ImageOutputFormat::Jpeg(85))?;
+
+                // Save the converted image as a JPEG file
+                let mut file = File::create("/home/ubuntu/.tmp/downloaded_image.jpg")?;
+                file.write_all(&jpeg_buffer)?;
 
                 msg.reply(
                     ctx.clone(),
