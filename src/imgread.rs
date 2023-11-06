@@ -1,15 +1,14 @@
-use candle::{Device, DType, Result, Tensor};
-use hf_hub::api::sync::Api;
+use std::path::Path;
 
 use anyhow::Error as E;
-use clap::Parser;
+
+use candle::{Device, Result, Tensor};
 
 use candle_examples::token_output_stream::TokenOutputStream;
-use candle_nn::VarBuilder;
 use candle_transformers::models::blip;
 use candle_transformers::models::quantized_blip;
+
 use tokenizers::Tokenizer;
-use candle_examples::device;
 
 enum Model {
     M(blip::BlipForConditionalGeneration),
@@ -44,11 +43,11 @@ pub fn load_image<P: AsRef<std::path::Path>>(p: P) -> Result<Tensor> {
         .broadcast_div(&std)
 }
 
-pub fn img_react(path: &str) -> anyhow::Result<(String)> {
+pub fn img_react(path: &Path) -> anyhow::Result<String> {
     let model_file = {
         let api = hf_hub::api::sync::Api::new()?;
-            let api = api.model("lmz/candle-blip".to_string());
-            api.get("blip-image-captioning-large-q4k.gguf")?
+        let api = api.model("lmz/candle-blip".to_string());
+        api.get("blip-image-captioning-large-q4k.gguf")?
     };
     let tokenizer = {
         let api = hf_hub::api::sync::Api::new()?;
@@ -64,10 +63,8 @@ pub fn img_react(path: &str) -> anyhow::Result<(String)> {
 
     let (image_embeds, device, mut model) = {
         let device = Device::Cpu;
-        // EDIT ME!!!
-        let imgpath = path.to_string();
 
-        let image = load_image(imgpath)?.to_device(&device)?;
+        let image = load_image(path)?.to_device(&device)?;
         println!("loaded image {image:?}");
 
         let vb = quantized_blip::VarBuilder::from_gguf(model_file)?;

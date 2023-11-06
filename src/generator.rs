@@ -24,7 +24,9 @@ pub fn get_chat_response(temp: &str, init: &str, prompt: &str) -> Result<String,
 
     let response_json: serde_json::Value = response.json()?;
     println!("{}", &response_json);
-    let completion_text = response_json["choices"][0]["text"].as_str().unwrap_or("Prompt machine broke");
+    let completion_text = response_json["choices"][0]["text"]
+        .as_str()
+        .unwrap_or("Prompt machine broke");
     println!("{}", &completion_text);
 
     Ok(completion_text.to_string())
@@ -51,7 +53,9 @@ pub fn get_smart_response(temp: &str, init: &str, prompt: &str) -> Result<String
 
     let response_json: serde_json::Value = response.json()?;
     println!("{}", &response_json);
-    let completion_text = response_json["choices"][0]["text"].as_str().unwrap_or("Prompt machine broke");
+    let completion_text = response_json["choices"][0]["text"]
+        .as_str()
+        .unwrap_or("Prompt machine broke");
     println!("{}", &completion_text);
 
     Ok(completion_text.to_string())
@@ -79,7 +83,9 @@ pub fn get_code_response(temp: &str, init: &str, prompt: &str) -> Result<String,
 
     let response_json: serde_json::Value = response.json()?;
     println!("{}", &response_json);
-    let completion_text = response_json["choices"][0]["text"].as_str().unwrap_or("Prompt machine broke");
+    let completion_text = response_json["choices"][0]["text"]
+        .as_str()
+        .unwrap_or("Prompt machine broke");
     println!("{}", &completion_text);
 
     Ok(completion_text.to_string())

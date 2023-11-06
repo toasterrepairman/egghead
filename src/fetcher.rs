@@ -1,9 +1,6 @@
-use std::error::Error;
-use rss::{Channel, Item};
+use rand::Rng;
 use reqwest;
-use rand::{random, Rng};
-use reqwest::header;
-use reqwest::Client;
+use std::error::Error;
 
 pub async fn get_random_headline_from_rss_link(rss_link: &str) -> Result<String, Box<dyn Error>> {
     // Send an HTTP GET request to the RSS link using reqwest
@@ -24,14 +21,20 @@ pub async fn get_random_headline_from_rss_link(rss_link: &str) -> Result<String,
 
 pub async fn get_wikipedia_summary(article: Option<&str>) -> Result<String, reqwest::Error> {
     let url = if let Some(article_name) = article {
-        format!("https://en.wikipedia.org/api/rest_v1/page/summary/{}", article_name)
+        format!(
+            "https://en.wikipedia.org/api/rest_v1/page/summary/{}",
+            article_name
+        )
     } else {
         "https://en.wikipedia.org/api/rest_v1/page/random/summary".to_string()
     };
 
     let client = reqwest::Client::new();
-    let mut headers = header::HeaderMap:: new();
-    headers.insert(header::USER_AGENT, header::HeaderValue::from_static("reqwest"));
+    let mut headers = reqwest::header::HeaderMap::new();
+    headers.insert(
+        reqwest::header::USER_AGENT,
+        reqwest::header::HeaderValue::from_static("reqwest"),
+    );
     let response = client
         .get(&url)
         .headers(headers)
@@ -46,10 +49,17 @@ pub async fn get_wikipedia_summary(article: Option<&str>) -> Result<String, reqw
 }
 
 pub async fn get_latest_hn_comment() -> Result<String, reqwest::Error> {
-    let client = Client::new();
+    let client = reqwest::Client::new();
     let url = "http://hn.algolia.com/api/v1/search_by_date?tags=comment";
-    let response = client.get(url).send().await?.json::<serde_json::Value>().await?;
+    let response = client
+        .get(url)
+        .send()
+        .await?
+        .json::<serde_json::Value>()
+        .await?;
     let index: usize = rand::thread_rng().gen_range(0..15);
-    let latest_comment = response["hits"][index]["comment_text"].as_str().unwrap_or("");
+    let latest_comment = response["hits"][index]["comment_text"]
+        .as_str()
+        .unwrap_or("");
     Ok(latest_comment.chars().take(30).collect())
 }
