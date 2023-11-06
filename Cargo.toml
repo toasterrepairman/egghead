@@ -30,3 +30,5 @@ clap = "4.4.7"
 hf-hub = "0.3.2"
 image = "*"
 tokenizers = "0.13.4"
+lazy_static = "1.4.0"
+simple-home-dir = { version = "0.2.0", features = ["expand_tilde"] }
