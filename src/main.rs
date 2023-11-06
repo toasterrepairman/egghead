@@ -2,8 +2,8 @@
 //! And how to use locks correctly to avoid deadlocking the bot.
 
 // swap between `generator` and `alt-gen` depending on serge status
-mod fetcher;
 mod fakeyou;
+mod fetcher;
 mod generator;
 mod imgread;
 
@@ -11,29 +11,23 @@ use std::collections::HashMap;
 use std::env;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
-use std::fs;
-use image::GenericImageView;
 
+use crate::fakeyou::get_audio_url;
+use crate::imgread::img_react;
 use serenity::async_trait;
 use serenity::framework::standard::macros::{command, group, hook};
 use serenity::framework::standard::{Args, CommandResult, StandardFramework};
 use serenity::http::Typing;
-use serenity::model::channel::{AttachmentType, Message};
+use serenity::model::channel::Message;
 use serenity::model::gateway::Ready;
-use serenity::model::prelude::Activity;
 use serenity::prelude::*;
-use tokio::sync::RwLock;
-use serde::{Deserialize, Serialize};
-use serde_json::json;
 use std::fs::File;
-use std::io::Write;
-use tokio::runtime::Runtime;
-use std::io::Cursor;
-use std::path::{Path, PathBuf};
-use std::time::Duration;
-use serenity::futures::TryFutureExt;
-use crate::fakeyou::get_audio_url;
-use crate::imgread::img_react;
+use std::path::PathBuf;
+use tokio::sync::RwLock;
+
+lazy_static::lazy_static! {
+    static ref TEMP_PATH: PathBuf = simple_home_dir::expand_tilde(".tmp/downloaded_image.jpg").unwrap();
+}
 
 // A container type is created for inserting into the Client's `data`, which
 // allows for data to be accessible across all events and framework commands, or
@@ -60,12 +54,31 @@ impl TypeMapKey for MessageCount {
 }
 
 #[group]
-#[commands(ping, command_usage, voices, see, ask, say, right, green, left, react, read, tldr, code, help)]
+#[commands(
+    ping,
+    command_usage,
+    voices,
+    see,
+    ask,
+    say,
+    right,
+    green,
+    left,
+    react,
+    read,
+    tldr,
+    code,
+    help
+)]
 struct General;
 
 #[hook]
 async fn before(ctx: &Context, msg: &Message, command_name: &str) -> bool {
-    println!("Running command '{}' invoked by '{}'", command_name, msg.author.tag());
+    println!(
+        "Running command '{}' invoked by '{}'",
+        command_name,
+        msg.author.tag()
+    );
 
     let counter_lock = {
         // While data is a RwLock, it's recommended that you always open the lock as read.
@@ -77,7 +90,10 @@ async fn before(ctx: &Context, msg: &Message, command_name: &str) -> bool {
         // data, instead the reference is cloned.
         // We wrap every value on in an Arc, as to keep the data lock open for the least time possible,
         // to again, avoid deadlocking it.
-        data_read.get::<CommandCounter>().expect("Expected CommandCounter in TypeMap.").clone()
+        data_read
+            .get::<CommandCounter>()
+            .expect("Expected CommandCounter in TypeMap.")
+            .clone()
     };
 
     // Just like with client.data in main, we want to keep write locks open the least time
@@ -107,7 +123,10 @@ impl EventHandler for Handler {
             // Since data is located in Context, this means you are also able to use it within events!
             let count = {
                 let data_read = ctx.data.read().await;
-                data_read.get::<MessageCount>().expect("Expected MessageCount in TypeMap.").clone()
+                data_read
+                    .get::<MessageCount>()
+                    .expect("Expected MessageCount in TypeMap.")
+                    .clone()
             };
 
             // Here, we are checking how many "owo" there are in the message content.
@@ -137,6 +156,7 @@ async fn main() {
     let intents = GatewayIntents::GUILD_MESSAGES
         | GatewayIntents::DIRECT_MESSAGES
         | GatewayIntents::MESSAGE_CONTENT;
+
     let mut client = Client::builder(&token, intents)
         .event_handler(Handler)
         .framework(framework)
@@ -191,9 +211,10 @@ async fn command_usage(ctx: &Context, msg: &Message, mut args: Args) -> CommandR
     let command_name = match args.single_quoted::<String>() {
         Ok(x) => x,
         Err(_) => {
-            msg.reply(ctx, "I require an argument to run this command.").await?;
+            msg.reply(ctx, "I require an argument to run this command.")
+                .await?;
             return Ok(());
-        },
+        }
     };
 
     // Yet again, we want to keep the locks open for the least time possible.
@@ -207,8 +228,10 @@ async fn command_usage(ctx: &Context, msg: &Message, mut args: Args) -> CommandR
         // Then we obtain the value we need from data, in this case, we want the command counter.
         // The returned value from get() is an Arc, so the reference will be cloned, rather than
         // the data.
-        let command_counter_lock =
-            data_read.get::<CommandCounter>().expect("Expected CommandCounter in TypeMap.").clone();
+        let command_counter_lock = data_read
+            .get::<CommandCounter>()
+            .expect("Expected CommandCounter in TypeMap.")
+            .clone();
 
         let command_counter = command_counter_lock.read().await;
         // And we return a usable value from it.
@@ -217,13 +240,20 @@ async fn command_usage(ctx: &Context, msg: &Message, mut args: Args) -> CommandR
     };
 
     if amount == 0 {
-        msg.reply(ctx, format!("The command `{}` has not yet been used.", command_name)).await?;
+        msg.reply(
+            ctx,
+            format!("The command `{}` has not yet been used.", command_name),
+        )
+        .await?;
     } else {
         msg.reply(
             ctx,
-            format!("The command `{}` has been used {} time/s this session!", command_name, amount),
+            format!(
+                "The command `{}` has been used {} time/s this session!",
+                command_name, amount
+            ),
         )
-            .await?;
+        .await?;
     }
 
     Ok(())
@@ -231,8 +261,8 @@ async fn command_usage(ctx: &Context, msg: &Message, mut args: Args) -> CommandR
 
 #[command]
 async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
-    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
-        .expect("Typing failed");
+    let typing: _ =
+        Typing::start(ctx.http.clone(), msg.channel_id.0.clone()).expect("Typing failed");
 
     let prompt = msg.content.clone().split_off(6);
     println!("{:?}", prompt);
@@ -240,50 +270,57 @@ async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
     let runner = tokio::task::spawn_blocking(move || {
         println!("Thread Spawned!");
         // This is running on a thread where blocking is fine.
-        let response = generator::get_chat_response("1.3", "I am egghead, the world's smartest computer. Here is my response to your question: \n", &prompt).unwrap();
+        let response = generator::get_chat_response(
+            "1.3",
+            "I am egghead, the world's smartest computer. Here is my response to your question: \n",
+            &prompt,
+        )
+        .unwrap();
         response
     });
 
-    msg.reply(
-        ctx.clone(),
-        format!("{}", runner.await.unwrap()
-    )).await?;
+    msg.reply(ctx.clone(), format!("{}", runner.await.unwrap()))
+        .await?;
 
     Ok(typing.stop().unwrap())
 }
 
+fn get_attachment_url(msg: &Message) -> Option<String> {
+    if let Some(attachment) = msg.attachments.first() {
+        (attachment.width.is_some() && attachment.height.is_some())
+            .then_some(attachment.url.clone())
+    } else {
+        let embed = msg.embeds.first()?;
+        embed.image.as_ref().map(|img| img.url.clone())
+    }
+}
+
 #[command]
 async fn see(ctx: &Context, msg: &Message) -> CommandResult {
-    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
-        .expect("Typing failed");
+    let typing: _ =
+        Typing::start(ctx.http.clone(), msg.channel_id.0.clone()).expect("Typing failed");
 
     let channel_id = msg.channel_id;
-    let messages = channel_id.messages(ctx, |retriever| retriever.before(msg.id)).await?;
+    let messages = channel_id
+        .messages(ctx, |retriever| retriever.before(msg.id))
+        .await?;
 
-    if let Some(prev_msg) = messages.get(0) {
-        if let Some(attachment) = &prev_msg.attachments.get(0) {
-            if attachment.width.is_some() && attachment.height.is_some() {
-                fs::remove_file("/home/ubuntu/.tmp/downloaded_image.jpg").expect("Failed to delete file");
-                // Download the image
-                let response = reqwest::get(&attachment.url).await?;
-                let image_bytes = response.bytes().await?;
-                let image = image::load_from_memory(&image_bytes)?;
+    if let Some(prev_msg) = messages.first() {
+        if let Some(attachment_url) = get_attachment_url(prev_msg) {
+            // Download the image
+            let response = reqwest::get(&attachment_url).await?;
+            let image_bytes = response.bytes().await?;
+            let image = image::load_from_memory(&image_bytes)?;
 
-                // Convert the image to JPEG format
-                let mut file = File::create("/home/ubuntu/.tmp/downloaded_image.jpg")?;
-                image.write_to(&mut file, image::ImageOutputFormat::Jpeg(85))?;
+            // Convert the image to JPEG format
+            let mut file = File::create(TEMP_PATH.as_path())?;
+            image.write_to(&mut file, image::ImageOutputFormat::Jpeg(85))?;
 
-                let reaction = img_react("/home/ubuntu/.tmp/downloaded_image.jpg").unwrap();
-                msg.reply(
-                    ctx.clone(),
-                    format!("{}", reaction
-                )).await?;
-                println!("Image downloaded: /home/ubuntu/.tmp/downloaded_image.jpg");
-            } else {
-                println!("break");
-            }
+            let reaction = img_react(TEMP_PATH.as_path()).unwrap();
+            msg.reply(ctx.clone(), format!("{}", reaction)).await?;
+            println!("Image downloaded: {}", TEMP_PATH.display());
         } else {
-            println!("break");
+            println!("No attachment in previous message.")
         }
     } else {
         println!("No previous message found.");
@@ -294,13 +331,15 @@ async fn see(ctx: &Context, msg: &Message) -> CommandResult {
 
 #[command]
 async fn say(ctx: &Context, msg: &Message) -> CommandResult {
-    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
-        .expect("Typing failed");
+    let typing: _ =
+        Typing::start(ctx.http.clone(), msg.channel_id.0.clone()).expect("Typing failed");
 
     let voice_name = msg.content.clone().split_off(6);
-    let prompt = match msg.channel_id.messages(&ctx.http, |retriever| {
-        retriever.limit(2)
-    }).await {
+    let prompt = match msg
+        .channel_id
+        .messages(&ctx.http, |retriever| retriever.limit(2))
+        .await
+    {
         Ok(messages) => messages.last().cloned(),
         Err(why) => {
             println!("Error getting messages: {:?}", why);
@@ -309,20 +348,19 @@ async fn say(ctx: &Context, msg: &Message) -> CommandResult {
     };
     println!("{:?}", prompt);
 
-    let audio_url = get_audio_url(&voice_name, &prompt.unwrap().content).await.unwrap();
+    let audio_url = get_audio_url(&voice_name, &prompt.unwrap().content)
+        .await
+        .unwrap();
 
-    msg.reply(
-        ctx.clone(),
-        format!("{}", audio_url
-    )).await?;
+    msg.reply(ctx.clone(), format!("{}", audio_url)).await?;
 
     Ok(typing.stop().unwrap())
 }
 
 #[command]
 async fn voices(ctx: &Context, msg: &Message) -> CommandResult {
-    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
-        .expect("Typing failed");
+    let typing: _ =
+        Typing::start(ctx.http.clone(), msg.channel_id.0.clone()).expect("Typing failed");
 
     let prompt = msg.content.clone().split_off(9);
     println!("{:?}", prompt);
@@ -334,18 +372,16 @@ async fn voices(ctx: &Context, msg: &Message) -> CommandResult {
         response
     });
 
-    msg.reply(
-        ctx.clone(),
-        format!("{}", runner.await.unwrap().await
-        )).await?;
+    msg.reply(ctx.clone(), format!("{}", runner.await.unwrap().await))
+        .await?;
 
     Ok(typing.stop().unwrap())
 }
 
 #[command]
 async fn green(ctx: &Context, msg: &Message) -> CommandResult {
-    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
-        .expect("Typing failed");
+    let typing: _ =
+        Typing::start(ctx.http.clone(), msg.channel_id.0.clone()).expect("Typing failed");
 
     let prompt = msg.content.clone().split_off(8);
     println!("{:?}", prompt);
@@ -353,22 +389,25 @@ async fn green(ctx: &Context, msg: &Message) -> CommandResult {
     let runner = tokio::task::spawn_blocking(move || {
         println!("Thread Spawned!");
         // This is running on a thread where blocking is fine.
-        let response = generator::get_chat_response("0.6", "Write a classic 4chan greentext based on the following prompt: \n>be me \n>", &prompt).unwrap();
+        let response = generator::get_chat_response(
+            "0.6",
+            "Write a classic 4chan greentext based on the following prompt: \n>be me \n>",
+            &prompt,
+        )
+        .unwrap();
         response
     });
 
-    msg.reply(
-        ctx.clone(),
-        format!("{}", runner.await.unwrap()
-        )).await?;
+    msg.reply(ctx.clone(), format!("{}", runner.await.unwrap()))
+        .await?;
 
     Ok(typing.stop().unwrap())
 }
 
 #[command]
 async fn code(ctx: &Context, msg: &Message) -> CommandResult {
-    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
-        .expect("Typing failed");
+    let typing: _ =
+        Typing::start(ctx.http.clone(), msg.channel_id.0.clone()).expect("Typing failed");
 
     let prompt = msg.content.clone().split_off(7);
     println!("{:?}", prompt);
@@ -376,27 +415,29 @@ async fn code(ctx: &Context, msg: &Message) -> CommandResult {
     let runner = tokio::task::spawn_blocking(move || {
         println!("Thread Spawned!");
         // This is running on a thread where blocking is fine.
-        let response = generator::get_smart_response("1.5", "I am egghead, the world's smartest computer. Here is my response to your question:\n", &prompt).unwrap();
+        let response = generator::get_smart_response(
+            "1.5",
+            "I am egghead, the world's smartest computer. Here is my response to your question:\n",
+            &prompt,
+        )
+        .unwrap();
         response
     });
 
-    msg.reply(
-        ctx.clone(),
-        format!("{}", runner.await.unwrap()
-        )).await?;
+    msg.reply(ctx.clone(), format!("{}", runner.await.unwrap()))
+        .await?;
 
     Ok(typing.stop().unwrap())
 }
 
-
 #[command]
 async fn left(ctx: &Context, msg: &Message) -> CommandResult {
-    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
-        .expect("Typing failed");
+    let typing: _ =
+        Typing::start(ctx.http.clone(), msg.channel_id.0.clone()).expect("Typing failed");
 
-    let prompt = fetcher::get_random_headline_from_rss_link(
-        "https://feeds.npr.org/1001/rss.xml"
-    ).await.expect("couldnt rss right");
+    let prompt = fetcher::get_random_headline_from_rss_link("https://feeds.npr.org/1001/rss.xml")
+        .await
+        .expect("couldnt rss right");
     let title = prompt.clone();
     println!("{:?}", &prompt);
 
@@ -409,20 +450,23 @@ async fn left(ctx: &Context, msg: &Message) -> CommandResult {
 
     msg.reply(
         ctx.clone(),
-        format!("Title: {:0} \n{:1}", title, runner.await?,
-        )).await?;
+        format!("Title: {:0} \n{:1}", title, runner.await?,),
+    )
+    .await?;
 
     Ok(typing.stop().unwrap())
 }
 
 #[command]
 async fn right(ctx: &Context, msg: &Message) -> CommandResult {
-    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
-        .expect("Typing failed");
+    let typing: _ =
+        Typing::start(ctx.http.clone(), msg.channel_id.0.clone()).expect("Typing failed");
 
     let prompt = fetcher::get_random_headline_from_rss_link(
-        "https://moxie.foxnews.com/google-publisher/latest.xml"
-    ).await.expect("couldnt rss right");
+        "https://moxie.foxnews.com/google-publisher/latest.xml",
+    )
+    .await
+    .expect("couldnt rss right");
     let title = prompt.clone();
     println!("{:?}", &prompt);
 
@@ -435,28 +479,27 @@ async fn right(ctx: &Context, msg: &Message) -> CommandResult {
 
     msg.reply(
         ctx.clone(),
-        format!("Title: {:0} \n{:1}", title, runner.await?,
-        )).await?;
+        format!("Title: {:0} \n{:1}", title, runner.await?,),
+    )
+    .await?;
 
     Ok(typing.stop().unwrap())
 }
 
 #[command]
 async fn react(ctx: &Context, msg: &Message) -> CommandResult {
-    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
-        .expect("Typing failed");
+    let typing: _ =
+        Typing::start(ctx.http.clone(), msg.channel_id.0.clone()).expect("Typing failed");
 
     let input = msg.content.clone().split_off(7).clone().trim().to_string();
 
-    let heat = if input.to_string() == "" {
-        "1.0"
-    } else {
-        &input
-    }.to_string();
+    let heat = if input.is_empty() { "1.0" } else { &input }.to_string();
 
-    let prompt = match msg.channel_id.messages(&ctx.http, |retriever| {
-        retriever.limit(2)
-    }).await {
+    let prompt = match msg
+        .channel_id
+        .messages(&ctx.http, |retriever| retriever.limit(2))
+        .await
+    {
         Ok(messages) => messages.last().cloned(),
         Err(why) => {
             println!("Error getting messages: {:?}", why);
@@ -465,22 +508,23 @@ async fn react(ctx: &Context, msg: &Message) -> CommandResult {
     };
 
     let channel_id = msg.channel_id;
-    let messages = channel_id.messages(ctx, |retriever| retriever.before(msg.id)).await?;
+    let messages = channel_id
+        .messages(ctx, |retriever| retriever.before(msg.id))
+        .await?;
 
     if let Some(prev_msg) = messages.get(0) {
         if let Some(attachment) = &prev_msg.attachments.get(0) {
             if attachment.width.is_some() && attachment.height.is_some() {
-                fs::remove_file("/home/ubuntu/.tmp/downloaded_image.jpg").expect("Failed to delete file");
                 // Download the image
                 let response = reqwest::get(&attachment.url).await?;
                 let image_bytes = response.bytes().await?;
                 let image = image::load_from_memory(&image_bytes)?;
 
                 // Convert the image to JPEG format
-                let mut file = File::create("/home/ubuntu/.tmp/downloaded_image.jpg")?;
+                let mut file = File::create(TEMP_PATH.as_path())?;
                 image.write_to(&mut file, image::ImageOutputFormat::Jpeg(85))?;
 
-                let reaction = img_react("/home/ubuntu/.tmp/downloaded_image.jpg").unwrap();
+                let reaction = img_react(TEMP_PATH.as_path()).unwrap();
 
                 let runner = tokio::task::spawn_blocking(move || {
                     println!("Thread Spawned!");
@@ -488,12 +532,8 @@ async fn react(ctx: &Context, msg: &Message) -> CommandResult {
                     let response = generator::get_chat_response(&heat, "You are Egghead, the world's smartest computer. React to the following description: ", &reaction).unwrap();
                     response
                 });
-
-                msg.reply(
-                    ctx.clone(),
-                    format!("{}", runner.await?
-                )).await?;
-                println!("Image downloaded: /home/ubuntu/.tmp/downloaded_image.jpg");
+                msg.reply(ctx.clone(), format!("{}", runner.await?)).await?;
+                println!("Image downloaded: {}", TEMP_PATH.display());
             } else {
                 println!("break");
             }
@@ -505,39 +545,43 @@ async fn react(ctx: &Context, msg: &Message) -> CommandResult {
                 response
             });
 
-            msg.reply(
-                ctx.clone(),
-                format!("{}", runner.await?
-                )).await?;
+            msg.reply(ctx.clone(), format!("{}", runner.await?)).await?;
         }
     } else {
         println!("No previous message found.");
     }
-
 
     Ok(typing.stop().unwrap())
 }
 
 #[command]
 async fn read(ctx: &Context, msg: &Message) -> CommandResult {
-    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
-        .expect("Typing failed");
+    let typing: _ =
+        Typing::start(ctx.http.clone(), msg.channel_id.0.clone()).expect("Typing failed");
 
     // Madman debugging
     // Be wary of Einstein's warning
 
     let history: u64 = *&msg.content.clone().split_off(6).trim().parse().unwrap();
 
-    let prompt = match msg.channel_id.messages(&ctx.http, |retriever| {
-        retriever.limit(history + 1)
-    }).await {
-        Ok(messages) => messages.into_iter().rev().map(|m: Message| m.content).collect::<Vec<_>>().join("\n"),
+    let prompt = match msg
+        .channel_id
+        .messages(&ctx.http, |retriever| retriever.limit(history + 1))
+        .await
+    {
+        Ok(messages) => messages
+            .into_iter()
+            .rev()
+            .map(|m: Message| m.content)
+            .collect::<Vec<_>>()
+            .join("\n"),
         Err(why) => {
             println!("Error getting messages: {:?}", why);
             "None".to_string()
         }
     };
-    let cleanprompt = prompt.split_whitespace()
+    let cleanprompt = prompt
+        .split_whitespace()
         .filter(|word| !word.starts_with('e') && !word.starts_with('E'))
         .collect::<Vec<_>>()
         .join(" ");
@@ -551,22 +595,22 @@ async fn read(ctx: &Context, msg: &Message) -> CommandResult {
         response
     });
 
-    msg.reply(
-        ctx.clone(),
-        format!("{}", runner.await?.unwrap()
-        )).await?;
+    msg.reply(ctx.clone(), format!("{}", runner.await?.unwrap()))
+        .await?;
 
     Ok(typing.stop().unwrap())
 }
 
 #[command]
 async fn tldr(ctx: &Context, msg: &Message) -> CommandResult {
-    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
-        .expect("Typing failed");
+    let typing: _ =
+        Typing::start(ctx.http.clone(), msg.channel_id.0.clone()).expect("Typing failed");
 
-    let prompt = match msg.channel_id.messages(&ctx.http, |retriever| {
-        retriever.limit(2)
-    }).await {
+    let prompt = match msg
+        .channel_id
+        .messages(&ctx.http, |retriever| retriever.limit(2))
+        .await
+    {
         Ok(messages) => messages.last().cloned(),
         Err(why) => {
             println!("Error getting messages: {:?}", why);
@@ -578,15 +622,15 @@ async fn tldr(ctx: &Context, msg: &Message) -> CommandResult {
     let runner = tokio::task::spawn_blocking(move || {
         println!("Thread Spawned!");
         // This is running on a thread where blocking is fine.
-        let response = generator::get_chat_response("0.5", "Respond with a summary of the passage below, then end with [end of text].\n", &prompt.unwrap().content).unwrap();
+        let response = generator::get_chat_response(
+            "0.5",
+            "Respond with a summary of the passage below, then end with [end of text].\n",
+            &prompt.unwrap().content,
+        )
+        .unwrap();
         response
     });
-
-    msg.reply(
-        ctx.clone(),
-        format!("{}", runner.await?
-        )).await?;
-
+    msg.reply(ctx.clone(), format!("{}", runner.await?)).await?;
     Ok(typing.stop().unwrap())
 }
 
@@ -613,10 +657,7 @@ async fn help(ctx: &Context, msg: &Message) -> CommandResult {
     \n
     Report serious issues to `toaster repairguy#1101`.";
 
-    msg.reply(
-        ctx.clone(),
-        &message
-    ).await.unwrap();
+    msg.reply(ctx.clone(), &message).await.unwrap();
 
     Ok(())
 }
