@@ -60,7 +60,7 @@ impl TypeMapKey for MessageCount {
 }
 
 #[group]
-#[commands(ping, command_usage, voices, see, ask, say, right, green, left, react, read, tldr, code, help)]
+#[commands(ping, command_usage, voices, see, ask, say, right, green, left, react, read, tldr, j, code, help)]
 struct General;
 
 #[hook]
@@ -376,7 +376,7 @@ async fn code(ctx: &Context, msg: &Message) -> CommandResult {
     let runner = tokio::task::spawn_blocking(move || {
         println!("Thread Spawned!");
         // This is running on a thread where blocking is fine.
-        let response = generator::get_smart_response("1.5", "I am egghead, the world's smartest computer. Here is my response to your question:\n", &prompt).unwrap();
+        let response = generator::get_code_response("1.5", "I am egghead, the world's smartest computer. Here is my response to your question:\n", &prompt).unwrap();
         response
     });
 
@@ -514,6 +514,62 @@ async fn react(ctx: &Context, msg: &Message) -> CommandResult {
         println!("No previous message found.");
     }
 
+
+    Ok(typing.stop().unwrap())
+}
+
+#[derive(Debug, Deserialize)]
+struct Clue {
+    id: u64,
+    answer: String,
+    question: String,
+    // other fields omitted for brevity
+    category: Category,
+}
+
+#[derive(Debug, Deserialize)]
+struct Category {
+    title: String,
+}
+
+#[command]
+async fn j(ctx: &Context, msg: &Message) -> CommandResult {
+    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
+        .expect("Typing failed");
+
+    let response = reqwest::blocking::get("http://jservice.io/api/final").expect("Failed to get data from the API");
+
+    // Check if the request was successful
+    if response.status().is_success() {
+        // Parse the JSON data
+        let clues: Vec<Clue> = response.json().expect("Failed to parse JSON");
+
+        if let Some(clue) = clues.get(0) {
+            let question = &clue.question;
+            let answer = &clue.answer;
+            let category_title = &clue.category.title;
+
+            println!("Question: {}", question);
+            println!("Answer: {}", answer);
+            println!("Category Title: {}", category_title);
+        } else {
+            println!("No clues found");
+        }
+    } else {
+        println!("Failed to fetch data from the API. Status code: {}", response.status());
+    }
+    
+    let runner = tokio::task::spawn_blocking(move || {
+        println!("Thread Spawned!");
+        // This is running on a thread where blocking is fine.
+        let response = generator::get_short_response("1.3", "Respond to the following Jeopardy! clue in the form of a question using less than 25 words:", &question).unwrap();
+        response
+    });
+    
+    msg.reply(
+        ctx.clone(),
+        format!("{}", runner.await?.unwrap()
+    )).await?;
 
     Ok(typing.stop().unwrap())
 }

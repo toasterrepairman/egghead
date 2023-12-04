@@ -13,7 +13,7 @@ pub fn get_chat_response(temp: &str, init: &str, prompt: &str) -> Result<String,
         "prompt": prompt_input,
         "temperature": temp.parse::<f64>().unwrap(),
         "stream": false,
-        "max_tokens": 384,
+        "max_tokens": 256,
     });
 
     let response = client
@@ -30,17 +30,18 @@ pub fn get_chat_response(temp: &str, init: &str, prompt: &str) -> Result<String,
     Ok(completion_text.to_string())
 }
 
-pub fn get_smart_response(temp: &str, init: &str, prompt: &str) -> Result<String, reqwest::Error> {
+pub fn get_short_response(temp: &str, init: &str, prompt: &str) -> Result<String, reqwest::Error> {
     let client = Client::builder()
-        .timeout(Duration::from_secs(500))
+        .timeout(Duration::from_secs(180))
         .build()?;
 
-    let prompt_input = format!("{}{}\n", init, prompt);
+    let prompt_input = format!("{}{}\n\n", init, prompt);
     let request_data = json!({
-        "model": "codellama-7b.ggmlv3.Q4_1.bin",
+        "model": "dolphin-2.1-mistral-7b.Q4_K_M.gguf",
         "prompt": prompt_input,
         "temperature": temp.parse::<f64>().unwrap(),
         "stream": false,
+        "max_tokens": 64,
     });
 
     let response = client
