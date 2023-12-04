@@ -567,7 +567,7 @@ async fn j(ctx: &Context, msg: &Message) -> CommandResult {
         // Check if the request was successful
         if response.status().is_success() {
         // Parse the JSON data
-        let clues: Vec<Clue> = &response.json().expect("Failed to parse JSON");
+        let clues: Vec<Clue> = response.json().expect("Failed to parse JSON");
 
             if let Some(clue) = clues.get(0) {
                 let question = &clue.question;
