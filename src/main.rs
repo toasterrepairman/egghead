@@ -601,7 +601,7 @@ async fn j(ctx: &Context, msg: &Message) -> CommandResult {
         format!("{:?}", runner.await?
     )).await?;
 
-    Ok(typing.stop().unwrap());
+    Ok(typing.stop().unwrap())
     
 }
 
