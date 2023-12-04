@@ -537,28 +537,6 @@ async fn j(ctx: &Context, msg: &Message) -> CommandResult {
     let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
         .expect("Typing failed");
 
-    let response = reqwest::blocking::get("http://jservice.io/api/final").expect("Failed to get data from the API");
-
-    // Check if the request was successful
-    if response.status().is_success() {
-        // Parse the JSON data
-        let clues: Vec<Clue> = response.json().expect("Failed to parse JSON");
-
-        if let Some(clue) = clues.get(0) {
-            let question = &clue.question;
-            let answer = &clue.answer;
-            let category_title = &clue.category.title;
-
-            println!("Question: {}", question);
-            println!("Answer: {}", answer);
-            println!("Category Title: {}", category_title);
-        } else {
-            println!("No clues found");
-        }
-    } else {
-        println!("Failed to fetch data from the API. Status code: {}", response.status());
-    }
-
     let runner = tokio::task::spawn_blocking(move || {
         println!("Thread Spawned!");
 
