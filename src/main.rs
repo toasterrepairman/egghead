@@ -595,19 +595,19 @@ async fn j(ctx: &Context, msg: &Message) -> CommandResult {
         let guess = generator::get_short_response("0.7", "Respond to the following quiz question using less than 25 words:", &question).unwrap();
         guess
     });
-        // Create an embed
-        let embed = CreateEmbed::default()
-            .title("Title")
-            .description("This is a description")
-            .field("Field 1", "Value 1", true)
-            .field("Field 2", "Value 2", true)
-            .color(0x3498db); // Set the color (optional)
 
-            // Reply with the embed
-            msg.reply(&ctx.http, "Here is an embed:", |m| m.set_embed(embed))
-                .await
-                .expect("Failed to send message");
-   
+    let embed = CreateEmbed::default()
+        .title("Example Embed")
+        .description("This is an example embed.")
+        .field("Field 1", "Value 1", true)
+        .field("Field 2", "Value 2", true)
+        .footer(|f| f.text("Footer Text"))
+        .color((0, 255, 0))
+        .build();
+
+    // Reply with the embed
+    msg.reply(&ctx.http, "").embed(|e| e.0 = embed).await?;
+    
     /*
     msg.reply(
         ctx.clone(),
