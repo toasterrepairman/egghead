@@ -592,7 +592,7 @@ async fn j(ctx: &Context, msg: &Message) -> CommandResult {
             category_title = "".to_string();
         }      
         // This is running on a thread where blocking is fine.
-        let guess = generator::get_short_response("1.3", "Respond to the following Jeopardy! clue in the form of a question using less than 25 words:", &question).unwrap();
+        let guess = generator::get_short_response("0.7", "Respond to the following quiz question using less than 25 words:", &question).unwrap();
         guess
     });
     
