@@ -561,11 +561,6 @@ async fn j(ctx: &Context, msg: &Message) -> CommandResult {
             question = "No clues found".to_string();
             answer = "".to_string();
             category_title = "".to_string();
-        } else {
-            // Provide default values or handle the case when the request fails
-            question = format!("Failed to fetch data from the API. Status code: {}", response.status());
-            answer = "".to_string();
-            category_title = "".to_string();
         }      
         // This is running on a thread where blocking is fine.
         let guess = generator::get_short_response("1.3", "Respond to the following Jeopardy! clue in the form of a question using less than 25 words:", &question).unwrap();
