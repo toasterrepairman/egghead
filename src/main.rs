@@ -569,7 +569,7 @@ async fn j(ctx: &Context, msg: &Message) -> CommandResult {
 
     msg.reply(
         ctx.clone(),
-        format!("", runner.await?
+        format!("{}", runner.await?
     )).await?;
 
     Ok(typing.stop().unwrap())
