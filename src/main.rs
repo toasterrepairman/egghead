@@ -579,6 +579,7 @@ async fn j(ctx: &Context, msg: &Message) -> CommandResult {
                 println!("Category Title: {}", category_title);
 
                 let response = generator::get_short_response("1.3", "Respond to the following Jeopardy! clue in the form of a question using less than 25 words:", &question).unwrap();
+                response
             } else {
                 println!("No clues found");
             }
@@ -586,7 +587,7 @@ async fn j(ctx: &Context, msg: &Message) -> CommandResult {
             println!("Failed to fetch data from the API. Status code: {}", response.status());
         }
         // This is running on a thread where blocking is fine.
-        let response = generator::get_short_response("1.3", "Respond to the following Jeopardy! clue in the form of a question using less than 25 words:", &question).unwrap();
+        // let response = generator::get_short_response("1.3", "Respond to the following Jeopardy! clue in the form of a question using less than 25 words:", &question).unwrap();
         response
     });
     
