@@ -561,6 +561,30 @@ async fn j(ctx: &Context, msg: &Message) -> CommandResult {
     
     let runner = tokio::task::spawn_blocking(move || {
         println!("Thread Spawned!");
+        
+        let response = reqwest::blocking::get("http://jservice.io/api/final").expect("Failed to get data from the API");
+
+        // Check if the request was successful
+        if response.status().is_success() {
+        // Parse the JSON data
+        let clues: Vec<Clue> = response.json().expect("Failed to parse JSON");
+
+            if let Some(clue) = clues.get(0) {
+                let question = &clue.question;
+                let answer = &clue.answer;
+                let category_title = &clue.category.title;
+
+                println!("Question: {}", &question);
+                println!("Answer: {}", answer);
+                println!("Category Title: {}", category_title);
+
+                let response = generator::get_short_response("1.3", "Respond to the following Jeopardy! clue in the form of a question using less than 25 words:", &question).unwrap();
+            } else {
+                println!("No clues found");
+            }
+        } else {
+            println!("Failed to fetch data from the API. Status code: {}", response.status());
+        }
         // This is running on a thread where blocking is fine.
         let response = generator::get_short_response("1.3", "Respond to the following Jeopardy! clue in the form of a question using less than 25 words:", &question).unwrap();
         response
