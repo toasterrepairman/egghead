@@ -558,63 +558,46 @@ async fn j(ctx: &Context, msg: &Message) -> CommandResult {
     } else {
         println!("Failed to fetch data from the API. Status code: {}", response.status());
     }
-    
-    let runner = tokio::task::spawn_blocking(move || {
+        let runner = tokio::task::spawn_blocking(move || {
         println!("Thread Spawned!");
-
+        
         let response = reqwest::blocking::get("http://jservice.io/api/final").expect("Failed to get data from the API");
-
-        // Declare variables before the if statement
-        let question: String;
-        let answer: String;
-        let category_title: String;
 
         // Check if the request was successful
         if response.status().is_success() {
         // Parse the JSON data
         let clues: Vec<Clue> = response.json().expect("Failed to parse JSON");
 
-        if let Some(clue) = clues.get(0) {
-            // Assign values to variables
-            question = clue.question.clone();
-            answer = clue.answer.clone();
-            category_title = clue.category.title.clone();
+            if let Some(clue) = clues.get(0) {
+                let question = &clue.question;
+                let answer = &clue.answer;
+                let category_title = &clue.category.title;
+
+                println!("Question: {}", &question);
+                println!("Answer: {}", answer);
+                println!("Category Title: {}", category_title);
+
+                let answer = generator::get_short_response("1.3", "Respond to the following Jeopardy! clue in the form of a question using less than 25 words:", &question).unwrap();
+                answer
+            } else {
+                println!("No clues found");
+                "broken".to_string()
+            }
         } else {
-            // Provide default values or handle the case when no clues are found
-            question = "No clues found".to_string();
-            answer = "".to_string();
-            category_title = "".to_string();
+            println!("Failed to fetch data from the API. Status code: {}", response.status());
         }
-        } else {
-            // Provide default values or handle the case when the request fails
-            question = format!("Failed to fetch data from the API. Status code: {}", response.status());
-            answer = "".to_string();
-            category_title = "".to_string();
-        }      
         // This is running on a thread where blocking is fine.
-        let guess = generator::get_short_response("0.7", "Respond to the following quiz question using less than 25 words:", &question).unwrap();
-        guess
+        // let response = generator::get_short_response("1.3", "Respond to the following Jeopardy! clue in the form of a question using less than 25 words:", &question).unwrap();
+        response
     });
-
-    let embed = CreateEmbed::default()
-        .title("Example Embed")
-        .description("This is an example embed.")
-        .field("Field 1", "Value 1", true)
-        .field("Field 2", "Value 2", true)
-        .footer(|f| f.text("Footer Text"))
-        .color((0, 255, 0))
-        .build();
-
-    // Reply with the embed
-    msg.reply(&ctx.http, "").embed(|e| e.0 = embed).await?;
     
-    /*
     msg.reply(
         ctx.clone(),
-        format!("{}", runner.await?
+        format!("{:?}", runner.await?
     )).await?;
-    */
+
     Ok(typing.stop().unwrap())
+    
 }
 
 #[command]
