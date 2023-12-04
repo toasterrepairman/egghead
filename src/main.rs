@@ -561,7 +561,6 @@ async fn j(ctx: &Context, msg: &Message) -> CommandResult {
             question = "No clues found".to_string();
             answer = "".to_string();
             category_title = "".to_string();
-        }
         } else {
             // Provide default values or handle the case when the request fails
             question = format!("Failed to fetch data from the API. Status code: {}", response.status());
