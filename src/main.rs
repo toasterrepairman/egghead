@@ -568,6 +568,7 @@ async fn j(ctx: &Context, msg: &Message) -> CommandResult {
         let question: String;
         let answer: String;
         let category_title: String;
+        println!("{}", question)
 
         // Check if the request was successful
         if response.status().is_success() {
