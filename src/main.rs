@@ -594,14 +594,14 @@ async fn j(ctx: &Context, msg: &Message) -> CommandResult {
         // This is running on a thread where blocking is fine.
         let guess = generator::get_short_response("1.3", "Respond to the following Jeopardy! clue in the form of a question using less than 25 words:", &question).unwrap();
         guess
-    })    
+    });
 
     msg.reply(
         ctx.clone(),
         format!("{:?}", runner.await?
     )).await?;
 
-    Ok(typing.stop().unwrap())
+    Ok(typing.stop().unwrap());
     
 }
 
