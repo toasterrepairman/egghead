@@ -546,7 +546,6 @@ async fn j(ctx: &Context, msg: &Message) -> CommandResult {
         let question: String;
         let answer: String;
         let category_title: String;
-        println!("{}", question);
 
         // Parse the JSON data
         let clues: Vec<Clue> = response.json().expect("Failed to parse JSON");
