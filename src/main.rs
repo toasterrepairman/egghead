@@ -582,7 +582,7 @@ async fn j(ctx: &Context, msg: &Message) -> CommandResult {
                 answer
             } else {
                 println!("No clues found");
-                "broken".to_string()
+                "broken".to_string();
             }
         } else {
             println!("Failed to fetch data from the API. Status code: {}", response.status());
