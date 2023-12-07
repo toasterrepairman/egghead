@@ -54,22 +54,7 @@ impl TypeMapKey for MessageCount {
 }
 
 #[group]
-#[commands(
-    ping,
-    command_usage,
-    voices,
-    see,
-    ask,
-    say,
-    right,
-    green,
-    left,
-    react,
-    read,
-    tldr,
-    code,
-    help
-)]
+#[commands(ping, command_usage, voices, see, ask, say, right, green, left, react, read, tldr, j, code, help)]
 struct General;
 
 #[hook]
@@ -415,12 +400,7 @@ async fn code(ctx: &Context, msg: &Message) -> CommandResult {
     let runner = tokio::task::spawn_blocking(move || {
         println!("Thread Spawned!");
         // This is running on a thread where blocking is fine.
-        let response = generator::get_smart_response(
-            "1.5",
-            "I am egghead, the world's smartest computer. Here is my response to your question:\n",
-            &prompt,
-        )
-        .unwrap();
+        let response = generator::get_code_response("1.5", "I am egghead, the world's smartest computer. Here is my response to your question:\n", &prompt).unwrap();
         response
     });
 
@@ -552,6 +532,63 @@ async fn react(ctx: &Context, msg: &Message) -> CommandResult {
     }
 
     Ok(typing.stop().unwrap())
+}
+
+#[derive(Debug, Deserialize)]
+struct Clue {
+    id: u64,
+    answer: String,
+    question: String,
+    // other fields omitted for brevity
+    category: Category,
+}
+
+#[derive(Debug, Deserialize)]
+struct Category {
+    title: String,
+}
+
+#[command]
+async fn j(ctx: &Context, msg: &Message) -> CommandResult {
+    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
+        .expect("Typing failed");
+
+    let runner = tokio::task::spawn_blocking(move || {
+        println!("Thread Spawned!");
+
+        let response = reqwest::blocking::get("http://jservice.io/api/final").expect("Failed to get data from the API");
+
+        // Declare variables before the if statement
+        let question: String;
+        let answer: String;
+        let category_title: String;
+
+        // Parse the JSON data
+        let clues: Vec<Clue> = response.json().expect("Failed to parse JSON");
+
+        if let Some(clue) = clues.get(0) {
+            // Assign values to variables
+            question = clue.question.clone();
+            answer = clue.answer.clone();
+            category_title = clue.category.title.clone();
+        } else {
+            // Provide default values or handle the case when no clues are found
+            question = "No clues found".to_string();
+            answer = "".to_string();
+            category_title = "".to_string();
+        }      
+        // This is running on a thread where blocking is fine.
+        let guess = generator::get_short_response("1.3", "Respond to the following quiz-show clue in one sentence:", &question).unwrap();
+        format!("Question: {} \n\nAnswer: {} \n\nEgghead's Guess: {}", &question, &answer, guess)
+    });
+
+    msg.reply(
+        ctx.clone(),
+        format!("{}", runner.await?
+    )).await?;
+
+    Ok(typing.stop().unwrap())
+    
 }
 
 #[command]
