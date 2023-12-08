@@ -6,6 +6,7 @@ mod fetcher;
 mod fakeyou;
 mod generator;
 mod imgread;
+mod diffusion;
 
 use std::collections::HashMap;
 use std::env;
@@ -60,7 +61,7 @@ impl TypeMapKey for MessageCount {
 }
 
 #[group]
-#[commands(ping, command_usage, voices, see, ask, say, right, green, left, react, read, tldr, j, code, help)]
+#[commands(ping, command_usage, voices, see, show, ask, say, right, green, left, react, read, tldr, j, code, help)]
 struct General;
 
 #[hook]
@@ -365,6 +366,29 @@ async fn green(ctx: &Context, msg: &Message) -> CommandResult {
     Ok(typing.stop().unwrap())
 }
 
+
+#[command]
+async fn show(ctx: &Context, msg: &Message) -> CommandResult {
+    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
+        .expect("Typing failed");
+    let prompt = msg.content.clone().split_off(8);
+    println!("{:?}", prompt);
+
+    let runner = tokio::task::spawn_blocking(move || {
+        println!("Thread Spawned!");
+        // This is running on a thread where blocking is fine.
+        let response = diffusion("Rust robot.");
+        response
+    });
+
+    msg.reply(
+        ctx.clone(),
+        format!("{}", runner.await.unwrap()
+        )).await?;
+
+    Ok(typing.stop().unwrap())
+}
+
 #[command]
 async fn code(ctx: &Context, msg: &Message) -> CommandResult {
     let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
@@ -387,7 +411,6 @@ async fn code(ctx: &Context, msg: &Message) -> CommandResult {
 
     Ok(typing.stop().unwrap())
 }
-
 
 #[command]
 async fn left(ctx: &Context, msg: &Message) -> CommandResult {
