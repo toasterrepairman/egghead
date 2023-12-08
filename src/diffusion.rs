@@ -349,12 +349,13 @@ fn image_preprocess<T: AsRef<std::path::Path>>(path: T) -> anyhow::Result<Tensor
     Ok(img)
 }
 
-pub fn diffusion(prompt: &str) -> Result<()> {
+pub fn generate_image(prompt: &str) -> Result<()> {
     use tracing_chrome::ChromeLayerBuilder;
     use tracing_subscriber::prelude::*;
 
     let sd_version = StableDiffusionVersion::Turbo;
-     
+
+    /*
     let Args {
         // prompt,
         uncond_prompt,
@@ -378,6 +379,7 @@ pub fn diffusion(prompt: &str) -> Result<()> {
         img2img_strength,
         ..
     } = args;
+    */
 
     if !(0. ..=1.).contains(&img2img_strength) {
         anyhow::bail!("img2img-strength should be between 0 and 1, got {img2img_strength}")
@@ -538,15 +540,6 @@ pub fn diffusion(prompt: &str) -> Result<()> {
             latents = scheduler.step(&noise_pred, timestep, &latents)?;
             let dt = start_time.elapsed().as_secs_f32();
             println!("step {}/{n_steps} done, {:.2}s", timestep_index + 1, dt);
-
-            if args.intermediary_images {
-                let image = vae.decode(&(&latents / vae_scale)?)?;
-                let image = ((image / 2.)? + 0.5)?.to_device(&Device::Cpu)?;
-                let image = (image * 255.)?.to_dtype(DType::U8)?.i(0)?;
-                let image_filename =
-                    output_filename(&final_image, idx + 1, num_samples, Some(timestep_index + 1));
-                candle_examples::save_image(&image, image_filename)?
-            }
         }
 
         println!(
