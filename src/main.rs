@@ -377,7 +377,7 @@ async fn show(ctx: &Context, msg: &Message) -> CommandResult {
     let runner = tokio::task::spawn_blocking(move || {
         println!("Thread Spawned!");
         // This is running on a thread where blocking is fine.
-        let response = diffusion("Rust robot.");
+        let response = generate_image("Rust robot.");
         response
     });
 
