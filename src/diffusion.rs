@@ -355,7 +355,8 @@ pub fn generate_image(prompt: &str) -> Result<()> {
 
     let sd_version = StableDiffusionVersion::Turbo;
 
-    /*
+    let args = Args::parse();
+    
     let Args {
         // prompt,
         uncond_prompt,
@@ -379,8 +380,7 @@ pub fn generate_image(prompt: &str) -> Result<()> {
         img2img_strength,
         ..
     } = args;
-    */
-
+   
     if !(0. ..=1.).contains(&img2img_strength) {
         anyhow::bail!("img2img-strength should be between 0 and 1, got {img2img_strength}")
     }
