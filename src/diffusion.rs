@@ -563,7 +563,3 @@ pub fn diffusion(prompt: &str) -> Result<()> {
     Ok(())
 }
 
-fn main() -> Result<()> {
-    let args = Args::parse();
-    run(args)
-}
