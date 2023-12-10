@@ -387,7 +387,7 @@ async fn show(ctx: &Context, msg: &Message) -> CommandResult {
     let file_path = "/home/ubuntu/egghead/sd_final.png";
 
     // Upload the image as an attachment
-    msg.channel_id.send_files(ctx, vec![file_path], |m| m)?;
+    msg.channel_id.send_files(ctx, vec![file_path], |m| m).await?;
 
     // Delete the image file locally
     if let Err(err) = fs::remove_file(file_path) {
