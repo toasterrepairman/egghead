@@ -371,20 +371,33 @@ async fn green(ctx: &Context, msg: &Message) -> CommandResult {
 async fn show(ctx: &Context, msg: &Message) -> CommandResult {
     let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
         .expect("Typing failed");
-    let prompt = msg.content.clone().split_off(8);
+    let prompt = msg.content.clone().split_off(7);
     println!("{:?}", prompt);
 
     let runner = tokio::task::spawn_blocking(move || {
         println!("Thread Spawned!");
         // This is running on a thread where blocking is fine.
-        let response = diffusion::generate_image("Rust robot.");
+        let response = diffusion::generate_image(&prompt);
         response
     });
 
-    msg.reply(
-        ctx.clone(),
-        format!("{:?}", runner.await.unwrap()
-        )).await?;
+    println!("The go-ahead signal: {:?}", runner.await.unwrap());
+
+    // Path to the image file
+    let file_path = "/home/ubuntu/egghead/sd_final.png";
+
+    // Upload the image as an attachment
+    msg.channel_id.send_files(ctx, vec![file_path], |m| m)?;
+
+    // Delete the image file locally
+    if let Err(err) = fs::remove_file(file_path) {
+        eprintln!("Error deleting image file: {}", err);
+    }
+
+    // msg.reply(
+    //     ctx.clone(),
+    //     format!("{:?}", runner.await.unwrap()
+    //     )).await?;
 
     Ok(typing.stop().unwrap())
 }
