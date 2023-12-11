@@ -375,7 +375,7 @@ pub fn generate_image(prompt: &str) -> Result<()> {
         tracing,
         use_f16,
         guidance_scale,
-        // use_flash_attn,
+        use_flash_attn,
         img2img,
         img2img_strength,
         ..
@@ -384,8 +384,6 @@ pub fn generate_image(prompt: &str) -> Result<()> {
     if !(0. ..=1.).contains(&img2img_strength) {
         anyhow::bail!("img2img-strength should be between 0 and 1, got {img2img_strength}")
     }
-
-    let use_flash_attn = true; 
 
     let _guard = if tracing {
         let (chrome_layer, guard) = ChromeLayerBuilder::new().build();
