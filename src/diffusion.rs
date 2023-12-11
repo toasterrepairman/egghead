@@ -79,7 +79,7 @@ struct Args {
     #[arg(long, action)]
     intermediary_images: bool,
 
-    #[arg(long)]
+    #[arg(long, default_value = true)]
     use_flash_attn: bool,
 
     #[arg(long)]
