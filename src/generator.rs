@@ -9,7 +9,7 @@ pub fn get_chat_response(temp: &str, init: &str, prompt: &str) -> Result<String,
 
     let prompt_input = format!("{}{}\n\n", init, prompt);
     let request_data = json!({
-        "model": "dolphin-2.1-mistral-7b.Q4_K_M.gguf",
+        "model": "phi-2.Q3_K_S.gguf",
         "prompt": prompt_input,
         "temperature": temp.parse::<f64>().unwrap(),
         "stream": false,
@@ -37,7 +37,7 @@ pub fn get_short_response(temp: &str, init: &str, prompt: &str) -> Result<String
 
     let prompt_input = format!("{}{}\n\n", init, prompt);
     let request_data = json!({
-        "model": "dolphin-2.1-mistral-7b.Q4_K_M.gguf",
+        "model": "phi-2.Q3_K_S.gguf",
         "prompt": prompt_input,
         "temperature": temp.parse::<f64>().unwrap(),
         "stream": false,
@@ -65,7 +65,7 @@ pub fn get_code_response(temp: &str, init: &str, prompt: &str) -> Result<String,
 
     let prompt_input = format!("{}{}\n", init, prompt);
     let request_data = json!({
-        "model": "codellama-7b.ggmlv3.Q4_1.bin",
+        "model": "phi-2.Q3_K_S.gguf",
         "prompt": prompt_input,
         "temperature": temp.parse::<f64>().unwrap(),
         // "stream": false,

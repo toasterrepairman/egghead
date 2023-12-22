@@ -439,8 +439,8 @@ dependencies = [
 
 [[package]]
 name = "candle-core"
-version = "0.3.0"
-source = "git+https://github.com/huggingface/candle.git#498c50348ce13456d683c987ad9aef319a45eb4a"
+version = "0.3.2"
+source = "git+https://github.com/huggingface/candle.git#9fc210fae8175a180dba8c28aa8e5975868a237c"
 dependencies = [
  "byteorder",
  "gemm",
@@ -459,8 +459,8 @@ dependencies = [
 
 [[package]]
 name = "candle-datasets"
-version = "0.3.0"
-source = "git+https://github.com/huggingface/candle.git#498c50348ce13456d683c987ad9aef319a45eb4a"
+version = "0.3.2"
+source = "git+https://github.com/huggingface/candle.git#9fc210fae8175a180dba8c28aa8e5975868a237c"
 dependencies = [
  "byteorder",
  "candle-core",
@@ -476,8 +476,8 @@ dependencies = [
 
 [[package]]
 name = "candle-examples"
-version = "0.3.0"
-source = "git+https://github.com/huggingface/candle.git#498c50348ce13456d683c987ad9aef319a45eb4a"
+version = "0.3.2"
+source = "git+https://github.com/huggingface/candle.git#9fc210fae8175a180dba8c28aa8e5975868a237c"
 dependencies = [
  "anyhow",
  "candle-core",
@@ -495,8 +495,8 @@ dependencies = [
 
 [[package]]
 name = "candle-nn"
-version = "0.3.0"
-source = "git+https://github.com/huggingface/candle.git#498c50348ce13456d683c987ad9aef319a45eb4a"
+version = "0.3.2"
+source = "git+https://github.com/huggingface/candle.git#9fc210fae8175a180dba8c28aa8e5975868a237c"
 dependencies = [
  "candle-core",
  "half",
@@ -509,8 +509,8 @@ dependencies = [
 
 [[package]]
 name = "candle-transformers"
-version = "0.3.0"
-source = "git+https://github.com/huggingface/candle.git#498c50348ce13456d683c987ad9aef319a45eb4a"
+version = "0.3.2"
+source = "git+https://github.com/huggingface/candle.git#9fc210fae8175a180dba8c28aa8e5975868a237c"
 dependencies = [
  "byteorder",
  "candle-core",
@@ -520,6 +520,7 @@ dependencies = [
  "rayon 1.8.0",
  "serde",
  "serde_json",
+ "serde_plain",
  "tracing",
  "wav",
 ]
@@ -1019,6 +1020,8 @@ dependencies = [
  "serenity",
  "tokenizers",
  "tokio",
+ "tracing-chrome",
+ "tracing-subscriber",
  "unicase",
  "unicode-normalization",
  "unidecode",
@@ -2076,6 +2079,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "nu-ansi-term"
+version = "0.46.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "77a8165726e8236064dbb45459242600304b42a5ea24ee2948e18e023bf7ba84"
+dependencies = [
+ "overload",
+ "winapi",
+]
+
+[[package]]
 name = "num"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2271,6 +2284,12 @@ checksum = "7940cf2ca942593318d07fcf2596cdca60a85c9e7fab408a5e21a4f9dcd40d87"
 dependencies = [
  "num-traits",
 ]
+
+[[package]]
+name = "overload"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b15813163c1d831bf4a13c3610c05c0d03b39feb07f7e09fa234dac9b15aaf39"
 
 [[package]]
 name = "parking_lot"
@@ -2914,6 +2933,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "serde_plain"
+version = "1.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9ce1fc6db65a611022b23a0dec6975d63fb80a302cb3388835ff02c097258d50"
+dependencies = [
+ "serde",
+]
+
+[[package]]
 name = "serde_urlencoded"
 version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3019,6 +3047,15 @@ dependencies = [
  "cfg-if",
  "cpufeatures",
  "digest",
+]
+
+[[package]]
+name = "sharded-slab"
+version = "0.1.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f40ca3c46823713e0d4209592e8d6e826aa57e928f09752619fc696c499637f6"
+dependencies = [
+ "lazy_static",
 ]
 
 [[package]]
@@ -3195,6 +3232,16 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.38",
+]
+
+[[package]]
+name = "thread_local"
+version = "1.1.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3fdd6f064ccff2d6567adcb3873ca630700f00b5ad3f060c25b5dcfd9a4ce152"
+dependencies = [
+ "cfg-if",
+ "once_cell",
 ]
 
 [[package]]
@@ -3401,12 +3448,49 @@ dependencies = [
 ]
 
 [[package]]
+name = "tracing-chrome"
+version = "0.7.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "496b3cd5447f7ff527bbbf19b071ad542a000adf297d4127078b4dfdb931f41a"
+dependencies = [
+ "serde_json",
+ "tracing-core",
+ "tracing-subscriber",
+]
+
+[[package]]
 name = "tracing-core"
 version = "0.1.30"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "24eb03ba0eab1fd845050058ce5e616558e8f8d8fca633e6b163fe25c797213a"
 dependencies = [
  "once_cell",
+ "valuable",
+]
+
+[[package]]
+name = "tracing-log"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ee855f1f400bd0e5c02d150ae5de3840039a3f54b025156404e34c23c03f47c3"
+dependencies = [
+ "log",
+ "once_cell",
+ "tracing-core",
+]
+
+[[package]]
+name = "tracing-subscriber"
+version = "0.3.18"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ad0f048c97dbd9faa9b7df56362b8ebcaa52adb06b498c050d2f4e32f90a7a8b"
+dependencies = [
+ "nu-ansi-term",
+ "sharded-slab",
+ "smallvec",
+ "thread_local",
+ "tracing-core",
+ "tracing-log",
 ]
 
 [[package]]
@@ -3602,6 +3686,12 @@ name = "uwl"
 version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f4bf03e0ca70d626ecc4ba6b0763b934b6f2976e8c744088bb3c1d646fbb1ad0"
+
+[[package]]
+name = "valuable"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "830b7e5d4d90034032940e4ace0d9a9a057e7a45cd94e6c007832e39edb82f6d"
 
 [[package]]
 name = "vcpkg"
