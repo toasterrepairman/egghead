@@ -14,6 +14,8 @@ pub fn get_chat_response(temp: &str, init: &str, prompt: &str) -> Result<String,
         "temperature": temp.parse::<f64>().unwrap(),
         "stream": false,
         "n_predict": 256,
+        "penalize_nl": true,
+        "presence_penalty": 1.5,
     });
 
     let response = client
