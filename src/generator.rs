@@ -16,6 +16,11 @@ pub fn get_chat_response(temp: &str, init: &str, prompt: &str) -> Result<String,
         // "n_predict": 256,
         "penalize_nl": true,
         "presence_penalty": 4.0,
+        "system_prompt": {
+            "prompt": "Transcript of a Discord conversation between various users and Egghead, the helpful bot.",
+            "anti_prompt": "User:",
+            "assistant_name": "Egghead:",
+        },
     });
 
     let response = client
