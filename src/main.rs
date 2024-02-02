@@ -241,7 +241,7 @@ async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
     let runner = tokio::task::spawn_blocking(move || {
         println!("Thread Spawned!");
         // This is running on a thread where blocking is fine.
-        let response = generator::get_chat_response("2.0", "I am egghead, the world's smartest computer. Here is my succinct response to your question: \n", &prompt).unwrap();
+        let response = generator::get_chat_response("2.0", "I am egghead, the world's smartest computer. I will respond to the following question in a single paragraph to fit Discord's chat limit: \n", &prompt).unwrap();
         response
     });
 

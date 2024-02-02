@@ -5,7 +5,7 @@ use serde_json::json;
 
 pub fn get_chat_response(temp: &str, init: &str, prompt: &str) -> Result<String, reqwest::Error> {
     let client = Client::builder()
-        .timeout(Duration::from_secs(180))
+        .timeout(Duration::from_secs(240))
         .build()?;
 
     let prompt_input = format!("{}{}\n\n", init, prompt);
