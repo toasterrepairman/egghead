@@ -17,7 +17,7 @@ pub fn get_chat_response(temp: &str, init: &str, prompt: &str) -> Result<String,
     });
 
     let response = client
-        .post("http://localhost:8080/completions")
+        .post("http://localhost:8080/completion")
         .header("Content-Type", "application/json")
         .json(&request_data)
         .send()?;
