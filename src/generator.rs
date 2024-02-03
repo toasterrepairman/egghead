@@ -15,7 +15,7 @@ pub fn get_chat_response(temp: &str, init: &str, prompt: &str) -> Result<String,
         "stream": false,
         // "n_predict": 256,
         "penalize_nl": true,
-        "presence_penalty": 16.0,
+        "presence_penalty": 4.0,
         "system_prompt": {
             "prompt": "Transcript of a Discord conversation between various users and Egghead, the helpful bot. Egghead limits every response to less than 2000 characters, because anything more will not be sent.",
             "anti_prompt": "User:",
