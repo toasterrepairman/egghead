@@ -241,7 +241,7 @@ async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
     let runner = tokio::task::spawn_blocking(move || {
         println!("Thread Spawned!");
         // This is running on a thread where blocking is fine.
-        let response = generator::get_chat_response("2.0", "I am Egghead, the world's smartest computer. You asked:", &prompt).unwrap();
+        let response = generator::get_chat_response("1.3", "I am Egghead, the world's smartest computer. You asked:", &prompt).unwrap();
         response
     });
 
