@@ -13,14 +13,14 @@ pub fn get_chat_response(temp: &str, init: &str, prompt: &str) -> Result<String,
         "prompt": prompt_input,
         "temperature": temp.parse::<f64>().unwrap(),
         "stream": false,
-        "n_predict": 256,
+        "n_predict": 128,
         "penalize_nl": true,
         "presence_penalty": 4.0,
-        "system_prompt": {
-            "prompt": "Transcript of a Discord conversation between various users and Egghead, the helpful bot. Egghead limits every response to less than 2000 characters, because anything more will not be sent.",
-            "anti_prompt": "User:",
-            "assistant_name": "Egghead:",
-        },
+        // "system_prompt": {
+            // "prompt": "Transcript of a Discord conversation between various users and Egghead, the helpful bot. Egghead limits every response to less than 2000 characters, because anything more will not be sent.",
+            // "anti_prompt": "User:",
+            // "assistant_name": "Egghead:",
+        // },
     });
 
     let response = client
