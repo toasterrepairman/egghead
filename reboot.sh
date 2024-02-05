@@ -8,6 +8,6 @@ cargo build --release
 
 strip target/release/egghead
 
-# screen -dmS llama-server /home/toast/llama.cpp/server -m ~/.ai/faraday-7b.Q4_K_M.gguf -t 2
+# screen -dmS llama-server /home/toast/llama.cpp/server -m ~/.ai/wizardlm-13b-v1.2.Q4_K_M.gguf -t 4
 
 ./target/release/egghead
