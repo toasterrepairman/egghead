@@ -19,7 +19,7 @@ pub fn get_chat_response(temp: &str, init: &str, prompt: &str) -> Result<String,
         "system_prompt": {
          "prompt": "You are Egghead, the world's smartest computer.",
          // "anti_prompt": "User:",
-         "assistant_name": "Egghead:",
+         // "assistant_name": "Egghead:",
         },
     });
 
