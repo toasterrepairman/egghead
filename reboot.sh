@@ -8,6 +8,6 @@ cargo build --release
 
 strip target/release/egghead
 
-# screen -dmS llama-server /home/toast/llama.cpp/server -m ~/.ai/WestLake-7B-v2-laser-truthy-dpo.q2_k.gguf -t 4 --mlock
+# screen -dmS llama-server /home/toast/llama.cpp/server -m ~/.ai/truthful_dpo_tomgrc_fusionnet_7bx2_moe_13b_GGUF/truthful_dpo_tomgrc_fusionnet_7bx2_moe_13b.Q2_K.gguf -t 4 --mlock --n_predict 500
 
 ./target/release/egghead
