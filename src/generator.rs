@@ -13,7 +13,7 @@ pub fn get_chat_response(temp: &str, init: &str, prompt: &str) -> Result<String,
         "prompt": prompt_input,
         "temperature": temp.parse::<f64>().unwrap(),
         "stream": false,
-        "n_predict": 500,
+        "n_predict": 350,
         // "penalize_nl": true,
         // "presence_penalty": 4.0,
         "system_prompt": {
