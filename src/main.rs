@@ -292,7 +292,7 @@ async fn magic(ctx: &Context, msg: &Message) -> CommandResult {
     let runner = tokio::task::spawn_blocking(move || {
         println!("Thread Spawned!");
         // This is running on a thread where blocking is fine.
-        let response = generator::get_chat_response("1.3", "", format!(&prompt, "\n", &magic_response)).unwrap();
+        let response = generator::get_chat_response("1.3", "", &format!(&prompt, "\n", &magic_response)).unwrap();
         response
     });
 
