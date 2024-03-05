@@ -13,6 +13,7 @@ use std::env;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
 use std::fs;
+use rand::Rng;
 use image::GenericImageView;
 
 use serenity::async_trait;
@@ -242,6 +243,56 @@ async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
         println!("Thread Spawned!");
         // This is running on a thread where blocking is fine.
         let response = generator::get_chat_response("1.3", "", &prompt).unwrap();
+        response
+    });
+
+    msg.reply(
+        ctx.clone(),
+        format!("{}", runner.await.unwrap()
+    )).await?;
+
+    Ok(typing.stop().unwrap())
+}
+
+#[command]
+async fn magic(ctx: &Context, msg: &Message) -> CommandResult {
+    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
+        .expect("Typing failed");
+
+    let prompt = msg.content.clone().split_off(6);
+    println!("{:?}", prompt);
+
+    // Magic 8 Ball responses
+    let responses = vec![
+        "It is certain",
+        "It is decidedly so",
+        "Without a doubt",
+        "Yes definitely",
+        "You may rely on it",
+        "As I see it, yes",
+        "Most likely",
+        "Outlook good",
+        "Yes",
+        "Signs point to yes",
+        "Reply hazy try again",
+        "Ask again later",
+        "Better not tell you now",
+        "Cannot predict now",
+        "Concentrate and ask again",
+        "Don't count on it",
+        "My reply is no",
+        "My sources say no",
+        "Outlook not so good",
+        "Very doubtful",
+    ];
+
+    let response_index = rand::thread_rng().gen_range(0..responses.len());
+    let magic_response = responses[response_index];
+
+    let runner = tokio::task::spawn_blocking(move || {
+        println!("Thread Spawned!");
+        // This is running on a thread where blocking is fine.
+        let response = generator::get_chat_response("1.3", magic_response, &prompt).unwrap();
         response
     });
 
