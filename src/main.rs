@@ -259,7 +259,7 @@ async fn magic(ctx: &Context, msg: &Message) -> CommandResult {
     let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
         .expect("Typing failed");
 
-    let prompt = msg.content.clone().split_off(6);
+    let prompt = msg.content.clone().split_off(7);
     println!("{:?}", prompt);
 
     // Magic 8 Ball responses
@@ -292,13 +292,13 @@ async fn magic(ctx: &Context, msg: &Message) -> CommandResult {
     let runner = tokio::task::spawn_blocking(move || {
         println!("Thread Spawned!");
         // This is running on a thread where blocking is fine.
-        let response = generator::get_chat_response("1.3", magic_response, &prompt).unwrap();
+        let response = generator::get_chat_response("1.3", "", format!(&prompt, "\n", &magic_response)).unwrap();
         response
     });
 
     msg.reply(
         ctx.clone(),
-        format!("{}", runner.await.unwrap()
+        format!("{}{}", &magic_response, runner.await.unwrap()
     )).await?;
 
     Ok(typing.stop().unwrap())
