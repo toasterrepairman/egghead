@@ -116,11 +116,11 @@ impl EventHandler for Handler {
                 let response = generator::get_chat_response("1.3", "", &prompt).unwrap();
                 response
             });
+
+            let reply = runner.await.unwrap();
+
+            send_message_in_parts(&ctx.http, &msg, &reply).await.unwrap();
         
-            msg.reply(
-                ctx.clone(),
-                format!("{}", runner.await.unwrap()
-            )).await.unwrap();
             typing.stop().unwrap();
             return
         }
@@ -129,6 +129,18 @@ impl EventHandler for Handler {
     async fn ready(&self, _: Context, ready: Ready) {
         println!("{} is connected!", ready.user.name);
     }
+}
+
+async fn send_message_in_parts(http: &serenity::http::Http, msg: &Message, text: &str) -> CommandResult {
+    const MAX_LENGTH: usize = 2000;
+
+    for chunk in text.as_bytes().chunks(MAX_LENGTH) {
+        let content = String::from_utf8_lossy(chunk);
+        if let Err(why) = msg.channel_id.say(http, &content).await {
+            println!("Error sending message: {:?}", why);
+        }
+    }
+    Ok(())
 }
 
 #[tokio::main]
