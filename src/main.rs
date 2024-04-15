@@ -62,7 +62,7 @@ impl TypeMapKey for MessageCount {
 }
 
 #[group]
-#[commands(ping, command_usage, voices, see, magic, show, ask, say, right, green, left, react, read, tldr, j, code, help)]
+#[commands(voices, magic, say, react, read, help)]
 struct General;
 
 #[hook]
@@ -196,81 +196,6 @@ async fn main() {
 }
 
 #[command]
-async fn ping(ctx: &Context, msg: &Message) -> CommandResult {
-    msg.reply(ctx, "Pong!").await?;
-
-    Ok(())
-}
-
-/// Usage: `~command_usage <command_name>`
-/// Example: `~command_usage ping`
-#[command]
-async fn command_usage(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
-    let command_name = match args.single_quoted::<String>() {
-        Ok(x) => x,
-        Err(_) => {
-            msg.reply(ctx, "I require an argument to run this command.").await?;
-            return Ok(());
-        },
-    };
-
-    // Yet again, we want to keep the locks open for the least time possible.
-    let amount = {
-        // Since we only want to read the data and not write to it, we open it in read mode,
-        // and since this is open in read mode, it means that there can be multiple locks open at
-        // the same time, and as mentioned earlier, it's heavily recommended that you only open
-        // the data lock in read mode, as it will avoid a lot of possible deadlocks.
-        let data_read = ctx.data.read().await;
-
-        // Then we obtain the value we need from data, in this case, we want the command counter.
-        // The returned value from get() is an Arc, so the reference will be cloned, rather than
-        // the data.
-        let command_counter_lock =
-            data_read.get::<CommandCounter>().expect("Expected CommandCounter in TypeMap.").clone();
-
-        let command_counter = command_counter_lock.read().await;
-        // And we return a usable value from it.
-        // This time, the value is not Arc, so the data will be cloned.
-        command_counter.get(&command_name).map_or(0, |x| *x)
-    };
-
-    if amount == 0 {
-        msg.reply(ctx, format!("The command `{}` has not yet been used.", command_name)).await?;
-    } else {
-        msg.reply(
-            ctx,
-            format!("The command `{}` has been used {} time/s this session!", command_name, amount),
-        )
-            .await?;
-    }
-
-    Ok(())
-}
-
-#[command]
-async fn ask(ctx: &Context, msg: &Message) -> CommandResult {
-    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
-        .expect("Typing failed");
-
-    let prompt = msg.content.clone().split_off(6);
-    println!("{:?}", prompt);
-
-    let runner = tokio::task::spawn_blocking(move || {
-        println!("Thread Spawned!");
-        // This is running on a thread where blocking is fine.
-        let response = generator::get_chat_response("1.3", "", &prompt).unwrap();
-        response
-    });
-
-    msg.reply(
-        ctx.clone(),
-        format!("{}", runner.await.unwrap()
-    )).await?;
-
-    Ok(typing.stop().unwrap())
-}
-
-#[command]
 async fn magic(ctx: &Context, msg: &Message) -> CommandResult {
     let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
         .expect("Typing failed");
@@ -320,45 +245,6 @@ async fn magic(ctx: &Context, msg: &Message) -> CommandResult {
     Ok(typing.stop().unwrap())
 }
 
-#[command]
-async fn see(ctx: &Context, msg: &Message) -> CommandResult {
-    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
-        .expect("Typing failed");
-
-    let channel_id = msg.channel_id;
-    let messages = channel_id.messages(ctx, |retriever| retriever.before(msg.id)).await?;
-
-    if let Some(prev_msg) = messages.get(0) {
-        if let Some(attachment) = &prev_msg.attachments.get(0) {
-            if attachment.width.is_some() && attachment.height.is_some() {
-                fs::remove_file("/home/ubuntu/.tmp/downloaded_image.jpg").expect("Failed to delete file");
-                // Download the image
-                let response = reqwest::get(&attachment.url).await?;
-                let image_bytes = response.bytes().await?;
-                let image = image::load_from_memory(&image_bytes)?;
-
-                // Convert the image to JPEG format
-                let mut file = File::create("/home/ubuntu/.tmp/downloaded_image.jpg")?;
-                image.write_to(&mut file, image::ImageOutputFormat::Jpeg(85))?;
-
-                let reaction = img_react("/home/ubuntu/.tmp/downloaded_image.jpg").unwrap();
-                msg.reply(
-                    ctx.clone(),
-                    format!("{}", reaction
-                )).await?;
-                println!("Image downloaded: /home/ubuntu/.tmp/downloaded_image.jpg");
-            } else {
-                println!("break");
-            }
-        } else {
-            println!("break");
-        }
-    } else {
-        println!("No previous message found.");
-    }
-
-    Ok(typing.stop().unwrap())
-}
 
 #[command]
 async fn say(ctx: &Context, msg: &Message) -> CommandResult {
@@ -411,30 +297,6 @@ async fn voices(ctx: &Context, msg: &Message) -> CommandResult {
 }
 
 #[command]
-async fn green(ctx: &Context, msg: &Message) -> CommandResult {
-    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
-        .expect("Typing failed");
-
-    let prompt = msg.content.clone().split_off(8);
-    println!("{:?}", prompt);
-
-    let runner = tokio::task::spawn_blocking(move || {
-        println!("Thread Spawned!");
-        // This is running on a thread where blocking is fine.
-        let response = generator::get_chat_response("0.6", "Write a classic 4chan greentext based on the following prompt: \n>be me \n>", &prompt).unwrap();
-        response
-    });
-
-    msg.reply(
-        ctx.clone(),
-        format!("{}", runner.await.unwrap()
-        )).await?;
-
-    Ok(typing.stop().unwrap())
-}
-
-
-#[command]
 async fn show(ctx: &Context, msg: &Message) -> CommandResult {
     let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
         .expect("Typing failed");
@@ -465,81 +327,6 @@ async fn show(ctx: &Context, msg: &Message) -> CommandResult {
     //     ctx.clone(),
     //     format!("{:?}", runner.await.unwrap()
     //     )).await?;
-
-    Ok(typing.stop().unwrap())
-}
-
-#[command]
-async fn code(ctx: &Context, msg: &Message) -> CommandResult {
-    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
-        .expect("Typing failed");
-
-    let prompt = msg.content.clone().split_off(7);
-    println!("{:?}", prompt);
-
-    let runner = tokio::task::spawn_blocking(move || {
-        println!("Thread Spawned!");
-        // This is running on a thread where blocking is fine.
-        let response = generator::get_code_response("1.5", "I am egghead, the world's smartest computer. Here is my response to your question:\n", &prompt).unwrap();
-        response
-    });
-
-    msg.reply(
-        ctx.clone(),
-        format!("{}", runner.await.unwrap()
-        )).await?;
-
-    Ok(typing.stop().unwrap())
-}
-
-#[command]
-async fn left(ctx: &Context, msg: &Message) -> CommandResult {
-    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
-        .expect("Typing failed");
-
-    let prompt = fetcher::get_random_headline_from_rss_link(
-        "https://feeds.npr.org/1001/rss.xml"
-    ).await.expect("couldnt rss right");
-    let title = prompt.clone();
-    println!("{:?}", &prompt);
-
-    let runner = tokio::task::spawn_blocking(move || {
-        println!("Thread Spawned!");
-        // This is running on a thread where blocking is fine.
-        let response = generator::get_chat_response("1.3", "Write a short parody article based on the following headline. A complete article is always ended by [end of text].", &prompt).unwrap();
-        response
-    });
-
-    msg.reply(
-        ctx.clone(),
-        format!("Title: {:0} \n{:1}", title, runner.await?,
-        )).await?;
-
-    Ok(typing.stop().unwrap())
-}
-
-#[command]
-async fn right(ctx: &Context, msg: &Message) -> CommandResult {
-    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
-        .expect("Typing failed");
-
-    let prompt = fetcher::get_random_headline_from_rss_link(
-        "https://moxie.foxnews.com/google-publisher/latest.xml"
-    ).await.expect("couldnt rss right");
-    let title = prompt.clone();
-    println!("{:?}", &prompt);
-
-    let runner = tokio::task::spawn_blocking(move || {
-        println!("Thread Spawned!");
-        // This is running on a thread where blocking is fine.
-        let response = generator::get_chat_response("1.3", "Write a short parody article based on the following headline. A complete article is always ended by [end of text].", &prompt).unwrap();
-        response
-    });
-
-    msg.reply(
-        ctx.clone(),
-        format!("Title: {:0} \n{:1}", title, runner.await?,
-        )).await?;
 
     Ok(typing.stop().unwrap())
 }
@@ -621,63 +408,6 @@ async fn react(ctx: &Context, msg: &Message) -> CommandResult {
     Ok(typing.stop().unwrap())
 }
 
-#[derive(Debug, Deserialize)]
-struct Clue {
-    id: u64,
-    answer: String,
-    question: String,
-    // other fields omitted for brevity
-    category: Category,
-}
-
-#[derive(Debug, Deserialize)]
-struct Category {
-    title: String,
-}
-
-#[command]
-async fn j(ctx: &Context, msg: &Message) -> CommandResult {
-    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
-        .expect("Typing failed");
-
-    let runner = tokio::task::spawn_blocking(move || {
-        println!("Thread Spawned!");
-
-        let response = reqwest::blocking::get("http://jservice.io/api/final").expect("Failed to get data from the API");
-
-        // Declare variables before the if statement
-        let question: String;
-        let answer: String;
-        let category_title: String;
-
-        // Parse the JSON data
-        let clues: Vec<Clue> = response.json().expect("Failed to parse JSON");
-
-        if let Some(clue) = clues.get(0) {
-            // Assign values to variables
-            question = clue.question.clone();
-            answer = clue.answer.clone();
-            category_title = clue.category.title.clone();
-        } else {
-            // Provide default values or handle the case when no clues are found
-            question = "No clues found".to_string();
-            answer = "".to_string();
-            category_title = "".to_string();
-        }      
-        // This is running on a thread where blocking is fine.
-        let guess = generator::get_short_response("1.3", "Respond to the following quiz-show clue in one sentence:", &question).unwrap();
-        format!("Question: {} \n\nAnswer: {} \n\nEgghead's Guess: {}", &question, &answer, guess)
-    });
-
-    msg.reply(
-        ctx.clone(),
-        format!("{}", runner.await?
-    )).await?;
-
-    Ok(typing.stop().unwrap())
-    
-}
-
 #[command]
 async fn read(ctx: &Context, msg: &Message) -> CommandResult {
     let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
@@ -714,37 +444,6 @@ async fn read(ctx: &Context, msg: &Message) -> CommandResult {
     msg.reply(
         ctx.clone(),
         format!("{}", runner.await?.unwrap()
-        )).await?;
-
-    Ok(typing.stop().unwrap())
-}
-
-#[command]
-async fn tldr(ctx: &Context, msg: &Message) -> CommandResult {
-    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
-        .expect("Typing failed");
-
-    let prompt = match msg.channel_id.messages(&ctx.http, |retriever| {
-        retriever.limit(2)
-    }).await {
-        Ok(messages) => messages.last().cloned(),
-        Err(why) => {
-            println!("Error getting messages: {:?}", why);
-            None
-        }
-    };
-    println!("{:?}", prompt);
-
-    let runner = tokio::task::spawn_blocking(move || {
-        println!("Thread Spawned!");
-        // This is running on a thread where blocking is fine.
-        let response = generator::get_chat_response("0.5", "Respond with a summary of the passage below, then end with [end of text].\n", &prompt.unwrap().content).unwrap();
-        response
-    });
-
-    msg.reply(
-        ctx.clone(),
-        format!("{}", runner.await?
         )).await?;
 
     Ok(typing.stop().unwrap())
