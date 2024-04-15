@@ -100,25 +100,29 @@ async fn before(ctx: &Context, msg: &Message, command_name: &str) -> bool {
 struct Handler;
 
 #[async_trait]
+
 impl EventHandler for Handler {
     async fn message(&self, ctx: Context, msg: Message) {
-        // We are verifying if the bot id is the same as the message author id.
-        if msg.author.id != ctx.cache.current_user_id()
-            && msg.content.to_lowercase().contains("owo")
-        {
-            // Since data is located in Context, this means you are also able to use it within events!
-            let count = {
-                let data_read = ctx.data.read().await;
-                data_read.get::<MessageCount>().expect("Expected MessageCount in TypeMap.").clone()
-            };
-
-            // Here, we are checking how many "owo" there are in the message content.
-            let owo_in_msg = msg.content.to_ascii_lowercase().matches("owo").count();
-
-            // Atomic operations with ordering do not require mut to be modified.
-            // In this case, we want to increase the message count by 1.
-            // https://doc.rust-lang.org/std/sync/atomic/struct.AtomicUsize.html#method.fetch_add
-            count.fetch_add(owo_in_msg, Ordering::SeqCst);
+        if msg.mentions_me(&ctx.http).await.unwrap_or(false) {
+            let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
+            .expect("Typing failed");
+        
+            let prompt = msg.content.clone().split_off(6);
+            println!("{:?}", prompt);
+        
+            let runner = tokio::task::spawn_blocking(move || {
+                println!("Thread Spawned!");
+                // This is running on a thread where blocking is fine.
+                let response = generator::get_chat_response("1.3", "", &prompt).unwrap();
+                response
+            });
+        
+            msg.reply(
+                ctx.clone(),
+                format!("{}", runner.await.unwrap()
+            )).await.unwrap();
+            typing.stop().unwrap();
+            return
         }
     }
 
