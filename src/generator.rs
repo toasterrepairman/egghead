@@ -16,6 +16,7 @@ pub fn get_chat_response(temp: &str, init: &str, prompt: &str, imagedata: Option
         // "n_predict": 325,
         // "penalize_nl": true,
         // "presence_penalty": 4.0,
+        "batch_size": 512,
         "image_data": [{"data": Some(imagedata), "id": 42}],
         "system_prompt": {
          "prompt": "Transcript of a never ending chatlog, where the User interacts with an Egghead. The users are formal but expect serious answers; the Egghead is highly-intelligent and will furnish an answer no matter how unrealistic or outlandish.",
