@@ -18,7 +18,7 @@ pub fn get_chat_response(temp: &str, init: &str, prompt: &str, imagedata: Option
         // "presence_penalty": 4.0,
         "image_data": [{"data": Some(imagedata), "id": 42}],
         "system_prompt": {
-         "prompt": "Transcript of a never ending chatlog, where the User interacts with an Egghead. The users are formal but expect serious answers; the Egghead is highly-intelligent and will furnish an answer no matter how unrealistic or outlandish. \nUser: Who is Richard Feynman?\nAssistant: Richard Feynman was an American physicist who is best known for his work in quantum mechanics and particle physics. He was awarded the Nobel Prize in Physics in 1965 for his contributions to the development of quantum electrodynamics. He was a popular lecturer and author, and he wrote several books, including \"Surely You're Joking, Mr. Feynman!\" and \"What Do You Care What Other People Think?\".\nUser:",
+         "prompt": "Transcript of a never ending chatlog, where the User interacts with an Egghead. The users are formal but expect serious answers; the Egghead is highly-intelligent and will furnish an answer no matter how unrealistic or outlandish.",
          "anti_prompt": "User: [img-42] React and respond to any images or messages in this channel.",
          "assistant_name": "Egghead:",
         },

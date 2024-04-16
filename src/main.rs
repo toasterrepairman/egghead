@@ -148,7 +148,7 @@ impl EventHandler for Handler {
                 
                 let image_path = encode_image_to_base64(get_image_path("downloaded_image.png"));
 
-                let response = generator::get_chat_response("1.3", "", &prompt, image_path).unwrap();
+                let response = generator::get_chat_response("1.3", "User:", &prompt, image_path).unwrap();
                 response
             });
 
