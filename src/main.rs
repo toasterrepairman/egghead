@@ -101,9 +101,38 @@ struct Handler;
 
 #[async_trait]
 
+#[async_trait]
 impl EventHandler for Handler {
     async fn message(&self, ctx: Context, msg: Message) {
         if msg.mentions_me(&ctx.http).await.unwrap_or(false) {
+            // Fetch last 3 messages in the channel
+            if let Ok(messages) = msg.channel_id.messages(&ctx.http, |retriever| retriever.limit(3)).await {
+                // Iterate through messages to find the last image
+                let mut last_image_url = None;
+                for message in messages {
+                    for attachment in &message.attachments {
+                        if attachment.width.is_some() { // This checks if the attachment is an image
+                            last_image_url = Some(attachment.url.clone());
+                        }
+                    }
+                }
+
+                // If an image was found, download it
+                if let Some(image_url) = last_image_url {
+                    let response = reqwest::get(&image_url).await;
+                    match response {
+                        Ok(mut content) => {
+                            // Save the image to a file
+                            let image_bytes = content.bytes().await.unwrap();
+                            std::fs::write("downloaded_image.png", &image_bytes).unwrap();
+                            msg.channel_id.say(&ctx.http, "I've downloaded the latest image sent.").await.unwrap();
+                        },
+                        Err(_) => println!("Couldn't download file"),
+                    }
+                } else {
+                    msg.channel_id.say(&ctx.http, "No images found in the last 3 messages.").await.unwrap();
+                }
+            }
             let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
             .expect("Typing failed");
         
