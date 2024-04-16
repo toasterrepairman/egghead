@@ -116,7 +116,7 @@ impl EventHandler for Handler {
             let runner = tokio::task::spawn_blocking(move || {
                 println!("Thread Spawned!");
                 // This is running on a thread where blocking is fine.
-                let response = generator::get_chat_response("1.3", "User:", &prompt).unwrap();
+                let response = generator::get_chat_response("1.3", "", &prompt).unwrap();
                 response
             });
 
