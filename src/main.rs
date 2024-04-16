@@ -36,6 +36,8 @@ use std::time::Duration;
 use serenity::futures::TryFutureExt;
 use crate::fakeyou::get_audio_url;
 use crate::imgread::img_react;
+use std::io::{self, Read};
+use base64::{encode};
 
 // A container type is created for inserting into the Client's `data`, which
 // allows for data to be accessible across all events and framework commands, or
@@ -125,7 +127,7 @@ impl EventHandler for Handler {
                             // Save the image to a file
                             let image_bytes = content.bytes().await.unwrap();
                             std::fs::write("downloaded_image.png", &image_bytes).unwrap();
-                            msg.channel_id.say(&ctx.http, "I've downloaded the latest image sent.").await.unwrap();
+                            println!("I've downloaded the latest image sent.");
                         },
                         Err(_) => println!("Couldn't download file"),
                     }
@@ -141,8 +143,12 @@ impl EventHandler for Handler {
         
             let runner = tokio::task::spawn_blocking(move || {
                 println!("Thread Spawned!");
+
                 // This is running on a thread where blocking is fine.
-                let response = generator::get_chat_response("1.3", "", &prompt).unwrap();
+                
+                let image_path = encode_image_to_base64(get_image_path("downloaded_image.png"));
+
+                let response = generator::get_chat_response("1.3", "", &prompt, image_path).unwrap();
                 response
             });
 
@@ -170,6 +176,34 @@ async fn send_message_in_parts(http: &serenity::http::Http, msg: &Message, text:
         }
     }
     Ok(())
+}
+
+/// Returns the full path to a file in the current working directory as a string,
+/// or None if the current directory cannot be accessed.
+fn get_image_path(file_name: &str) -> Option<String> {
+    let mut path = env::current_dir().ok()?;
+    path.push(file_name);
+    Some(path.display().to_string())
+}
+
+/// Reads the image from the given path and returns its base64 encoded string.
+fn encode_image_to_base64(path: Option<String>) -> Option<String> {
+    path.and_then(|p| {
+        // Attempt to open the file.
+        let mut file = match File::open(&p) {
+            Ok(f) => f,
+            Err(_) => return None,
+        };
+
+        // Read the contents of the file.
+        let mut contents = Vec::new();
+        if file.read_to_end(&mut contents).is_err() {
+            return None;
+        }
+
+        // Encode the contents to base64.
+        Some(encode(contents))
+    })
 }
 
 #[tokio::main]
@@ -262,7 +296,7 @@ async fn magic(ctx: &Context, msg: &Message) -> CommandResult {
     let runner = tokio::task::spawn_blocking(move || {
         println!("Thread Spawned!");
         // This is running on a thread where blocking is fine.
-        let response = generator::get_chat_response("1.3", "", &format!("{}{}{}", &prompt, "\n", &magic_response)).unwrap();
+        let response = generator::get_chat_response("1.3", "", &format!("{}{}{}", &prompt, "\n", &magic_response), None).unwrap();
         response
     });
 
@@ -404,7 +438,7 @@ async fn react(ctx: &Context, msg: &Message) -> CommandResult {
                 let runner = tokio::task::spawn_blocking(move || {
                     println!("Thread Spawned!");
                     // This is running on a thread where blocking is fine.
-                    let response = generator::get_chat_response(&heat, "You are Egghead, the world's smartest computer. React to the following description: ", &reaction).unwrap();
+                    let response = generator::get_chat_response(&heat, "You are Egghead, the world's smartest computer. React to the following description: ", &reaction, None).unwrap();
                     response
                 });
 
@@ -420,7 +454,7 @@ async fn react(ctx: &Context, msg: &Message) -> CommandResult {
             let runner = tokio::task::spawn_blocking(move || {
                 println!("Thread Spawned!");
                 // This is running on a thread where blocking is fine.
-                let response = generator::get_chat_response(&heat, "A complete response is always ended by [end of text]. Respond to the following Discord message as egghead, the world's smartest computer: ", &prompt.unwrap().content).unwrap();
+                let response = generator::get_chat_response(&heat, "A complete response is always ended by [end of text]. Respond to the following Discord message as egghead, the world's smartest computer: ", &prompt.unwrap().content, None).unwrap();
                 response
             });
 
@@ -466,7 +500,7 @@ async fn read(ctx: &Context, msg: &Message) -> CommandResult {
     let runner = tokio::task::spawn_blocking(move || {
         println!("Thread Spawned!");
         // This is running on a thread where blocking is fine.
-        let response = generator::get_chat_response("1.0", "A complete article is always ended by [end of text]. Respond to the following Discord conversation as egghead, the world's smartest computer: ", &cleanprompt);
+        let response = generator::get_chat_response("1.0", "A complete article is always ended by [end of text]. Respond to the following Discord conversation as egghead, the world's smartest computer: ", &cleanprompt, None);
         response
     });
 
