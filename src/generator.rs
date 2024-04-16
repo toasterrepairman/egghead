@@ -3,7 +3,7 @@ use std::time::Duration;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
-pub fn get_chat_response(temp: &str, init: &str, prompt: &str, imagedata: Option<String>) -> Result<String, reqwest::Error> {
+pub fn get_chat_response(temp: &str, init: &str, prompt: &str) -> Result<String, reqwest::Error> {
     let client = Client::builder()
         .timeout(Duration::from_secs(360))
         .build()?;
@@ -16,11 +16,11 @@ pub fn get_chat_response(temp: &str, init: &str, prompt: &str, imagedata: Option
         // "n_predict": 325,
         // "penalize_nl": true,
         // "presence_penalty": 4.0,
-        "batch_size": 512,
-        "image_data": [{"data": Some(imagedata), "id": 42}],
+        // "batch_size": 512,
+        // "image_data": [{"data": Some(imagedata), "id": 42}],
         "system_prompt": {
          "prompt": "Transcript of a never ending chatlog, where the User interacts with an Egghead. The users are formal but expect serious answers; the Egghead is highly-intelligent and will furnish an answer no matter how unrealistic or outlandish.",
-         "anti_prompt": "User: [img-42] React and respond to any images or messages in this channel.",
+         "anti_prompt": "User: React and respond to any images or messages in this channel.",
          "assistant_name": "Egghead:",
         },
     });

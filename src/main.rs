@@ -107,34 +107,6 @@ struct Handler;
 impl EventHandler for Handler {
     async fn message(&self, ctx: Context, msg: Message) {
         if msg.mentions_me(&ctx.http).await.unwrap_or(false) {
-            // Fetch last 3 messages in the channel
-            if let Ok(messages) = msg.channel_id.messages(&ctx.http, |retriever| retriever.limit(3)).await {
-                // Iterate through messages to find the last image
-                let mut last_image_url = None;
-                for message in messages {
-                    for attachment in &message.attachments {
-                        if attachment.width.is_some() { // This checks if the attachment is an image
-                            last_image_url = Some(attachment.url.clone());
-                        }
-                    }
-                }
-
-                // If an image was found, download it
-                if let Some(image_url) = last_image_url {
-                    let response = reqwest::get(&image_url).await;
-                    match response {
-                        Ok(mut content) => {
-                            // Save the image to a file
-                            let image_bytes = content.bytes().await.unwrap();
-                            std::fs::write("downloaded_image.png", &image_bytes).unwrap();
-                            println!("I've downloaded the latest image sent.");
-                        },
-                        Err(_) => println!("Couldn't download file"),
-                    }
-                } else {
-                    msg.channel_id.say(&ctx.http, "No images found in the last 3 messages.").await.unwrap();
-                }
-            }
             let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
             .expect("Typing failed");
         
@@ -143,12 +115,8 @@ impl EventHandler for Handler {
         
             let runner = tokio::task::spawn_blocking(move || {
                 println!("Thread Spawned!");
-
                 // This is running on a thread where blocking is fine.
-                
-                let image_path = encode_image_to_base64(get_image_path("downloaded_image.png"));
-
-                let response = generator::get_chat_response("1.3", "User:", &prompt, image_path).unwrap();
+                let response = generator::get_chat_response("1.3", "User:", &prompt).unwrap();
                 response
             });
 
@@ -296,7 +264,7 @@ async fn magic(ctx: &Context, msg: &Message) -> CommandResult {
     let runner = tokio::task::spawn_blocking(move || {
         println!("Thread Spawned!");
         // This is running on a thread where blocking is fine.
-        let response = generator::get_chat_response("1.3", "", &format!("{}{}{}", &prompt, "\n", &magic_response), None).unwrap();
+        let response = generator::get_chat_response("1.3", "", &format!("{}{}{}", &prompt, "\n", &magic_response)).unwrap();
         response
     });
 
@@ -438,7 +406,7 @@ async fn react(ctx: &Context, msg: &Message) -> CommandResult {
                 let runner = tokio::task::spawn_blocking(move || {
                     println!("Thread Spawned!");
                     // This is running on a thread where blocking is fine.
-                    let response = generator::get_chat_response(&heat, "You are Egghead, the world's smartest computer. React to the following description: ", &reaction, None).unwrap();
+                    let response = generator::get_chat_response(&heat, "You are Egghead, the world's smartest computer. React to the following description: ", &reaction).unwrap();
                     response
                 });
 
@@ -454,7 +422,7 @@ async fn react(ctx: &Context, msg: &Message) -> CommandResult {
             let runner = tokio::task::spawn_blocking(move || {
                 println!("Thread Spawned!");
                 // This is running on a thread where blocking is fine.
-                let response = generator::get_chat_response(&heat, "A complete response is always ended by [end of text]. Respond to the following Discord message as egghead, the world's smartest computer: ", &prompt.unwrap().content, None).unwrap();
+                let response = generator::get_chat_response(&heat, "A complete response is always ended by [end of text]. Respond to the following Discord message as egghead, the world's smartest computer: ", &prompt.unwrap().content).unwrap();
                 response
             });
 
@@ -500,7 +468,7 @@ async fn read(ctx: &Context, msg: &Message) -> CommandResult {
     let runner = tokio::task::spawn_blocking(move || {
         println!("Thread Spawned!");
         // This is running on a thread where blocking is fine.
-        let response = generator::get_chat_response("1.0", "A complete article is always ended by [end of text]. Respond to the following Discord conversation as egghead, the world's smartest computer: ", &cleanprompt, None);
+        let response = generator::get_chat_response("1.0", "A complete article is always ended by [end of text]. Respond to the following Discord conversation as egghead, the world's smartest computer: ", &cleanprompt);
         response
     });
 
