@@ -145,33 +145,33 @@ async fn send_message_in_parts(http: &serenity::http::Http, msg: &Message, text:
     Ok(())
 }
 
-/// Returns the full path to a file in the current working directory as a string,
-/// or None if the current directory cannot be accessed.
-fn get_image_path(file_name: &str) -> Option<String> {
-    let mut path = env::current_dir().ok()?;
-    path.push(file_name);
-    Some(path.display().to_string())
-}
+// /// Returns the full path to a file in the current working directory as a string,
+// /// or None if the current directory cannot be accessed.
+// fn get_image_path(file_name: &str) -> Option<String> {
+//     let mut path = env::current_dir().ok()?;
+//     path.push(file_name);
+//     Some(path.display().to_string())
+// }
 
-/// Reads the image from the given path and returns its base64 encoded string.
-fn encode_image_to_base64(path: Option<String>) -> Option<String> {
-    path.and_then(|p| {
-        // Attempt to open the file.
-        let mut file = match File::open(&p) {
-            Ok(f) => f,
-            Err(_) => return None,
-        };
+// /// Reads the image from the given path and returns its base64 encoded string.
+// fn encode_image_to_base64(path: Option<String>) -> Option<String> {
+//     path.and_then(|p| {
+//         // Attempt to open the file.
+//         let mut file = match File::open(&p) {
+//             Ok(f) => f,
+//             Err(_) => return None,
+//         };
 
-        // Read the contents of the file.
-        let mut contents = Vec::new();
-        if file.read_to_end(&mut contents).is_err() {
-            return None;
-        }
+//         // Read the contents of the file.
+//         let mut contents = Vec::new();
+//         if file.read_to_end(&mut contents).is_err() {
+//             return None;
+//         }
 
-        // Encode the contents to base64.
-        Some(encode(contents))
-    })
-}
+//         // Encode the contents to base64.
+//         Some(encode(contents))
+//     })
+// }
 
 #[tokio::main]
 async fn main() {
