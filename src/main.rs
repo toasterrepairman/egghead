@@ -37,7 +37,6 @@ use serenity::futures::TryFutureExt;
 use crate::fakeyou::get_audio_url;
 use crate::imgread::img_react;
 use std::io::{self, Read};
-use base64::{encode};
 
 // A container type is created for inserting into the Client's `data`, which
 // allows for data to be accessible across all events and framework commands, or

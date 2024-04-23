@@ -19,9 +19,9 @@ pub fn get_chat_response(temp: &str, init: &str, prompt: &str) -> Result<String,
         // "batch_size": 512,
         // "image_data": [{"data": Some(imagedata), "id": 42}],
         "system_prompt": {
-         "prompt": "You are Egghead, the world's smartest computer.",
-         // "anti_prompt": "User: React and respond to any images or messages in this channel.",
-         // "assistant_name": "Egghead:",
+          "prompt": "You are Egghead, the world's smartest computer.",
+          "anti_prompt": "<|end|>",
+          "assistant_name": "<|assistant|>",
         },
     });
 
