@@ -20,8 +20,8 @@ pub fn get_chat_response(temp: &str, init: &str, prompt: &str) -> Result<String,
         // "image_data": [{"data": Some(imagedata), "id": 42}],
         "system_prompt": {
           "prompt": "You are Egghead, the world's smartest computer.",
-          "anti_prompt": "<|end|>",
-          "assistant_name": "<|assistant|>",
+          "anti_prompt": "<|endoftext|>",
+          "assistant_name": "<|im_start|>assistant",
         },
     });
 
