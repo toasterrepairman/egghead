@@ -19,8 +19,8 @@ pub fn get_chat_response(temp: &str, init: &str, prompt: &str) -> Result<String,
         // "presence_penalty": 4.0,
         // "batch_size": 512,
         // "image_data": [{"data": Some(imagedata), "id": 42}],
-         "system_prompt": {
-          "prompt": "You are Egghead, the world's smartest computer.",
+        "system_prompt": {
+          "prompt": "You are Egghead, the world's smartest computer. Answer the following user query:",
           // "anti_prompt": "<|endoftext|>",
           // "assistant_name": "<|im_start|>assistant",
          },
