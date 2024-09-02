@@ -377,12 +377,15 @@ async fn react(ctx: &Context, msg: &Message) -> CommandResult {
     let prompt = match msg.channel_id.messages(&ctx.http, |retriever| {
         retriever.limit(2)
     }).await {
-        Ok(messages) => messages.last().cloned(),
+        Ok(messages) => messages.last().content.clone(),
         Err(why) => {
             println!("Error getting messages: {:?}", why);
             None
         }
     };
+
+    let prompt = msg.content.clone().split_off(23);
+    println!("{:?}", prompt);
 
     let channel_id = msg.channel_id;
     let messages = channel_id.messages(ctx, |retriever| retriever.before(msg.id)).await?;
