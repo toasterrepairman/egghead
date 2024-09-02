@@ -13,7 +13,7 @@ pub fn get_chat_response(temp: &str, init: &str, prompt: &str, imagedata: Option
         None => json!({ "data": "" }),
     };
 
-    println!("{:?}", image_data.unwrap());
+    println!("{:?}", image_data);
 
     let prompt_input = format!("{}{}\n\n", init, prompt);
     let request_data = json!({
