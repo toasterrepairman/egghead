@@ -380,7 +380,7 @@ async fn react(ctx: &Context, msg: &Message) -> CommandResult {
         Ok(messages) => messages.last().unwrap().content.clone(),
         Err(why) => {
             println!("Error getting messages: {:?}", why);
-            None
+            "None"
         }
     };
 
