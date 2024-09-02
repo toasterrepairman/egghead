@@ -395,7 +395,7 @@ async fn react(ctx: &Context, msg: &Message) -> CommandResult {
                 let response = reqwest::get(&attachment.url).await?;
                 let image_bytes = response.bytes().await?;
                 let image = image::load_from_memory(&image_bytes)?;
-
+                println!("Image downloaded: /home/toast/.tmp/downloaded_image.jpg");
                 // Convert the image to JPEG format
                 let mut file = File::create("/home/toast/.tmp/downloaded_image.jpg")?;
                 image.write_to(&mut file, image::ImageOutputFormat::Jpeg(85))?;
@@ -405,7 +405,7 @@ async fn react(ctx: &Context, msg: &Message) -> CommandResult {
                 let runner = tokio::task::spawn_blocking(move || {
                     println!("Thread Spawned!");
                     // This is running on a thread where blocking is fine.
-                    let response = generator::get_chat_response(&heat, "You are Egghead, the world's smartest computer. React to the following description: ", &reaction, None).unwrap();
+                    let response = generator::get_chat_response(&heat, "You are Egghead, the world's smartest computer. React to the following description: ", "", &reaction).unwrap();
                     response
                 });
 
@@ -413,7 +413,6 @@ async fn react(ctx: &Context, msg: &Message) -> CommandResult {
                     ctx.clone(),
                     format!("{}", runner.await?
                 )).await?;
-                println!("Image downloaded: /home/toast/.tmp/downloaded_image.jpg");
             } else {
                 println!("break");
             }
