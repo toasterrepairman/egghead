@@ -19,7 +19,7 @@ pub fn get_chat_response(temp: &str, init: &str, prompt: &str, imagedata: Option
     let request_data = json!({
         "model": "qnguyen3/nanollava",
         "prompt": prompt_input,
-        "temperature": temp.parse::<f64>().unwrap(),
+        // "temperature": temp.parse::<f64>().unwrap(),
         "stream": false,
         "stop": ["\n"],
         "image_data": image_data,
