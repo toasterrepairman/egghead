@@ -108,21 +108,21 @@ impl EventHandler for Handler {
         if msg.mentions_me(&ctx.http).await.unwrap_or(false) {
             let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
             .expect("Typing failed");
-        
+
             let prompt = msg.content.clone().split_off(23);
             println!("{:?}", prompt);
-        
+
             let runner = tokio::task::spawn_blocking(move || {
                 println!("Thread Spawned!");
                 // This is running on a thread where blocking is fine.
-                let response = generator::get_chat_response("1.3", "", &prompt).unwrap();
+                let response = generator::get_chat_response("1.3", "", &prompt, None).unwrap();
                 response
             });
 
             let reply = runner.await.unwrap();
 
             send_message_in_parts(&ctx.http, &msg, &reply).await.unwrap();
-        
+
             typing.stop().unwrap();
             return
         }
@@ -263,7 +263,7 @@ async fn magic(ctx: &Context, msg: &Message) -> CommandResult {
     let runner = tokio::task::spawn_blocking(move || {
         println!("Thread Spawned!");
         // This is running on a thread where blocking is fine.
-        let response = generator::get_chat_response("1.3", "", &format!("{}{}{}", &prompt, "\n", &magic_response)).unwrap();
+        let response = generator::get_chat_response("1.3", "", &format!("{}{}{}", &prompt, "\n", &magic_response), None).unwrap();
         response
     });
 
@@ -405,7 +405,7 @@ async fn react(ctx: &Context, msg: &Message) -> CommandResult {
                 let runner = tokio::task::spawn_blocking(move || {
                     println!("Thread Spawned!");
                     // This is running on a thread where blocking is fine.
-                    let response = generator::get_chat_response(&heat, "You are Egghead, the world's smartest computer. React to the following description: ", &reaction).unwrap();
+                    let response = generator::get_chat_response(&heat, "You are Egghead, the world's smartest computer. React to the following description: ", &reaction, None).unwrap();
                     response
                 });
 
@@ -421,7 +421,7 @@ async fn react(ctx: &Context, msg: &Message) -> CommandResult {
             let runner = tokio::task::spawn_blocking(move || {
                 println!("Thread Spawned!");
                 // This is running on a thread where blocking is fine.
-                let response = generator::get_chat_response(&heat, "A complete response is always ended by [end of text]. Respond to the following Discord message as egghead, the world's smartest computer: ", &prompt.unwrap().content).unwrap();
+                let response = generator::get_chat_response(&heat, "A complete response is always ended by [end of text]. Respond to the following Discord message as egghead, the world's smartest computer: ", &prompt.unwrap().content, None).unwrap();
                 response
             });
 
@@ -467,7 +467,7 @@ async fn read(ctx: &Context, msg: &Message) -> CommandResult {
     let runner = tokio::task::spawn_blocking(move || {
         println!("Thread Spawned!");
         // This is running on a thread where blocking is fine.
-        let response = generator::get_chat_response("1.0", "A complete article is always ended by [end of text]. Respond to the following Discord conversation as egghead, the world's smartest computer: ", &cleanprompt);
+        let response = generator::get_chat_response("1.0", "A complete article is always ended by [end of text]. Respond to the following Discord conversation as egghead, the world's smartest computer: ", &cleanprompt, None);
         response
     });
 
