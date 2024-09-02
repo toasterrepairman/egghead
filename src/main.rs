@@ -35,7 +35,7 @@ use std::path::{Path, PathBuf};
 use std::time::Duration;
 use serenity::futures::TryFutureExt;
 use crate::fakeyou::get_audio_url;
-use crate::imgread::base64_encode_image_file;
+use crate::imgread::encode_image_to_base64;
 use std::io::{self, Read};
 
 // A container type is created for inserting into the Client's `data`, which
@@ -400,7 +400,7 @@ async fn react(ctx: &Context, msg: &Message) -> CommandResult {
                 let mut file = File::create("/home/toast/.tmp/downloaded_image.jpg")?;
                 image.write_to(&mut file, image::ImageOutputFormat::Jpeg(85))?;
 
-                let reaction = base64_encode_image_file("/home/toast/.tmp/downloaded_image.jpg").unwrap();
+                let reaction = encode_image_to_base64("/home/toast/.tmp/downloaded_image.jpg").unwrap();
 
                 let runner = tokio::task::spawn_blocking(move || {
                     println!("Thread Spawned!");
