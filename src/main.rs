@@ -35,7 +35,7 @@ use std::path::{Path, PathBuf};
 use std::time::Duration;
 use serenity::futures::TryFutureExt;
 use crate::fakeyou::get_audio_url;
-use crate::imgread::img_react;
+use crate::imgread::base64_encode_image_file;
 use std::io::{self, Read};
 
 // A container type is created for inserting into the Client's `data`, which
@@ -390,17 +390,17 @@ async fn react(ctx: &Context, msg: &Message) -> CommandResult {
     if let Some(prev_msg) = messages.get(0) {
         if let Some(attachment) = &prev_msg.attachments.get(0) {
             if attachment.width.is_some() && attachment.height.is_some() {
-                fs::remove_file("/home/ubuntu/.tmp/downloaded_image.jpg").expect("Failed to delete file");
+                fs::remove_file("/home/toast/.tmp/downloaded_image.jpg").expect("Failed to delete file");
                 // Download the image
                 let response = reqwest::get(&attachment.url).await?;
                 let image_bytes = response.bytes().await?;
                 let image = image::load_from_memory(&image_bytes)?;
 
                 // Convert the image to JPEG format
-                let mut file = File::create("/home/ubuntu/.tmp/downloaded_image.jpg")?;
+                let mut file = File::create("/home/toast/.tmp/downloaded_image.jpg")?;
                 image.write_to(&mut file, image::ImageOutputFormat::Jpeg(85))?;
 
-                let reaction = img_react("/home/ubuntu/.tmp/downloaded_image.jpg").unwrap();
+                let reaction = base64_encode_image_file("/home/toast/.tmp/downloaded_image.jpg").unwrap();
 
                 let runner = tokio::task::spawn_blocking(move || {
                     println!("Thread Spawned!");
@@ -413,7 +413,7 @@ async fn react(ctx: &Context, msg: &Message) -> CommandResult {
                     ctx.clone(),
                     format!("{}", runner.await?
                 )).await?;
-                println!("Image downloaded: /home/ubuntu/.tmp/downloaded_image.jpg");
+                println!("Image downloaded: /home/toast/.tmp/downloaded_image.jpg");
             } else {
                 println!("break");
             }
