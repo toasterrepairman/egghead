@@ -377,7 +377,7 @@ async fn react(ctx: &Context, msg: &Message) -> CommandResult {
     let prompt = match msg.channel_id.messages(&ctx.http, |retriever| {
         retriever.limit(2)
     }).await {
-        Ok(messages) => messages.last().content.clone(),
+        Ok(messages) => messages.last().unwrap().content.clone(),
         Err(why) => {
             println!("Error getting messages: {:?}", why);
             None
@@ -423,7 +423,7 @@ async fn react(ctx: &Context, msg: &Message) -> CommandResult {
             let runner = tokio::task::spawn_blocking(move || {
                 println!("Thread Spawned!");
                 // This is running on a thread where blocking is fine.
-                let response = generator::get_chat_response(&heat, "A complete response is always ended by [end of text]. Respond to the following Discord message as egghead, the world's smartest computer: ", &prompt.unwrap().content, None).unwrap();
+                let response = generator::get_chat_response(&heat, "A complete response is always ended by [end of text]. Respond to the following Discord message as egghead, the world's smartest computer: ", &prompt, None).unwrap();
                 response
             });
 
