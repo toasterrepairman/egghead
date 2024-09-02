@@ -366,26 +366,13 @@ async fn react(ctx: &Context, msg: &Message) -> CommandResult {
     let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
         .expect("Typing failed");
 
-    let input = msg.content.clone().split_off(7).clone().trim().to_string();
+    let input = msg.content.clone().trim().to_string();
 
     let heat = if input.to_string() == "" {
         "1.0"
     } else {
         &input
     }.to_string();
-
-    let prompt = match msg.channel_id.messages(&ctx.http, |retriever| {
-        retriever.limit(2)
-    }).await {
-        Ok(messages) => messages.last().unwrap().content.clone(),
-        Err(why) => {
-            println!("Error getting messages: {:?}", why);
-            "None".to_string()
-        }
-    };
-
-    let prompt = msg.content.clone().split_off(23);
-    println!("{:?}", prompt);
 
     let channel_id = msg.channel_id;
     let messages = channel_id.messages(ctx, |retriever| retriever.before(msg.id)).await?;
@@ -408,7 +395,7 @@ async fn react(ctx: &Context, msg: &Message) -> CommandResult {
                 let runner = tokio::task::spawn_blocking(move || {
                     println!("Thread Spawned!");
                     // This is running on a thread where blocking is fine.
-                    let response = generator::get_chat_response(&heat, "You are Egghead, the world's smartest computer. React to the following description: ", &prompt, Some(&reaction)).unwrap();
+                    let response = generator::get_chat_response(&heat, "You are Egghead, the world's smartest computer. React to the following description: ", &input, Some(&reaction)).unwrap();
                     response
                 });
 
@@ -423,7 +410,7 @@ async fn react(ctx: &Context, msg: &Message) -> CommandResult {
             let runner = tokio::task::spawn_blocking(move || {
                 println!("Thread Spawned!");
                 // This is running on a thread where blocking is fine.
-                let response = generator::get_chat_response(&heat, "A complete response is always ended by [end of text]. Respond to the following Discord message as egghead, the world's smartest computer: ", &prompt, None).unwrap();
+                let response = generator::get_chat_response(&heat, "A complete response is always ended by [end of text]. Respond to the following Discord message as egghead, the world's smartest computer: ", &input, None).unwrap();
                 response
             });
 
