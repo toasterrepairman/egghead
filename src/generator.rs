@@ -17,7 +17,7 @@ pub fn get_chat_response(temp: &str, init: &str, prompt: &str, imagedata: Option
 
     let prompt_input = format!("{}{}\n\n", init, prompt);
     let request_data = json!({
-        "model": "granite3-moe:1b",
+        "model": "qwen2.5:1.5b",
         "prompt": prompt_input,
         // "temperature": temp.parse::<f64>().unwrap(),
         "stream": false,
