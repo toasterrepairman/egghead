@@ -352,7 +352,7 @@ async fn react(ctx: &Context, msg: &Message) -> CommandResult {
                 println!("Image downloaded: /home/toast/.tmp/downloaded_image.jpg");
                 // Convert the image to JPEG format
                 let mut file = File::create("/home/toast/.tmp/downloaded_image.jpg")?;
-                image.write_to(&mut file, image::ImageOutputFormat::Jpeg(85))?;
+                image.write_to(&mut file, image::ImageOutputFormat::Jpeg(100))?;
 
                 let reaction = encode_image_to_base64("/home/toast/.tmp/downloaded_image.jpg").unwrap();
 
