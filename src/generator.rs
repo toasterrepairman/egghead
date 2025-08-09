@@ -17,8 +17,8 @@ pub fn get_chat_response(temp: &str, init: &str, prompt: &str, imagedata: Option
 
     let prompt_input = format!("{}{}\n\n", init, prompt);
     let request_data = json!({
-        "model": "qwen3:0.6b",
-        "prompt": prompt_input,
+        "model": "huihui_ai/qwen3-abliterated:0.6b",
+        "prompt": format!("{}/no_think", prompt_input)
         // "temperature": temp.parse::<f64>().unwrap(),
         "stream": false,
         "stop": ["\n"],
