@@ -1,41 +1,19 @@
-//! In this example, you will be shown various ways of sharing data between events and commands.
-//! And how to use locks correctly to avoid deadlocking the bot.
-
-// swap between `generator` and `alt-gen` depending on serge status
-mod fetcher;
-mod fakeyou;
 mod generator;
-mod imgread;
 
 use std::collections::HashMap;
 use std::env;
-use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::atomic::AtomicUsize;
 use std::sync::Arc;
-use std::fs;
-use rand::Rng;
-use image::GenericImageView;
 
 use serenity::async_trait;
 use serenity::framework::standard::macros::{command, group, hook};
-use serenity::framework::standard::{Args, CommandResult, StandardFramework};
+use serenity::framework::standard::CommandResult;
+use serenity::framework::standard::StandardFramework;
 use serenity::http::Typing;
-use serenity::model::channel::{AttachmentType, Message};
+use serenity::model::channel::Message;
 use serenity::model::gateway::Ready;
-use serenity::model::prelude::Activity;
 use serenity::prelude::*;
 use tokio::sync::RwLock;
-use serde::{Deserialize, Serialize};
-use serde_json::json;
-use std::fs::File;
-use std::io::Write;
-use tokio::runtime::Runtime;
-use std::io::Cursor;
-use std::path::{Path, PathBuf};
-use std::time::Duration;
-use serenity::futures::TryFutureExt;
-use crate::fakeyou::get_audio_url;
-use crate::imgread::encode_image_to_base64;
-use std::io::{self, Read};
 
 // A container type is created for inserting into the Client's `data`, which
 // allows for data to be accessible across all events and framework commands, or
@@ -62,7 +40,7 @@ impl TypeMapKey for MessageCount {
 }
 
 #[group]
-#[commands(voices, magic, say, react, read, help)]
+#[commands(help)]
 struct General;
 
 #[hook]
@@ -144,34 +122,6 @@ async fn send_message_in_parts(http: &serenity::http::Http, msg: &Message, text:
     Ok(())
 }
 
-// /// Returns the full path to a file in the current working directory as a string,
-// /// or None if the current directory cannot be accessed.
-// fn get_image_path(file_name: &str) -> Option<String> {
-//     let mut path = env::current_dir().ok()?;
-//     path.push(file_name);
-//     Some(path.display().to_string())
-// }
-
-// /// Reads the image from the given path and returns its base64 encoded string.
-// fn encode_image_to_base64(path: Option<String>) -> Option<String> {
-//     path.and_then(|p| {
-//         // Attempt to open the file.
-//         let mut file = match File::open(&p) {
-//             Ok(f) => f,
-//             Err(_) => return None,
-//         };
-
-//         // Read the contents of the file.
-//         let mut contents = Vec::new();
-//         if file.read_to_end(&mut contents).is_err() {
-//             return None;
-//         }
-
-//         // Encode the contents to base64.
-//         Some(encode(contents))
-//     })
-// }
-
 #[tokio::main]
 async fn main() {
     let token = env::var("DISCORD_TOKEN").expect("Expected a token in the environment");
@@ -222,214 +172,6 @@ async fn main() {
     if let Err(why) = client.start().await {
         eprintln!("Client error: {:?}", why);
     }
-}
-
-#[command]
-async fn magic(ctx: &Context, msg: &Message) -> CommandResult {
-    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
-        .expect("Typing failed");
-
-    let prompt = msg.content.clone().split_off(7);
-    println!("{:?}", prompt);
-
-    // Magic 8 Ball responses
-    let responses = vec![
-        "It is certain",
-        "It is decidedly so",
-        "Without a doubt",
-        "Yes definitely",
-        "You may rely on it",
-        "As I see it, yes",
-        "Most likely",
-        "Outlook good",
-        "Yes",
-        "Signs point to yes",
-        "Reply hazy try again",
-        "Ask again later",
-        "Better not tell you now",
-        "Cannot predict now",
-        "Concentrate and ask again",
-        "Don't count on it",
-        "My reply is no",
-        "My sources say no",
-        "Outlook not so good",
-        "Very doubtful",
-    ];
-
-    let response_index = rand::thread_rng().gen_range(0..responses.len());
-    let magic_response = responses[response_index];
-
-    let runner = tokio::task::spawn_blocking(move || {
-        println!("Thread Spawned!");
-        // This is running on a thread where blocking is fine.
-        let response = generator::get_chat_response("1.3", "", &format!("{}{}{}", &prompt, "\n", &magic_response), None).unwrap();
-        response
-    });
-
-    msg.reply(
-        ctx.clone(),
-        format!("{}{}", &magic_response, runner.await.unwrap()
-    )).await?;
-
-    Ok(typing.stop().unwrap())
-}
-
-
-#[command]
-async fn say(ctx: &Context, msg: &Message) -> CommandResult {
-    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
-        .expect("Typing failed");
-
-    let voice_name = msg.content.clone().split_off(6);
-    let prompt = match msg.channel_id.messages(&ctx.http, |retriever| {
-        retriever.limit(2)
-    }).await {
-        Ok(messages) => messages.last().cloned(),
-        Err(why) => {
-            println!("Error getting messages: {:?}", why);
-            None
-        }
-    };
-    println!("{:?}", prompt);
-
-    let audio_url = get_audio_url(&voice_name, &prompt.unwrap().content).await.unwrap();
-
-    msg.reply(
-        ctx.clone(),
-        format!("{}", audio_url
-    )).await?;
-
-    Ok(typing.stop().unwrap())
-}
-
-#[command]
-async fn voices(ctx: &Context, msg: &Message) -> CommandResult {
-    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
-        .expect("Typing failed");
-
-    let prompt = msg.content.clone().split_off(9);
-    println!("{:?}", prompt);
-
-    let runner = tokio::task::spawn_blocking(move || {
-        println!("Thread Spawned!");
-        // This is running on a thread where blocking is fine.
-        let response = fakeyou::fuzzy_search_voices(prompt);
-        response
-    });
-
-    msg.reply(
-        ctx.clone(),
-        format!("{}", runner.await.unwrap().await
-        )).await?;
-
-    Ok(typing.stop().unwrap())
-}
-
-#[command]
-async fn react(ctx: &Context, msg: &Message) -> CommandResult {
-    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
-        .expect("Typing failed");
-
-    let input = msg.content.clone().trim().to_string();
-
-    let heat = if input.to_string() == "" {
-        "1.0"
-    } else {
-        &input
-    }.to_string();
-
-    let channel_id = msg.channel_id;
-    let messages = channel_id.messages(ctx, |retriever| retriever.before(msg.id)).await?;
-
-    if let Some(prev_msg) = messages.get(0) {
-        if let Some(attachment) = &prev_msg.attachments.get(0) {
-            if attachment.width.is_some() && attachment.height.is_some() {
-                fs::remove_file("/home/toast/.tmp/downloaded_image.jpg").expect("Failed to delete file");
-                // Download the image
-                let response = reqwest::get(&attachment.url).await?;
-                let image_bytes = response.bytes().await?;
-                let image = image::load_from_memory(&image_bytes)?;
-                println!("Image downloaded: /home/toast/.tmp/downloaded_image.jpg");
-                // Convert the image to JPEG format
-                let mut file = File::create("/home/toast/.tmp/downloaded_image.jpg")?;
-                image.write_to(&mut file, image::ImageOutputFormat::Jpeg(100))?;
-
-                let reaction = encode_image_to_base64("/home/toast/.tmp/downloaded_image.jpg").unwrap();
-
-                let runner = tokio::task::spawn_blocking(move || {
-                    println!("Thread Spawned!");
-                    // This is running on a thread where blocking is fine.
-                    let response = generator::get_chat_response(&heat, "You are Egghead, the world's smartest computer. React to the following description: ", &input, Some(&reaction)).unwrap();
-                    response
-                });
-
-                msg.reply(
-                    ctx.clone(),
-                    format!("{}", runner.await?
-                )).await?;
-            } else {
-                println!("break");
-            }
-        } else {
-            let runner = tokio::task::spawn_blocking(move || {
-                println!("Thread Spawned!");
-                // This is running on a thread where blocking is fine.
-                let response = generator::get_chat_response(&heat, "A complete response is always ended by [end of text]. Respond to the following Discord message as egghead, the world's smartest computer: ", &input, None).unwrap();
-                response
-            });
-
-            msg.reply(
-                ctx.clone(),
-                format!("{}", runner.await?
-                )).await?;
-        }
-    } else {
-        println!("No previous message found.");
-    }
-
-
-    Ok(typing.stop().unwrap())
-}
-
-#[command]
-async fn read(ctx: &Context, msg: &Message) -> CommandResult {
-    let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
-        .expect("Typing failed");
-
-    // Madman debugging
-    // Be wary of Einstein's warning
-
-    let history: u64 = *&msg.content.clone().split_off(6).trim().parse().unwrap();
-
-    let prompt = match msg.channel_id.messages(&ctx.http, |retriever| {
-        retriever.limit(history + 1)
-    }).await {
-        Ok(messages) => messages.into_iter().rev().map(|m: Message| m.content).collect::<Vec<_>>().join("\n"),
-        Err(why) => {
-            println!("Error getting messages: {:?}", why);
-            "None".to_string()
-        }
-    };
-    let cleanprompt = prompt.split_whitespace()
-        .filter(|word| !word.starts_with('e') && !word.starts_with('E'))
-        .collect::<Vec<_>>()
-        .join(" ");
-
-    println!("{:?}", cleanprompt);
-
-    let runner = tokio::task::spawn_blocking(move || {
-        println!("Thread Spawned!");
-        // This is running on a thread where blocking is fine.
-        let response = generator::get_chat_response("1.0", "A complete article is always ended by [end of text]. Respond to the following Discord conversation as egghead, the world's smartest computer: ", &cleanprompt, None);
-        response
-    });
-
-    msg.reply(
-        ctx.clone(),
-        format!("{}", runner.await?.unwrap()
-        )).await?;
-
-    Ok(typing.stop().unwrap())
 }
 
 #[command]
