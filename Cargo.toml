@@ -14,3 +14,4 @@ serde = "1.0.228"
 rusqlite = { version = "0.30", features = ["bundled"] }
 rss = "2.0"
 chrono = "0.4"
+warp = { version = "0.4", features = ["server"] }

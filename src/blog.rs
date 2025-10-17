@@ -3,6 +3,9 @@ use reqwest::blocking::Client;
 use rusqlite::{Connection, params};
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
+use std::sync::Arc;
+use warp::{Filter, Rejection, Reply, http::StatusCode};
+use tokio::sync::Mutex;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct BlogPost {
@@ -13,6 +16,11 @@ pub struct BlogPost {
     pub activity: String,
     pub image_url: String,
 }
+
+#[derive(Debug)]
+struct DatabaseError;
+
+impl warp::reject::Reject for DatabaseError {}
 
 pub fn init_database(db_path: &str) -> Result<Connection, rusqlite::Error> {
     let conn = Connection::open(db_path)?;
@@ -171,7 +179,7 @@ pub fn generate_blog_post() -> Result<BlogPost, Box<dyn std::error::Error>> {
     let image_url = search_unsplash_image(&location)?;
 
     // Use the passion text from the blog post image
-    let passion = "Exploring new technologies: I'm constantly learning and experimenting with new gadgets, apps, and platforms. I'm constantly trying to understand how these innovations are shaping the future and how to they can be used to improve lives.Learning new things: I'm always eager to learn and expand my knowledge base. I'm passionate about staying up-to-date with the latest trends, developments, and exciting innovations.Understanding the world: I'm fascinated by the interconnectedness of the world and the ways technology can influence our daily lives. I'm constantly looking for ways to make a positive impact and contribute to a more sustainable and equitable future.Building relationships: I'm a good listener and always willing to help others. I enjoy collaborating with people from different backgrounds and cultures.".to_string();
+    let passion = "Exploring new technologies: I'm constantly learning and experimenting with new gadgets, apps, and platforms. I'm constantly trying to understand how these innovations are shaping the future and how they can be used to improve lives. Learning new things: I'm always eager to learn and expand my knowledge base. I'm passionate about staying up-to-date with the latest trends, developments, and exciting innovations. Understanding the world: I'm fascinated by the interconnectedness of the world and the ways technology can influence our daily lives. I'm constantly looking for ways to make a positive impact and contribute to a more sustainable and equitable future. Building relationships: I'm a good listener and always willing to help others. I enjoy collaborating with people from different backgrounds and cultures.".to_string();
 
     Ok(BlogPost {
         id: None,
@@ -245,4 +253,145 @@ pub fn get_random_blog_post(conn: &Connection) -> Result<BlogPost, rusqlite::Err
     })?;
 
     Ok(post)
+}
+
+// ===== HTTP API SERVER IMPLEMENTATION =====
+
+type DbPool = Arc<Mutex<String>>; // Store the database path
+
+// Handler to get latest blog posts
+async fn handle_get_posts(
+    limit: Option<usize>,
+    db_path: DbPool,
+) -> Result<impl Reply, Rejection> {
+    let limit = limit.unwrap_or(10).min(100); // Default to 10, max 100
+    let db_path = db_path.lock().await;
+
+    // Open a new connection for this request
+    let conn = Connection::open(db_path.as_str())
+        .map_err(|_| warp::reject::custom(DatabaseError))?;
+
+    let posts = get_latest_blog_posts(&conn, limit)
+        .map_err(|_| warp::reject::custom(DatabaseError))?;
+
+    Ok(warp::reply::json(&posts))
+}
+
+// Handler to get a specific blog post by ID
+async fn handle_get_post(
+    id: i64,
+    db_path: DbPool,
+) -> Result<impl Reply, Rejection> {
+    let db_path = db_path.lock().await;
+
+    let conn = Connection::open(db_path.as_str())
+        .map_err(|_| warp::reject::custom(DatabaseError))?;
+
+    let post = get_blog_post_by_id(&conn, id)
+        .map_err(|_| warp::reject::custom(DatabaseError))?;
+
+    Ok(warp::reply::json(&post))
+}
+
+// Handler to get a random blog post
+async fn handle_get_random(
+    db_path: DbPool,
+) -> Result<impl Reply, Rejection> {
+    let db_path = db_path.lock().await;
+
+    let conn = Connection::open(db_path.as_str())
+        .map_err(|_| warp::reject::custom(DatabaseError))?;
+
+    let post = get_random_blog_post(&conn)
+        .map_err(|_| warp::reject::custom(DatabaseError))?;
+
+    Ok(warp::reply::json(&post))
+}
+
+// Custom error handler
+async fn handle_rejection(err: Rejection) -> Result<impl Reply, std::convert::Infallible> {
+    let code;
+    let message;
+
+    if err.is_not_found() {
+        code = StatusCode::NOT_FOUND;
+        message = "Not Found";
+    } else if let Some(DatabaseError) = err.find() {
+        code = StatusCode::INTERNAL_SERVER_ERROR;
+        message = "Database Error";
+    } else {
+        eprintln!("unhandled rejection: {:?}", err);
+        code = StatusCode::INTERNAL_SERVER_ERROR;
+        message = "Internal Server Error";
+    }
+
+    let json = warp::reply::json(&serde_json::json!({
+        "error": message,
+        "status": code.as_u16(),
+    }));
+
+    Ok(warp::reply::with_status(json, code))
+}
+
+// Start the HTTP server
+pub async fn start_api_server(db_path: String, port: u16) {
+    let db_path = Arc::new(Mutex::new(db_path));
+
+    // CORS configuration
+    let cors = warp::cors()
+        .allow_any_origin()
+        .allow_headers(vec!["Content-Type", "Accept"])
+        .allow_methods(vec!["GET", "OPTIONS"]);
+
+    // GET /api/posts?limit=10
+    let get_posts = warp::path!("api" / "posts")
+        .and(warp::get())
+        .and(warp::query::<std::collections::HashMap<String, String>>())
+        .map(|params: std::collections::HashMap<String, String>| {
+            params.get("limit")
+                .and_then(|l| l.parse::<usize>().ok())
+        })
+        .and(with_db(db_path.clone()))
+        .and_then(handle_get_posts);
+
+    // GET /api/posts/:id
+    let get_post = warp::path!("api" / "posts" / i64)
+        .and(warp::get())
+        .and(with_db(db_path.clone()))
+        .and_then(handle_get_post);
+
+    // GET /api/posts/random
+    let get_random = warp::path!("api" / "posts" / "random")
+        .and(warp::get())
+        .and(with_db(db_path.clone()))
+        .and_then(handle_get_random);
+
+    // Health check endpoint
+    let health = warp::path!("health")
+        .and(warp::get())
+        .map(|| warp::reply::json(&serde_json::json!({"status": "healthy"})));
+
+    // Combine all routes
+    let routes = get_posts
+        .or(get_random)
+        .or(get_post)
+        .or(health)
+        .recover(handle_rejection)
+        .with(cors);
+
+    println!("Starting API server on http://0.0.0.0:{}", port);
+    println!("Endpoints:");
+    println!("  GET /api/posts?limit=10 - Get latest posts");
+    println!("  GET /api/posts/:id      - Get post by ID");
+    println!("  GET /api/posts/random   - Get random post");
+    println!("  GET /health            - Health check");
+
+    warp::serve(routes)
+        .run(([0, 0, 0, 0], port))
+        .await;
+}
+
+// Helper function to pass db_path to handlers
+fn with_db(db_path: DbPool) -> impl Filter<Extract = (DbPool,), Error = std::convert::Infallible> + Clone {
+    warp::any().map(move || db_path.clone())
 }

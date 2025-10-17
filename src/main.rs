@@ -86,8 +86,6 @@ async fn before(ctx: &Context, msg: &Message, command_name: &str) -> bool {
 struct Handler;
 
 #[async_trait]
-
-#[async_trait]
 impl EventHandler for Handler {
     async fn message(&self, ctx: Context, msg: Message) {
         if msg.mentions_me(&ctx.http).await.unwrap_or(false) {
@@ -245,9 +243,22 @@ async fn main() {
         .parse::<u64>()
         .unwrap_or(20);
 
+    // Get the API server port (default: 8080)
+    let api_port = env::var("API_PORT")
+        .unwrap_or_else(|_| "8080".to_string())
+        .parse::<u16>()
+        .unwrap_or(8080);
+
     // Spawn the blog post generator task
+    let db_path_generator = db_path.clone();
     tokio::spawn(async move {
-        blog_post_generator_task(db_path, blog_interval).await;
+        blog_post_generator_task(db_path_generator, blog_interval).await;
+    });
+
+    // Spawn the HTTP API server
+    let db_path_api = db_path.clone();
+    tokio::spawn(async move {
+        blog::start_api_server(db_path_api, api_port).await;
     });
 
     {
