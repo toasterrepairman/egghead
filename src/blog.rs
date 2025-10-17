@@ -338,10 +338,13 @@ pub async fn start_api_server(db_path: String, port: u16) {
     let db_path = Arc::new(Mutex::new(db_path));
 
     // CORS configuration
+    // CORS configuration - more permissive for development
     let cors = warp::cors()
         .allow_any_origin()
-        .allow_headers(vec!["Content-Type", "Accept"])
-        .allow_methods(vec!["GET", "OPTIONS"]);
+        .allow_methods(vec!["GET", "POST", "PUT", "DELETE", "OPTIONS"])
+        .allow_headers(vec!["Content-Type", "Accept", "Authorization", "Origin"])
+        .expose_headers(vec!["Content-Length", "Content-Type"])
+        .max_age(3600);
 
     // GET /api/posts?limit=10
     let get_posts = warp::path!("api" / "posts")
