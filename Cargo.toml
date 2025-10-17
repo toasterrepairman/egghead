@@ -8,6 +8,9 @@ edition = "2021"
 [dependencies]
 serenity = "0.11.5"
 tokio = { version = "1.25.0", features = ["macros", "rt-multi-thread"] }
-reqwest = { version = "0.11.15", features = ["blocking"] }
+reqwest = { version = "0.11.15", features = ["blocking", "json"] }
 serde_json = "1.0.93"
 serde = "1.0.228"
+rusqlite = { version = "0.30", features = ["bundled"] }
+rss = "2.0"
+chrono = "0.4"

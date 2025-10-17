@@ -1,9 +1,11 @@
 mod generator;
+mod blog;
 
 use std::collections::HashMap;
 use std::env;
 use std::sync::atomic::AtomicUsize;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
+use std::time::Duration;
 
 use serenity::async_trait;
 use serenity::framework::standard::macros::{command, group, hook};
@@ -39,8 +41,14 @@ impl TypeMapKey for MessageCount {
     type Value = Arc<AtomicUsize>;
 }
 
+struct BlogDatabasePath;
+
+impl TypeMapKey for BlogDatabasePath {
+    type Value = Arc<String>;
+}
+
 #[group]
-#[commands(help)]
+#[commands(help, blog)]
 struct General;
 
 #[hook]
@@ -122,6 +130,56 @@ async fn send_message_in_parts(http: &serenity::http::Http, msg: &Message, text:
     Ok(())
 }
 
+async fn blog_post_generator_task(db_path: String, interval_minutes: u64) {
+    let mut interval = tokio::time::interval(Duration::from_secs(interval_minutes * 60));
+
+    loop {
+        interval.tick().await;
+
+        println!("Generating new blog post...");
+
+        // Run the blog post generation in a blocking task
+        let db_path_clone = db_path.clone();
+        let result = tokio::task::spawn_blocking(move || {
+            match blog::generate_blog_post() {
+                Ok(post) => {
+                    // Open connection for this operation only
+                    match rusqlite::Connection::open(&db_path_clone) {
+                        Ok(conn) => {
+                            match blog::save_blog_post(&conn, &post) {
+                                Ok(id) => {
+                                    println!("Successfully saved blog post with ID: {}", id);
+                                    println!("Location: {}", post.location);
+                                    println!("Activity: {}", post.activity);
+                                    Ok(())
+                                }
+                                Err(e) => {
+                                    eprintln!("Failed to save blog post: {:?}", e);
+                                    Err(format!("Save error: {:?}", e))
+                                }
+                            }
+                        }
+                        Err(e) => {
+                            eprintln!("Failed to open database: {:?}", e);
+                            Err(format!("DB open error: {:?}", e))
+                        }
+                    }
+                }
+                Err(e) => {
+                    eprintln!("Failed to generate blog post: {:?}", e);
+                    Err(format!("Generation error: {:?}", e))
+                }
+            }
+        }).await;
+
+        match result {
+            Ok(Ok(_)) => println!("Blog post generation completed successfully"),
+            Ok(Err(e)) => eprintln!("Blog post generation error: {}", e),
+            Err(e) => eprintln!("Task join error: {:?}", e),
+        }
+    }
+}
+
 #[tokio::main]
 async fn main() {
     let token = env::var("DISCORD_TOKEN").expect("Expected a token in the environment");
@@ -157,6 +215,41 @@ async fn main() {
     //
     // Alternatively, you can also use `ClientBuilder::type_map_insert` or
     // `ClientBuilder::type_map` to populate the global TypeMap without dealing with the RwLock.
+
+    // Initialize the blog database
+    // Use ~/.config/egghead/blog.sqlite as the default path
+    let db_path = env::var("BLOG_DB_PATH").unwrap_or_else(|_| {
+        let home = env::var("HOME").unwrap_or_else(|_| ".".to_string());
+        let config_dir = format!("{}/.config/egghead", home);
+        // Create the directory if it doesn't exist
+        std::fs::create_dir_all(&config_dir).ok();
+        format!("{}/blog.sqlite", config_dir)
+    });
+
+    // Initialize the database (create table if needed)
+    match blog::init_database(&db_path) {
+        Ok(_) => {
+            println!("Blog database initialized at: {}", db_path);
+        }
+        Err(e) => {
+            eprintln!("Failed to initialize blog database: {:?}", e);
+            panic!("Cannot start without blog database");
+        }
+    };
+
+    let db_path_arc = Arc::new(db_path.clone());
+
+    // Get the blog post generation interval (default: 20 minutes = 3 times per hour)
+    let blog_interval = env::var("BLOG_INTERVAL_MINUTES")
+        .unwrap_or_else(|_| "20".to_string())
+        .parse::<u64>()
+        .unwrap_or(20);
+
+    // Spawn the blog post generator task
+    tokio::spawn(async move {
+        blog_post_generator_task(db_path, blog_interval).await;
+    });
+
     {
         // Open the data lock in write mode, so keys can be inserted to it.
         let mut data = client.data.write().await;
@@ -167,6 +260,8 @@ async fn main() {
         data.insert::<CommandCounter>(Arc::new(RwLock::new(HashMap::default())));
 
         data.insert::<MessageCount>(Arc::new(AtomicUsize::new(0)));
+
+        data.insert::<BlogDatabasePath>(db_path_arc);
     }
 
     if let Err(why) = client.start().await {
@@ -187,6 +282,7 @@ async fn help(ctx: &Context, msg: &Message) -> CommandResult {
     `left` - PBS articles, autocompleted
     `react <temp>` - Reacts to the last-sent message with set temp
     `read <lines>` - Reads the number of lines and responds
+    `blog` - Shows a random blog post from Egghead's life
     --- HELL FEATURE LINE ---
     --EXPERIMENTAL FEATURES--
     ----------BELOW----------
@@ -201,6 +297,70 @@ async fn help(ctx: &Context, msg: &Message) -> CommandResult {
         ctx.clone(),
         &message
     ).await.unwrap();
+
+    Ok(())
+}
+
+#[command]
+async fn blog(ctx: &Context, msg: &Message) -> CommandResult {
+    let args: Vec<String> = msg.content.split_whitespace().skip(1).map(|s| s.to_string()).collect();
+
+    let db_lock = {
+        let data_read = ctx.data.read().await;
+        data_read.get::<BlogDatabasePath>().expect("Expected BlogDatabasePath in TypeMap.").clone()
+    };
+
+    let response = tokio::task::spawn_blocking(move || {
+        let db = match rusqlite::Connection::open(db_lock.as_ref()) {
+            Ok(conn) => conn,
+            Err(e) => return format!("Error opening database: {:?}", e),
+        };
+
+        if args.is_empty() || args[0].as_str() == "latest" {
+            // Show latest 5 posts
+            match blog::get_latest_blog_posts(&db, 5) {
+                Ok(posts) => {
+                    if posts.is_empty() {
+                        "No blog posts yet! Wait for the next generation cycle.".to_string()
+                    } else {
+                        let mut response = "**Latest Blog Posts:**\n\n".to_string();
+                        for post in posts {
+                            response.push_str(&format!(
+                                "**Post #{}** ({})\n📍 {}\n💭 {}\n🖼️ {}\n\n",
+                                post.id.unwrap_or(0),
+                                post.timestamp.format("%Y-%m-%d %H:%M UTC"),
+                                post.location,
+                                post.activity,
+                                post.image_url
+                            ));
+                        }
+                        response
+                    }
+                }
+                Err(e) => format!("Error fetching blog posts: {:?}", e)
+            }
+        } else if let Ok(id) = args[0].parse::<i64>() {
+            // Show specific post by ID
+            match blog::get_blog_post_by_id(&db, id) {
+                Ok(post) => {
+                    format!(
+                        "**Blog Post #{}**\n\n**When:** {}\n\n**What I'm passionate about:**\n{}\n\n**Where I am:** {}\n\n**What I'm doing:** {}\n\n**Photo:** {}",
+                        post.id.unwrap_or(0),
+                        post.timestamp.format("%Y-%m-%d %H:%M UTC"),
+                        post.passion,
+                        post.location,
+                        post.activity,
+                        post.image_url
+                    )
+                }
+                Err(_) => format!("Blog post #{} not found.", id)
+            }
+        } else {
+            "Usage: `e.blog [id|latest]`".to_string()
+        }
+    }).await.unwrap();
+
+    send_message_in_parts(&ctx.http, msg, &response).await?;
 
     Ok(())
 }
