@@ -245,9 +245,9 @@ async fn main() {
 
     // Get the API server port (default: 8080)
     let api_port = env::var("API_PORT")
-        .unwrap_or_else(|_| "8080".to_string())
+        .unwrap_or_else(|_| "9757".to_string())
         .parse::<u16>()
-        .unwrap_or(8080);
+        .unwrap_or(9757);
 
     // Spawn the blog post generator task
     let db_path_generator = db_path.clone();
