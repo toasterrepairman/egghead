@@ -67,10 +67,10 @@ pub fn fetch_guardian_headlines() -> Result<Vec<String>, Box<dyn std::error::Err
 
 pub fn generate_location() -> Result<String, Box<dyn std::error::Error>> {
     let client = Client::builder()
-        .timeout(Duration::from_secs(60))
+        .timeout(Duration::from_secs(15))
         .build()?;
 
-    let prompt = "Pick an interesting city somewhere in the world:";
+    let prompt = "Pick an interesting city somewhere in the world. Reply with just the location:";
 
     let request_data = serde_json::json!({
         "model": OLLAMA_MODEL,
@@ -97,7 +97,7 @@ pub fn generate_location() -> Result<String, Box<dyn std::error::Error>> {
 
 pub fn generate_activity(location: &str) -> Result<String, Box<dyn std::error::Error>> {
     let client = Client::builder()
-        .timeout(Duration::from_secs(60))
+        .timeout(Duration::from_secs(120))
         .build()?;
 
     let prompt = format!(
@@ -130,7 +130,7 @@ pub fn generate_activity(location: &str) -> Result<String, Box<dyn std::error::E
 
 pub fn generate_blog_content(location: &str, activity: &str, context: &str) -> Result<String, Box<dyn std::error::Error>> {
     let client = Client::builder()
-        .timeout(Duration::from_secs(60))
+        .timeout(Duration::from_secs(120))
         .build()?;
 
     let prompt = format!(
@@ -142,7 +142,7 @@ pub fn generate_blog_content(location: &str, activity: &str, context: &str) -> R
         "model": OLLAMA_MODEL,
         "prompt": prompt,
         "stream": false,
-        "temperature": 0.85,
+        "temperature": 1.35,
     });
 
     let response = client
