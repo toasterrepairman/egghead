@@ -62,21 +62,18 @@ pub fn fetch_guardian_headlines() -> Result<Vec<String>, Box<dyn std::error::Err
     Ok(titles)
 }
 
-pub fn generate_location_with_context(context: &str) -> Result<String, Box<dyn std::error::Error>> {
+pub fn generate_location() -> Result<String, Box<dyn std::error::Error>> {
     let client = Client::builder()
         .timeout(Duration::from_secs(60))
         .build()?;
 
-    let prompt = format!(
-        "Based on these recent world news headlines:\n{}\n\nWhere in the world might you want to be right now? Reply with just a city and country name, nothing else.",
-        context
-    );
+    let prompt = "Pick an interesting city somewhere in the world. Reply with just a city and country name, nothing else.";
 
     let request_data = serde_json::json!({
         "model": "gemma3:270m",
         "prompt": prompt,
         "stream": false,
-        "temperature": 0.8,
+        "temperature": 0.9,
     });
 
     let response = client
@@ -95,14 +92,14 @@ pub fn generate_location_with_context(context: &str) -> Result<String, Box<dyn s
     Ok(location)
 }
 
-pub fn generate_activity_with_context(location: &str, context: &str) -> Result<String, Box<dyn std::error::Error>> {
+pub fn generate_activity(location: &str) -> Result<String, Box<dyn std::error::Error>> {
     let client = Client::builder()
         .timeout(Duration::from_secs(60))
         .build()?;
 
     let prompt = format!(
-        "Given this context from world news:\n{}\n\nYou're in {}. What are you doing right now? Reply with a short, engaging description (one sentence) of your activity.",
-        context, location
+        "You're in {}. What are you doing right now? Reply with a short, engaging description (one sentence) of your activity.",
+        location
     );
 
     let request_data = serde_json::json!({
@@ -134,8 +131,8 @@ pub fn generate_blog_content(location: &str, activity: &str, context: &str) -> R
         .build()?;
 
     let prompt = format!(
-        "You're a tech enthusiast blogger named Egghead. Based on these world news headlines:\n{}\n\nYou're currently in {} where you're {}. Write a personal, engaging blog post (2-3 paragraphs) about what you're thinking about, what excites you about technology, or how current events inspire you. Be authentic, curious, and conversational. Don't use hashtags or emojis.",
-        context, location, activity
+        "You're a tech enthusiast blogger named Egghead. Based on these world news headlines:\n{}\n\nWrite a personal, engaging blog post (2-3 paragraphs) about what you're thinking about regarding technology and current events. Be authentic, curious, and conversational. Don't mention where you are or what you're doing. Don't use hashtags or emojis.",
+        context
     );
 
     let request_data = serde_json::json!({
@@ -186,17 +183,17 @@ pub fn save_blog_post(conn: &Connection, post: &BlogPost) -> Result<i64, rusqlit
 }
 
 pub fn generate_blog_post() -> Result<BlogPost, Box<dyn std::error::Error>> {
-    // Fetch Guardian headlines
+    // Fetch Guardian headlines for blog content only
     let headlines = fetch_guardian_headlines()?;
     let context = headlines.join("\n");
 
-    // Generate location based on context
-    let location = generate_location_with_context(&context)?;
+    // Generate random location (no context)
+    let location = generate_location()?;
 
-    // Generate activity based on location and context
-    let activity = generate_activity_with_context(&location, &context)?;
+    // Generate activity based on location only (no news context)
+    let activity = generate_activity(&location)?;
 
-    // Generate unique blog content
+    // Generate blog content based on news context
     let content = generate_blog_content(&location, &activity, &context)?;
 
     // Get image from Picsum (no API key needed)
