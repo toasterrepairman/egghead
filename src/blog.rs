@@ -8,7 +8,7 @@ use warp::{Filter, Rejection, Reply, http::StatusCode};
 use tokio::sync::Mutex;
 
 // Model configuration
-const OLLAMA_MODEL: &str = "qwen3:0.6b";
+const OLLAMA_MODEL: &str = "smollm2:135m";
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct BlogPost {
