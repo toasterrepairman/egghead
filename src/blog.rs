@@ -77,6 +77,7 @@ pub fn generate_location() -> Result<String, Box<dyn std::error::Error>> {
         "prompt": prompt,
         "stream": false,
         "temperature": 0.9,
+        "num_predict": 32,
     });
 
     let response = client
@@ -110,6 +111,7 @@ pub fn generate_activity(location: &str) -> Result<String, Box<dyn std::error::E
         "prompt": prompt,
         "stream": false,
         "temperature": 0.9,
+        "num_predict": 64,
     });
 
     let response = client
@@ -143,6 +145,7 @@ pub fn generate_blog_content(location: &str, activity: &str, context: &str) -> R
         "prompt": prompt,
         "stream": false,
         "temperature": 1.35,
+        "num_predict": 256,
     });
 
     let response = client
