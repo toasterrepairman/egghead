@@ -55,7 +55,7 @@ pub fn fetch_guardian_headlines() -> Result<Vec<String>, Box<dyn std::error::Err
     let titles: Vec<String> = channel
         .items()
         .iter()
-        .take(5)
+        .take(3)
         .filter_map(|item| item.title().map(|t| t.to_string()))
         .collect();
 
@@ -67,7 +67,7 @@ pub fn generate_location() -> Result<String, Box<dyn std::error::Error>> {
         .timeout(Duration::from_secs(60))
         .build()?;
 
-    let prompt = "Pick an interesting city somewhere in the world. Reply with just a city and country name, nothing else.";
+    let prompt = "Pick an interesting city somewhere in the world:";
 
     let request_data = serde_json::json!({
         "model": "gemma3:270m",
@@ -98,7 +98,7 @@ pub fn generate_activity(location: &str) -> Result<String, Box<dyn std::error::E
         .build()?;
 
     let prompt = format!(
-        "You're in {}. What are you doing right now? Reply with a short, engaging description (one sentence) of your activity.",
+        "You're in {}. What are you doing right now?",
         location
     );
 
@@ -131,7 +131,7 @@ pub fn generate_blog_content(location: &str, activity: &str, context: &str) -> R
         .build()?;
 
     let prompt = format!(
-        "You're a tech enthusiast blogger named Egghead. Based on these world news headlines:\n{}\n\nWrite a personal, engaging blog post (2-3 paragraphs) about what you're thinking about regarding technology and current events. Be authentic, curious, and conversational. Don't mention where you are or what you're doing. Don't use hashtags or emojis.",
+        "You're a tech enthusiast blogger named Egghead. Based on these world news headlines:\n{}\n\nDiscuss what you're feeling and reflect on current events.",
         context
     );
 
