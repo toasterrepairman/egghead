@@ -358,7 +358,7 @@ async fn blog(ctx: &Context, msg: &Message) -> CommandResult {
                         "**Blog Post #{}**\n\n**When:** {}\n\n**What I'm passionate about:**\n{}\n\n**Where I am:** {}\n\n**What I'm doing:** {}\n\n**Photo:** {}",
                         post.id.unwrap_or(0),
                         post.timestamp.format("%Y-%m-%d %H:%M UTC"),
-                        post.passion,
+                        post.content,
                         post.location,
                         post.activity,
                         post.image_url
