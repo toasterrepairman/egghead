@@ -67,7 +67,7 @@ pub fn fetch_guardian_headlines() -> Result<Vec<String>, Box<dyn std::error::Err
 
 pub fn generate_location() -> Result<String, Box<dyn std::error::Error>> {
     let client = Client::builder()
-        .timeout(Duration::from_secs(15))
+        .timeout(Duration::from_secs(30))
         .build()?;
 
     let prompt = "Pick an interesting city somewhere in the world. Reply with just the location:";
