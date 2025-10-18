@@ -67,7 +67,7 @@ pub fn fetch_guardian_headlines() -> Result<Vec<String>, Box<dyn std::error::Err
 
 pub fn generate_location() -> Result<String, Box<dyn std::error::Error>> {
     let client = Client::builder()
-        .timeout(Duration::from_secs(30))
+        .timeout(Duration::from_secs(60))
         .build()?;
 
     let prompt = "Pick an interesting city somewhere in the world. Reply with just the location:";
@@ -132,7 +132,7 @@ pub fn generate_activity(location: &str) -> Result<String, Box<dyn std::error::E
 
 pub fn generate_blog_content(location: &str, activity: &str, context: &str) -> Result<String, Box<dyn std::error::Error>> {
     let client = Client::builder()
-        .timeout(Duration::from_secs(120))
+        .timeout(Duration::from_secs(180))
         .build()?;
 
     let prompt = format!(
