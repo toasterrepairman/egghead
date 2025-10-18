@@ -7,6 +7,9 @@ use std::sync::Arc;
 use warp::{Filter, Rejection, Reply, http::StatusCode};
 use tokio::sync::Mutex;
 
+// Model configuration
+const OLLAMA_MODEL: &str = "qwen3:0.6b";
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct BlogPost {
     pub id: Option<i64>,
@@ -70,7 +73,7 @@ pub fn generate_location() -> Result<String, Box<dyn std::error::Error>> {
     let prompt = "Pick an interesting city somewhere in the world:";
 
     let request_data = serde_json::json!({
-        "model": "gemma3:270m",
+        "model": OLLAMA_MODEL,
         "prompt": prompt,
         "stream": false,
         "temperature": 0.9,
@@ -103,7 +106,7 @@ pub fn generate_activity(location: &str) -> Result<String, Box<dyn std::error::E
     );
 
     let request_data = serde_json::json!({
-        "model": "gemma3:270m",
+        "model": OLLAMA_MODEL,
         "prompt": prompt,
         "stream": false,
         "temperature": 0.9,
@@ -136,7 +139,7 @@ pub fn generate_blog_content(location: &str, activity: &str, context: &str) -> R
     );
 
     let request_data = serde_json::json!({
-        "model": "gemma3:270m",
+        "model": OLLAMA_MODEL,
         "prompt": prompt,
         "stream": false,
         "temperature": 0.85,
