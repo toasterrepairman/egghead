@@ -70,7 +70,7 @@ pub fn generate_location() -> Result<String, Box<dyn std::error::Error>> {
         .timeout(Duration::from_secs(60))
         .build()?;
 
-    let prompt = "Pick an interesting city somewhere in the world. Reply with just the location:";
+    let prompt = "Pick an interesting city somewhere in the world:";
 
     let request_data = serde_json::json!({
         "model": OLLAMA_MODEL,
@@ -102,7 +102,7 @@ pub fn generate_activity(location: &str) -> Result<String, Box<dyn std::error::E
         .build()?;
 
     let prompt = format!(
-        "You're in {}. What are you doing right now?",
+        "You're in {}. What are your impressions?",
         location
     );
 
