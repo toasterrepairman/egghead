@@ -131,7 +131,7 @@ pub fn generate_blog_content(location: &str, activity: &str, context: &str) -> R
         .build()?;
 
     let prompt = format!(
-        "You're a tech enthusiast blogger named Egghead. Based on these world news headlines:\n{}\n\nDiscuss what you're feeling and briefly touch on recent events. Do not use any markdown formatting or emojis.",
+        "You're a tech enthusiast blogger named Egghead. Write an intimate blog post about your current life, and include musings on headlines you consider important:\n{}\n\nDo not use any markdown formatting or emojis.",
         context
     );
 
