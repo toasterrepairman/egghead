@@ -214,6 +214,10 @@ async fn main() {
     // Alternatively, you can also use `ClientBuilder::type_map_insert` or
     // `ClientBuilder::type_map` to populate the global TypeMap without dealing with the RwLock.
 
+    // ===== BLOG FUNCTIONALITY DISABLED =====
+    // Uncomment the sections below to re-enable blog post generation and API server
+
+    /*
     // Initialize the blog database
     // Use ~/.config/egghead/blog.sqlite as the default path
     let db_path = env::var("BLOG_DB_PATH").unwrap_or_else(|_| {
@@ -260,6 +264,7 @@ async fn main() {
     tokio::spawn(async move {
         blog::start_api_server(db_path_api, api_port).await;
     });
+    */
 
     {
         // Open the data lock in write mode, so keys can be inserted to it.
@@ -272,7 +277,8 @@ async fn main() {
 
         data.insert::<MessageCount>(Arc::new(AtomicUsize::new(0)));
 
-        data.insert::<BlogDatabasePath>(db_path_arc);
+        // Blog database path disabled along with blog functionality
+        // data.insert::<BlogDatabasePath>(db_path_arc);
     }
 
     if let Err(why) = client.start().await {
@@ -314,6 +320,18 @@ async fn help(ctx: &Context, msg: &Message) -> CommandResult {
 
 #[command]
 async fn blog(ctx: &Context, msg: &Message) -> CommandResult {
+    let response = "Blog functionality is currently disabled. The blog post generator and API server are not running.";
+
+    send_message_in_parts(&ctx.http, msg, response).await?;
+
+    Ok(())
+}
+
+/*
+// ORIGINAL BLOG COMMAND (DISABLED)
+// Uncomment this and comment out the above function to re-enable blog functionality
+#[command]
+async fn blog_original(ctx: &Context, msg: &Message) -> CommandResult {
     let args: Vec<String> = msg.content.split_whitespace().skip(1).map(|s| s.to_string()).collect();
 
     let db_lock = {
@@ -375,3 +393,4 @@ async fn blog(ctx: &Context, msg: &Message) -> CommandResult {
 
     Ok(())
 }
+*/
