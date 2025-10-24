@@ -32,7 +32,21 @@ pub fn get_chat_response(temp: &str, init: &str, prompt: &str, images: Option<Ve
         .json(&request_data)
         .send()?;
 
+    let status = response.status();
+    println!("Response status: {}", status);
+
     let response_json: serde_json::Value = response.json().unwrap();
-    let completion_text = response_json["response"].as_str().unwrap_or("Prompt machine broke");
+    println!("Response JSON: {:?}", response_json);
+
+    // Check for error in response
+    if let Some(error) = response_json.get("error") {
+        eprintln!("Ollama API error: {}", error);
+        return Ok(format!("Error from Ollama: {}", error));
+    }
+
+    let completion_text = response_json["response"].as_str().unwrap_or_else(|| {
+        eprintln!("No 'response' field in JSON: {:?}", response_json);
+        "Prompt machine broke - no response field"
+    });
     Ok(completion_text.to_string())
 }
