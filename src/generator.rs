@@ -3,27 +3,28 @@ use std::time::Duration;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
-pub fn get_chat_response(temp: &str, init: &str, prompt: &str, imagedata: Option<&str>) -> Result<String, reqwest::Error> {
+pub fn get_chat_response(temp: &str, init: &str, prompt: &str, images: Option<Vec<String>>) -> Result<String, reqwest::Error> {
     let client = Client::builder()
         .timeout(Duration::from_secs(360))
         .build()?;
 
-    let image_data = match imagedata {
-        Some(data) => json!({ "data": data }),
-        None => json!({ "data": "" }),
-    };
-
-    println!("{:?}", image_data);
-
     let prompt_input = format!("{}{}\n\n", init, prompt);
-    let request_data = json!({
+
+    let mut request_data = json!({
         "model": "gemma3:270m",
         "prompt": format!("{}", prompt_input),
         // "temperature": temp.parse::<f64>().unwrap(),
         "stream": false,
         "stop": ["\n"],
-        "image_data": image_data,
     });
+
+    // Add images array if provided
+    if let Some(img_list) = images {
+        if !img_list.is_empty() {
+            request_data["images"] = json!(img_list);
+            println!("Sending request with {} image(s)", img_list.len());
+        }
+    }
 
     let response = client
         .post("http://localhost:11434/api/generate")

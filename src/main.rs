@@ -95,10 +95,45 @@ impl EventHandler for Handler {
             let prompt = msg.content.clone().split_off(23);
             println!("{:?}", prompt);
 
+            // Process image attachments
+            let images: Vec<String> = if !msg.attachments.is_empty() {
+                let mut img_vec = Vec::new();
+                for attachment in &msg.attachments {
+                    // Check if it's an image by content type or file extension
+                    let is_image = attachment.content_type.as_ref()
+                        .map(|ct| ct.starts_with("image/"))
+                        .unwrap_or(false);
+
+                    if is_image {
+                        println!("Downloading image: {}", attachment.url);
+                        // Download the image and convert to base64
+                        match reqwest::get(&attachment.url).await {
+                            Ok(response) => {
+                                match response.bytes().await {
+                                    Ok(bytes) => {
+                                        use base64::{Engine as _, engine::general_purpose};
+                                        let base64_string = general_purpose::STANDARD.encode(&bytes);
+                                        img_vec.push(base64_string);
+                                        println!("Successfully encoded image to base64");
+                                    }
+                                    Err(e) => eprintln!("Failed to read image bytes: {:?}", e),
+                                }
+                            }
+                            Err(e) => eprintln!("Failed to download image: {:?}", e),
+                        }
+                    }
+                }
+                img_vec
+            } else {
+                Vec::new()
+            };
+
+            let images_opt = if images.is_empty() { None } else { Some(images) };
+
             let runner = tokio::task::spawn_blocking(move || {
                 println!("Thread Spawned!");
                 // This is running on a thread where blocking is fine.
-                let response = generator::get_chat_response("1.3", "You are Egghead, the world's smartest computer.", &prompt, None).unwrap();
+                let response = generator::get_chat_response("1.3", "You are Egghead, the world's smartest computer.", &prompt, images_opt).unwrap();
                 response
             });
 
