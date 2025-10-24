@@ -11,7 +11,7 @@ pub fn get_chat_response(temp: &str, init: &str, prompt: &str, images: Option<Ve
     let prompt_input = format!("{}{}\n\n", init, prompt);
 
     let mut request_data = json!({
-        "model": "smolvlm",
+        "model": "riven/smolvlm",
         "prompt": format!("{}", prompt_input),
         // "temperature": temp.parse::<f64>().unwrap(),
         "stream": false,
