@@ -92,7 +92,20 @@ impl EventHandler for Handler {
             let typing: _ = Typing::start(ctx.http.clone(), msg.channel_id.0.clone())
             .expect("Typing failed");
 
-            let prompt = msg.content.clone().split_off(23);
+            // Extract prompt by removing bot mentions
+            // Discord mentions are in the format <@USER_ID> or <@!USER_ID>
+            let bot_id = ctx.cache.current_user().id.0.to_string();
+            let mention_formats = vec![
+                format!("<@{}>", bot_id),
+                format!("<@!{}>", bot_id),
+            ];
+
+            let mut prompt = msg.content.clone();
+            for mention in &mention_formats {
+                prompt = prompt.replace(mention, "");
+            }
+            prompt = prompt.trim().to_string();
+
             println!("{:?}", prompt);
 
             // Process image attachments
