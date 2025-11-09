@@ -172,10 +172,21 @@ impl EventHandler for Handler {
 async fn send_message_in_parts(http: &serenity::http::Http, msg: &Message, text: &str) -> CommandResult {
     const MAX_LENGTH: usize = 2000;
 
-    for chunk in text.as_bytes().chunks(MAX_LENGTH) {
+    let chunks: Vec<_> = text.as_bytes().chunks(MAX_LENGTH).collect();
+
+    for (i, chunk) in chunks.iter().enumerate() {
         let content = String::from_utf8_lossy(chunk);
-        if let Err(why) = msg.channel_id.say(http, &content).await {
-            println!("Error sending message: {:?}", why);
+
+        if i == 0 {
+            // First message should be a reply to create the thread
+            if let Err(why) = msg.reply(http, &content).await {
+                println!("Error sending reply: {:?}", why);
+            }
+        } else {
+            // Subsequent messages just go to the channel
+            if let Err(why) = msg.channel_id.say(http, &content).await {
+                println!("Error sending message: {:?}", why);
+            }
         }
     }
     Ok(())
