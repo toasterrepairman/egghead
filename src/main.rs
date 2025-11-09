@@ -206,7 +206,7 @@ async fn get_conversation_history(ctx: &Context, msg: &Message, bot_id: u64) -> 
         None
     };
 
-    // If we're in a thread, collect all messages in the thread chain
+    // Only load context if we're in a thread (reply chain)
     if let Some(root_id) = thread_root {
         println!("Detected reply thread, fetching thread messages starting from {}", root_id);
 
@@ -266,43 +266,8 @@ async fn get_conversation_history(ctx: &Context, msg: &Message, bot_id: u64) -> 
             }
         }
     } else {
-        // Not in a thread, fetch the last 10 messages from the channel
-        match msg.channel_id.messages(&ctx.http, |retriever| retriever.limit(10).before(msg.id)).await {
-            Ok(messages) => {
-                // Reverse to get chronological order (oldest first)
-                for message in messages.iter().rev() {
-                    let role = if message.author.id.0 == bot_id {
-                        "assistant"
-                    } else {
-                        "user"
-                    };
-
-                    let mut content = message.content.clone();
-                    if role == "user" {
-                        let mention_formats = vec![
-                            format!("<@{}>", bot_id),
-                            format!("<@!{}>", bot_id),
-                        ];
-                        for mention in &mention_formats {
-                            content = content.replace(mention, "");
-                        }
-                        content = content.trim().to_string();
-                    }
-
-                    if !content.is_empty() {
-                        history.push(json!({
-                            "role": role,
-                            "content": content
-                        }));
-                    }
-                }
-
-                println!("Loaded {} messages from conversation history", history.len());
-            }
-            Err(e) => {
-                eprintln!("Failed to fetch message history: {:?}", e);
-            }
-        }
+        // Not in a thread - don't load any context
+        println!("Not in a reply thread, no conversation history loaded");
     }
 
     history
