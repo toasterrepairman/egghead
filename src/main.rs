@@ -143,10 +143,15 @@ impl EventHandler for Handler {
 
             let images_opt = if images.is_empty() { None } else { Some(images) };
 
+            // Fetch conversation history
+            let bot_id = ctx.cache.current_user().id.0;
+            let conversation_history = get_conversation_history(&ctx, &msg, bot_id).await;
+            let history_opt = if conversation_history.is_empty() { None } else { Some(conversation_history) };
+
             let runner = tokio::task::spawn_blocking(move || {
                 println!("Thread Spawned!");
                 // This is running on a thread where blocking is fine.
-                let response = generator::get_chat_response("1.3", "You are Egghead, the world's smartest computer.", &prompt, images_opt).unwrap();
+                let response = generator::get_chat_response("1.3", "You are Egghead, the world's smartest computer.", &prompt, images_opt, history_opt).unwrap();
                 response
             });
 
@@ -174,6 +179,55 @@ async fn send_message_in_parts(http: &serenity::http::Http, msg: &Message, text:
         }
     }
     Ok(())
+}
+
+async fn get_conversation_history(ctx: &Context, msg: &Message, bot_id: u64) -> Vec<serde_json::Value> {
+    use serde_json::json;
+
+    let mut history = Vec::new();
+
+    // Fetch the last 10 messages from the channel (not including the current message)
+    match msg.channel_id.messages(&ctx.http, |retriever| retriever.limit(10).before(msg.id)).await {
+        Ok(messages) => {
+            // Reverse to get chronological order (oldest first)
+            for message in messages.iter().rev() {
+                // Skip bot messages for now, or include them as assistant responses
+                let role = if message.author.id.0 == bot_id {
+                    "assistant"
+                } else {
+                    "user"
+                };
+
+                // Clean the content - remove bot mentions from user messages
+                let mut content = message.content.clone();
+                if role == "user" {
+                    let mention_formats = vec![
+                        format!("<@{}>", bot_id),
+                        format!("<@!{}>", bot_id),
+                    ];
+                    for mention in &mention_formats {
+                        content = content.replace(mention, "");
+                    }
+                    content = content.trim().to_string();
+                }
+
+                // Only add non-empty messages
+                if !content.is_empty() {
+                    history.push(json!({
+                        "role": role,
+                        "content": content
+                    }));
+                }
+            }
+
+            println!("Loaded {} messages from conversation history", history.len());
+        }
+        Err(e) => {
+            eprintln!("Failed to fetch message history: {:?}", e);
+        }
+    }
+
+    history
 }
 
 async fn blog_post_generator_task(db_path: String, interval_minutes: u64) {

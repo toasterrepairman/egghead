@@ -3,18 +3,23 @@ use std::time::Duration;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
-pub fn get_chat_response(temp: &str, init: &str, prompt: &str, images: Option<Vec<String>>) -> Result<String, reqwest::Error> {
+pub fn get_chat_response(temp: &str, init: &str, prompt: &str, images: Option<Vec<String>>, conversation_history: Option<Vec<serde_json::Value>>) -> Result<String, reqwest::Error> {
     let client = Client::builder()
         .timeout(Duration::from_secs(360))
         .build()?;
 
-    // Build messages array with system and user messages
+    // Build messages array with system message
     let mut messages = vec![
         json!({
             "role": "system",
             "content": init
         })
     ];
+
+    // Add conversation history if provided
+    if let Some(history) = conversation_history {
+        messages.extend(history);
+    }
 
     // Build user message content
     let user_message = if let Some(img_list) = images {
