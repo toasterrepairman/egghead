@@ -197,44 +197,111 @@ async fn get_conversation_history(ctx: &Context, msg: &Message, bot_id: u64) -> 
 
     let mut history = Vec::new();
 
-    // Fetch the last 10 messages from the channel (not including the current message)
-    match msg.channel_id.messages(&ctx.http, |retriever| retriever.limit(10).before(msg.id)).await {
-        Ok(messages) => {
-            // Reverse to get chronological order (oldest first)
-            for message in messages.iter().rev() {
-                // Skip bot messages for now, or include them as assistant responses
-                let role = if message.author.id.0 == bot_id {
-                    "assistant"
-                } else {
-                    "user"
-                };
+    // Check if this message is a reply to another message (part of a thread)
+    let thread_root = if let Some(ref referenced_msg) = msg.referenced_message {
+        // We're in a reply thread, use the referenced message as the root
+        Some(referenced_msg.id)
+    } else {
+        // Not a reply, just fetch recent channel messages
+        None
+    };
 
-                // Clean the content - remove bot mentions from user messages
-                let mut content = message.content.clone();
-                if role == "user" {
-                    let mention_formats = vec![
-                        format!("<@{}>", bot_id),
-                        format!("<@!{}>", bot_id),
-                    ];
-                    for mention in &mention_formats {
-                        content = content.replace(mention, "");
+    // If we're in a thread, collect all messages in the thread chain
+    if let Some(root_id) = thread_root {
+        println!("Detected reply thread, fetching thread messages starting from {}", root_id);
+
+        // Fetch messages and filter for ones that are part of this thread
+        match msg.channel_id.messages(&ctx.http, |retriever| retriever.limit(100).before(msg.id)).await {
+            Ok(messages) => {
+                let mut thread_messages = Vec::new();
+
+                // Find all messages that are part of this reply chain
+                for message in messages.iter().rev() {
+                    // Include the root message
+                    if message.id == root_id {
+                        thread_messages.push(message.clone());
                     }
-                    content = content.trim().to_string();
+                    // Include messages that reference the root or are part of the chain
+                    else if let Some(ref_msg) = &message.referenced_message {
+                        if ref_msg.id == root_id || thread_messages.iter().any(|m: &Message| m.id == ref_msg.id) {
+                            thread_messages.push(message.clone());
+                        }
+                    }
                 }
 
-                // Only add non-empty messages
-                if !content.is_empty() {
-                    history.push(json!({
-                        "role": role,
-                        "content": content
-                    }));
+                // Limit to last 10 messages in the thread
+                let start_idx = if thread_messages.len() > 10 { thread_messages.len() - 10 } else { 0 };
+
+                for message in &thread_messages[start_idx..] {
+                    let role = if message.author.id.0 == bot_id {
+                        "assistant"
+                    } else {
+                        "user"
+                    };
+
+                    let mut content = message.content.clone();
+                    if role == "user" {
+                        let mention_formats = vec![
+                            format!("<@{}>", bot_id),
+                            format!("<@!{}>", bot_id),
+                        ];
+                        for mention in &mention_formats {
+                            content = content.replace(mention, "");
+                        }
+                        content = content.trim().to_string();
+                    }
+
+                    if !content.is_empty() {
+                        history.push(json!({
+                            "role": role,
+                            "content": content
+                        }));
+                    }
                 }
+
+                println!("Loaded {} messages from reply thread", history.len());
             }
-
-            println!("Loaded {} messages from conversation history", history.len());
+            Err(e) => {
+                eprintln!("Failed to fetch thread messages: {:?}", e);
+            }
         }
-        Err(e) => {
-            eprintln!("Failed to fetch message history: {:?}", e);
+    } else {
+        // Not in a thread, fetch the last 10 messages from the channel
+        match msg.channel_id.messages(&ctx.http, |retriever| retriever.limit(10).before(msg.id)).await {
+            Ok(messages) => {
+                // Reverse to get chronological order (oldest first)
+                for message in messages.iter().rev() {
+                    let role = if message.author.id.0 == bot_id {
+                        "assistant"
+                    } else {
+                        "user"
+                    };
+
+                    let mut content = message.content.clone();
+                    if role == "user" {
+                        let mention_formats = vec![
+                            format!("<@{}>", bot_id),
+                            format!("<@!{}>", bot_id),
+                        ];
+                        for mention in &mention_formats {
+                            content = content.replace(mention, "");
+                        }
+                        content = content.trim().to_string();
+                    }
+
+                    if !content.is_empty() {
+                        history.push(json!({
+                            "role": role,
+                            "content": content
+                        }));
+                    }
+                }
+
+                println!("Loaded {} messages from conversation history", history.len());
+            }
+            Err(e) => {
+                eprintln!("Failed to fetch message history: {:?}", e);
+            }
         }
     }
 
