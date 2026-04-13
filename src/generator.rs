@@ -46,7 +46,7 @@ pub fn get_chat_response(temp: &str, init: &str, prompt: &str, images: Option<Ve
             json!({
                 "role": "user",
                 "content": content_parts
-            })@
+            })
         } else {
             json!({
                 "role": "user",
