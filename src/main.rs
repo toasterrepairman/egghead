@@ -115,7 +115,14 @@ impl EventHandler for Handler {
                     // Check if it's an image by content type or file extension
                     let is_image = attachment.content_type.as_ref()
                         .map(|ct| ct.starts_with("image/"))
-                        .unwrap_or(false);
+                        .unwrap_or_else(|| {
+                            let ext = attachment.filename.to_lowercase();
+                            ext.ends_with(".png")
+                                || ext.ends_with(".jpg")
+                                || ext.ends_with(".jpeg")
+                                || ext.ends_with(".gif")
+                                || ext.ends_with(".webp")
+                        });
 
                     if is_image {
                         println!("Downloading image: {}", attachment.url);
