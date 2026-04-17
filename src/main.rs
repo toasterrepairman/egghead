@@ -48,7 +48,7 @@ impl TypeMapKey for BlogDatabasePath {
 }
 
 #[group]
-#[commands(help, blog)]
+#[commands(help, blog, dream)]
 struct General;
 
 #[hook]
@@ -475,6 +475,76 @@ async fn blog(ctx: &Context, msg: &Message) -> CommandResult {
     let response = "Blog functionality is currently disabled. The blog post generator and API server are not running.";
 
     send_message_in_parts(&ctx.http, msg, response).await?;
+
+    Ok(())
+}
+
+#[command]
+async fn dream(ctx: &Context, msg: &Message) -> CommandResult {
+    let prompt: String = msg.content.split_whitespace().skip(1).collect::<Vec<_>>().join(" ");
+
+    if prompt.is_empty() {
+        msg.reply(&ctx.http, "Usage: `e.dream <prompt>`").await?;
+        return Ok(());
+    }
+
+    let _typing = Typing::start(ctx.http.clone(), msg.channel_id.0).expect("Typing failed");
+
+    let prompt_owned = prompt.clone();
+    let result = tokio::task::spawn_blocking(move || {
+        let client = reqwest::blocking::Client::builder()
+            .timeout(std::time::Duration::from_secs(300))
+            .build()
+            .ok()?;
+
+        let body = serde_json::json!({
+            "prompt": prompt_owned,
+            "steps": 25,
+            "width": 512,
+            "height": 512,
+        });
+
+        let resp = client
+            .post("http://localhost:11434/sdapi/v1/txt2img")
+            .json(&body)
+            .send()
+            .ok()?;
+
+        let json: serde_json::Value = resp.json().ok()?;
+        json["images"][0].as_str().map(|s| s.to_string())
+    }).await.unwrap();
+
+    match result {
+        Some(b64_string) => {
+            use base64::{Engine as _, engine::general_purpose};
+            match general_purpose::STANDARD.decode(&b64_string) {
+                Ok(image_bytes) => {
+                    let temp_path = format!("/tmp/egghead_dream_{}.png", msg.id.0);
+                    if let Err(e) = std::fs::write(&temp_path, &image_bytes) {
+                        eprintln!("Failed to write temp image: {:?}", e);
+                        msg.reply(&ctx.http, "Failed to save generated image.").await.ok();
+                        return Ok(());
+                    }
+
+                    if let Err(e) = msg.channel_id.send_message(&ctx.http, |m| {
+                        m.content(format!("Dream: {}", prompt))
+                            .add_file(std::path::Path::new(&temp_path))
+                    }).await {
+                        eprintln!("Failed to send image: {:?}", e);
+                    }
+
+                    std::fs::remove_file(&temp_path).ok();
+                }
+                Err(e) => {
+                    eprintln!("Failed to decode base64: {:?}", e);
+                    msg.reply(&ctx.http, "Failed to decode generated image.").await.ok();
+                }
+            }
+        }
+        None => {
+            msg.reply(&ctx.http, "Failed to generate image. Make sure the SD model is loaded.").await.ok();
+        }
+    }
 
     Ok(())
 }
