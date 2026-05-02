@@ -64,7 +64,7 @@ pub fn get_chat_response(temp: &str, init: &str, prompt: &str, images: Option<Ve
 
     let request_data = json!({
         "model": "riven/smolvlm",
-        "max_tokens": 512,
+        "max_tokens": 1024,
         "messages": messages,
         "temperature": temp.parse::<f64>().unwrap(),
         "stream": false,
